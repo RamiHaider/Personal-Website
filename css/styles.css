@@ -1,3 +1,5 @@
+/* Styles Common Across All the Pages */
+
 body {
     font-family: 'Inter', sans-serif;
     margin: 0;
@@ -27,14 +29,6 @@ body::before {
     background-color: transparent;
 }
 
-header {
-    display: flex;
-    align-items: center;
-    padding: 0px 65px;
-    background-color: transparent;
-    margin-bottom: 0;
-    border-bottom: 4px solid #A4A155;
-}
 
 .main-content-wrapper {
     display: flex;
@@ -55,98 +49,15 @@ main {
     padding: 40px;
 }
 
-.intro-section {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 40px;
-}
-
-#recent {
-    width: 200px;
-    background-color: #E2E8F7;
-    padding: 20px;
-    border-radius: 0 0 20px 0;
-}
-
-.logo {
-    font-size: 40px;
-    font-weight: 600;
-    color: #D7D7D7;
-    text-decoration: none;
-    align-self: center; /* This keeps the logo centered vertically */
-}
-
-nav {
-    display: flex;
-    align-items: flex-end; /* This aligns nav items to the bottom */
-}
-
-nav a {
-    font-size: 18px;
-    font-weight: 500;
-    color: #A4A155;
-    text-decoration: none;
-    margin-left: 20px;
-    padding: 5px 10px;
-    border-radius: 5px 5px 0 0;
-    transition: background-color 0.3s;
-}
-
-nav a:hover {
-    background-color: rgba(240, 240, 240, 0.5);
-}
-
-.recent h2 {
-    color: #6F6F6F;
-    font-weight: 500;
-    font-size: 18px;
-    margin-top: 0;
-    margin-bottom: 20px;
-}
-
-.recent .month {
-    color: #6F6F6F;
-    font-weight: 500;
-    font-size: 12px;
-    margin-top: 15px;
-    margin-bottom: 10px;
-}
-
-.recent ul {
-    list-style-type: none;
-    padding: 0;
-    margin: 0;
-}
-
-.recent li {
-    display: flex;
-    align-items: center;
-    margin-bottom: 10px;
-}
-
-.recent .placeholder {
-    width: 35px;
-    height: 35px;
-    background-color: white;
-    margin-right: 10px;
-    border-radius: 5px;
-}
-
-.recent a {
-    color: #6F6F6F;
-    font-size: 10px;
-    text-decoration: none;
-}
-
 h1 {
-    font-size: 35px;
+    font-size: 30px;
     font-weight: 600;
-    color: #373737;
+    color: #252525;
     margin-top: 0;
 }
 
 h2 {
-    font-size: 30px;
+    font-size: 20px;
     font-weight: 500;
     color: #404040;
 }
@@ -158,6 +69,25 @@ p {
     font-weight: 20;
 }
 
+h3 {
+    font-size: 17px;
+    font-weight: 500;
+    color: #404040;
+}
+
+
+
+
+/* Landing Page Styles */
+
+
+.intro-section {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 40px;
+}
+
+
 .profile-container {
     width: 45%;
     display: flex;
@@ -166,8 +96,8 @@ p {
 }
 
 .profile-image {
-    width: 275px;
-    height: 275px;
+    width: 235px;
+    height: 235px;
     border-radius: 50%;
     border: 2px solid black;
     object-fit: cover;
@@ -180,8 +110,8 @@ p {
 }
 
 .social-icons img {
-    width: 40px;
-    height: 40px;
+    width: 30px;
+    height: 30px;
     margin: 0 10px;
 }
 
@@ -190,29 +120,49 @@ p {
     padding-left: 20px;
 }
 
-.what-you-will-find {
-    margin-top: 40px;
+.ds-portfolio {
+    margin-top: 60px;
 }
 
-.what-you-will-find h2 {
-    font-size: 30px;
-    font-weight: 500;
-    color: #404040;
+.ds-portfolio h2 {
+    font-size: 20px;
+    font-weight: 600;
+    color: #282828;
     margin-bottom: 20px;
 }
 
-.projects {
+.portfolio {
     display: flex;
+    flex-direction: column;
     gap: 20px;
 }
 
-.project-card {
-    flex: 1;
+.portfolio-card {
+    margin-top: 15px;
+    display: flex;
     background-color: #f8f8f8;
     border-radius: 10px;
-    padding: 20px;
+    overflow: hidden;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
+
+.portfolio-image {
+    width: 300px;
+    object-fit: cover;
+}
+
+.portfolio-content {
+    flex: 1;
+    padding: 20px;
+}
+
+
+
+
+
+
+
+/* Directory Styling */
 
 .project-card h3 {
     font-size: 18px;
@@ -257,15 +207,25 @@ p {
 .project-list {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 1px;
 }
 
 .project-item {
     display: flex;
     align-items: center;
-    background-color: #f8f8f8;
-    padding: 10px;
-    border-radius: 5px;
+    background-color: #ffffff;
+    padding: 15px;
+}
+
+.project-item:not(:last-child) {
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.project-item a {
+    flex-grow: 1;
+    color: #007bff;
+    text-decoration: none;
+    font-weight: normal;
 }
 
 .project-icon {
@@ -273,13 +233,6 @@ p {
     height: 20px;
     background-color: #000;
     margin-right: 15px;
-}
-
-.project-item a {
-    flex-grow: 1;
-    color: #007bff;
-    text-decoration: none;
-    font-weight: 500;
 }
 
 .tag {
@@ -302,4 +255,100 @@ p {
 .tag.code {
     background-color: #ffe0e0;
     color: #ff0000;
+}
+
+
+
+
+
+
+
+
+
+/* Component Styling */
+
+#recent {
+    width: 200px;
+    background-color: #E2E8F7;
+    padding: 20px;
+    border-radius: 0 0 20px 0;
+}
+
+.recent h2 {
+    color: #6F6F6F;
+    text-align: center;
+    font-weight: 500;
+    font-size: 18px;
+    margin-top: 0;
+    margin-bottom: 20px;
+}
+
+.recent .month {
+    color: #6F6F6F;
+    font-weight: 500;
+    font-size: 12px;
+    margin-top: 15px;
+    margin-bottom: 10px;
+}
+
+.recent ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+.recent li {
+    display: flex;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.recent .placeholder {
+    width: 35px;
+    height: 35px;
+    background-color: white;
+    margin-right: 10px;
+    border-radius: 5px;
+}
+
+.recent a {
+    color: #6F6F6F;
+    font-size: 10px;
+    text-decoration: none;
+}
+
+header {
+    display: flex;
+    align-items: center;
+    padding: 0px 65px;
+    background-color: transparent;
+    margin-bottom: 0;
+    border-bottom: 4px solid #A4A155;
+}
+
+.logo {
+    font-size: 40px;
+    font-weight: 600;
+    color: #D7D7D7;
+    text-decoration: none;
+    align-self: center; /* This keeps the logo centered vertically */
+}
+
+nav {
+    display: flex;
+    align-items: center;
+}
+
+nav a {
+    font-size: 18px;
+    font-weight: 500;
+    color: #A4A155;
+    text-decoration: none;
+    margin-left: 20px;
+    padding: 5px 10px;
+    transition: background-color 0.3s;
+}
+
+nav a:hover {
+    background-color: rgba(240, 240, 240, 0.5);
 }
