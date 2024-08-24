@@ -1,7 +1,9 @@
 /* Styles Common Across All the Pages */
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@100;300;400&display=swap');
+
 
 body {
-    font-family: 'Inter', sans-serif;
+    font-family: 'Roboto', sans-serif;
     margin: 0;
     padding: 0;
     background-image: url('/assets/images/Universe-Background.jpg');
@@ -52,7 +54,7 @@ main {
 h1 {
     font-size: 30px;
     font-weight: 600;
-    color: #252525;
+    color: #2c2c2c;
     margin-top: 0;
 }
 
@@ -66,7 +68,7 @@ p {
     font-size: 15px;
     line-height: 1.6;
     color: #404040;
-    font-weight: 20;
+    font-weight: 350;
 }
 
 h3 {
@@ -113,6 +115,18 @@ h3 {
     width: 30px;
     height: 30px;
     margin: 0 10px;
+    filter: brightness(1.5) opacity(0.7); /* Adjust these values as needed */
+    transition: filter 0.3s ease; /* Smooth transition for hover effect */
+}
+
+/* Specific rule for GitHub icon */
+.social-icons img[alt="GitHub"] {
+    filter: brightness(1.5) opacity(0.85); /* Increased opacity for GitHub */
+}
+
+/* Optional: Revert to original appearance on hover */
+.social-icons img:hover {
+    filter: brightness(1) opacity(1);
 }
 
 .intro-container {
@@ -156,6 +170,10 @@ h3 {
     padding: 20px;
 }
 
+p.portfolio-description {
+    font-size: 12px;
+}
+
 
 
 
@@ -174,6 +192,32 @@ h3 {
     color: #666;
 }
 
+.tag {
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-weight: 450;
+    color: #464646;
+    background-color: #d7d5a0; /* Default background */
+    margin-right: 0px;
+    margin-bottom: 5px;
+}
+
+.tag.blog {
+    background-color: #e0f0ff;
+    color: #007bff;
+}
+
+.tag.case-study {
+    background-color: #e0ffe0;
+    color: #00a000;
+}
+
+.tag.code {
+    background-color: #ffe0e0;
+    color: #ff0000;
+}
+
 .project-card .tags {
     display: flex;
     flex-wrap: wrap;
@@ -185,7 +229,7 @@ h3 {
     color: #333;
     padding: 5px 10px;
     border-radius: 15px;
-    font-size: 12px;
+    font-size: 10px;
     margin-right: 5px;
     margin-bottom: 5px;
 }
@@ -200,8 +244,8 @@ h3 {
 }
 
 .topic h2 {
-    font-size: 24px;
-    margin-bottom: 20px;
+    font-size: 20px;
+    margin-bottom: 10px;
 }
 
 .project-list {
@@ -235,27 +279,7 @@ h3 {
     margin-right: 15px;
 }
 
-.tag {
-    font-size: 12px;
-    padding: 3px 8px;
-    border-radius: 12px;
-    font-weight: 500;
-}
 
-.tag.blog {
-    background-color: #e0f0ff;
-    color: #007bff;
-}
-
-.tag.case-study {
-    background-color: #e0ffe0;
-    color: #00a000;
-}
-
-.tag.code {
-    background-color: #ffe0e0;
-    color: #ff0000;
-}
 
 
 
@@ -269,7 +293,7 @@ h3 {
 
 #recent {
     width: 200px;
-    background-color: #E2E8F7;
+    background-color: #edeef3;
     padding: 20px;
     border-radius: 0 0 20px 0;
 }
@@ -277,23 +301,23 @@ h3 {
 .recent h2 {
     color: #6F6F6F;
     text-align: center;
-    font-weight: 500;
-    font-size: 18px;
-    margin-top: 0;
+    font-weight: 350;
+    font-size: 13px;
+    margin-top: 10px;
     margin-bottom: 20px;
 }
 
 .recent .month {
-    color: #6F6F6F;
-    font-weight: 500;
-    font-size: 12px;
+    color: #838383;
+    font-weight: 300;
+    font-size: 10px;
     margin-top: 15px;
     margin-bottom: 10px;
 }
 
 .recent ul {
     list-style-type: none;
-    padding: 0;
+    padding: 5px;
     margin: 0;
 }
 
@@ -312,7 +336,7 @@ h3 {
 }
 
 .recent a {
-    color: #6F6F6F;
+    color: #7d7d7d;
     font-size: 10px;
     text-decoration: none;
 }
@@ -327,7 +351,7 @@ header {
 }
 
 .logo {
-    font-size: 40px;
+    font-size: 30px;
     font-weight: 600;
     color: #D7D7D7;
     text-decoration: none;
@@ -340,8 +364,8 @@ nav {
 }
 
 nav a {
-    font-size: 18px;
-    font-weight: 500;
+    font-size: 14px;
+    font-weight: 700;
     color: #A4A155;
     text-decoration: none;
     margin-left: 20px;
