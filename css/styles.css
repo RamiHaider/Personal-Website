@@ -68,7 +68,7 @@ p {
     font-size: 15px;
     line-height: 1.6;
     color: #404040;
-    font-weight: 350;
+    font-weight: 370;
 }
 
 h3 {
@@ -86,7 +86,9 @@ h3 {
 .intro-section {
     display: flex;
     justify-content: space-between;
-    margin-bottom: 40px;
+    border-bottom: 0.5px solid #e0e0e0; /* Light grey line */
+    margin-bottom: 30px; /* Adjust as needed */
+    padding-bottom: 30px; /* Adjust as needed */
 }
 
 
@@ -95,14 +97,16 @@ h3 {
     display: flex;
     flex-direction: column;
     align-items: center;
+    
 }
 
 .profile-image {
-    width: 235px;
-    height: 235px;
+    width: 170px;
+    height: 170px;
     border-radius: 50%;
     border: 2px solid black;
     object-fit: cover;
+    margin-top: 30px;
 }
 
 .social-icons {
@@ -135,12 +139,12 @@ h3 {
 }
 
 .ds-portfolio {
-    margin-top: 60px;
+    margin-top: 90px;
 }
 
 .ds-portfolio h2 {
     font-size: 20px;
-    font-weight: 600;
+    font-weight: 800;
     color: #282828;
     margin-bottom: 20px;
 }
@@ -198,7 +202,7 @@ p.portfolio-description {
     border-radius: 12px;
     font-weight: 450;
     color: #464646;
-    background-color: #d7d5a0; /* Default background */
+    background-color: #d7d5a0b0; /* Default background */
     margin-right: 0px;
     margin-bottom: 5px;
 }
@@ -246,7 +250,10 @@ p.portfolio-description {
 .topic h2 {
     font-size: 20px;
     margin-bottom: 10px;
+    font-weight: 700;
 }
+
+
 
 .project-list {
     display: flex;
@@ -267,9 +274,14 @@ p.portfolio-description {
 
 .project-item a {
     flex-grow: 1;
-    color: #007bff;
+    color: #0e67c5;
     text-decoration: none;
     font-weight: normal;
+    font-size: 15px;
+}
+
+.project-item a:hover {
+    text-decoration: underline;
 }
 
 .project-icon {
@@ -292,7 +304,7 @@ p.portfolio-description {
 /* Component Styling */
 
 #recent {
-    width: 200px;
+    width: 185px;
     background-color: #edeef3;
     padding: 20px;
     border-radius: 0 0 20px 0;
@@ -347,32 +359,43 @@ header {
     padding: 0px 65px;
     background-color: transparent;
     margin-bottom: 0;
-    border-bottom: 4px solid #A4A155;
+    border-bottom: 6px solid #A4A155;
 }
 
 .logo {
-    font-size: 30px;
-    font-weight: 600;
+    font-size: 35px;
+    font-weight: 900;
     color: #D7D7D7;
     text-decoration: none;
-    align-self: center; /* This keeps the logo centered vertically */
+    padding-bottom: 0px;
+}
+
+.logo:hover {
+    color: white;
 }
 
 nav {
     display: flex;
-    align-items: center;
+    align-items: flex-end;
+    padding-bottom: 0px;
 }
 
 nav a {
-    font-size: 14px;
-    font-weight: 700;
+    font-size: 15px;
+    font-weight: 900;
     color: #A4A155;
     text-decoration: none;
-    margin-left: 20px;
-    padding: 5px 10px;
+    margin-left: 10px; /* Reduced from 20px */
+    padding: 5px 5px; /* Reduced horizontal padding */
     transition: background-color 0.3s;
 }
 
-nav a:hover {
-    background-color: rgba(240, 240, 240, 0.5);
+nav a:first-child {
+    margin-left: 50px;
 }
+
+nav a:hover {
+    color: white;
+}
+
+
