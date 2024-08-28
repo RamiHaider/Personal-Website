@@ -14,13 +14,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    const rootPath = window.location.pathname.startsWith('/data-science') ||
-                     window.location.pathname.startsWith('/programming') ||
-                     window.location.pathname.startsWith('/math') ||
-                     window.location.pathname.startsWith('/ux-ui')
-        ? '../'
-        : './';
-
+    const rootPath = window.location.pathname.startsWith('/blog') ? '../' : './';
     loadComponent('header', `${rootPath}components/header.html`);
-    loadComponent('recent', `${rootPath}components/recent.html`);
 });
