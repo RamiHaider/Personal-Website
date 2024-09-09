@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hashing vs. Nested Loops</title>
+    <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <div id="header"></div>
+
+        <div class="main-content-wrapper">
+            <main role="main">
+                <div class="content">
+                    <h1>Hashing vs. Nested Loops</h1>
+                    <p class="publish-date">Aug 15th, 2024</p>
+
+                    <h2>TwoSum Problem in LeetCode</h2>
+                    <p>The TwoSum problem is a classic coding challenge that demonstrates the efficiency gains of using a hash table approach over nested loops. Let's explore both approaches and their time complexities.</p>
+
+                    <h3>The Problem</h3>
+                    <p>Given a list of integers and a target sum, find two numbers in the list that add up to the target. We need to return the indices of these two numbers.</p>
+
+                    <h3>Nested Loop Approach</h3>
+                    <p>The nested loop approach involves checking every possible pair of numbers in the list. While straightforward, this method can be inefficient for large lists.</p>
+
+                    <h4>Time Complexity Analysis</h4>
+                    <p>For a list of size n, the nested loop approach performs approximately (n * (n-1) / 2) * 4 operations. For a list of 1000 elements, this results in about 1,998,000 operations.</p>
+
+                    <h3>Hash Table Approach</h3>
+                    <p>The hash table approach uses a dictionary to store complement values, allowing for much faster lookups.</p>
+
+                    <h4>Time Complexity Analysis</h4>
+                    <p>For a list of size n, the hash table approach performs approximately n * 3 operations. For a list of 1000 elements, this results in only about 3,000 operations.</p>
+
+                    <h3>Memory Considerations</h3>
+                    <p>While hash tables offer faster lookups, they do use more memory compared to the nested loop approach. This trade-off between speed and memory usage is a common theme in algorithm design.</p>
+
+                    <h3>Conclusion</h3>
+                    <p>The hash table approach demonstrates why it's considered O(n) time complexity, while the nested loop is O(n^2). This significant difference in efficiency becomes even more pronounced as the size of the input grows.</p>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="../js/main.js"></script>
+</body>
+</html>

@@ -3,29 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Logistic Regression - R.A</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <title>Logistic Regression from Scratch</title>
     <link rel="stylesheet" href="../css/styles.css">
 </head>
 <body>
     <div class="container">
         <div id="header"></div>
+
         <div class="main-content-wrapper">
-            <main>
+            <main role="main">
                 <div class="content">
                     <h1>Logistic Regression from Scratch</h1>
+                    <p class="publish-date">Aug 28th, 2024</p>
 
-                    <section class="project-content">
-                        <h2>Overview</h2>
-                        <p>Writing the logistic regression algorithm using Python and testing it on a known dataset</p>
-                        <a href="https://github.com/RamiHaider/ML-Logistic-Regression">Github Source-Code</a>
-                        <!-- Add more content here -->
-                    </section>
+                    <h2>Understanding Logistic Regression</h2>
+                    <p>Logistic Regression is a fundamental machine learning algorithm used for binary classification problems. Despite its name, it's used for classification rather than regression tasks.</p>
+
+                    <h3>The Concept</h3>
+                    <p>At its core, logistic regression estimates the probability that an instance belongs to a particular class. It uses the logistic function (also called sigmoid function) to map any real-valued number into a value between 0 and 1.</p>
+
+                    <h3>Building from Scratch</h3>
+                    <p>Implementing logistic regression from scratch involves several key steps:</p>
+                    <ol>
+                        <li>Initializing parameters</li>
+                        <li>Implementing the sigmoid function</li>
+                        <li>Implementing the cost function</li>
+                        <li>Implementing gradient descent</li>
+                        <li>Training the model</li>
+                        <li>Making predictions</li>
+                    </ol>
+
+                    <h3>Case Study: Employee Turnover Prediction</h3>
+                    <p>In our case study, we applied logistic regression to predict employee turnover. This involved:</p>
+                    <ul>
+                        <li>Preparing and preprocessing the employee data</li>
+                        <li>Splitting the data into training and testing sets</li>
+                        <li>Training the logistic regression model</li>
+                        <li>Evaluating the model's performance</li>
+                        <li>Interpreting the results to identify factors associated with turnover</li>
+                    </ul>
+
+                    <h3>Advantages of Building from Scratch</h3>
+                    <p>While many libraries offer pre-built logistic regression models, implementing it from scratch provides several benefits:</p>
+                    <ul>
+                        <li>Deep understanding of the algorithm's mechanics</li>
+                        <li>Flexibility to customize and optimize for specific needs</li>
+                        <li>Improved debugging and troubleshooting capabilities</li>
+                        <li>Foundation for understanding more complex algorithms</li>
+                    </ul>
+
+                    <h3>Conclusion</h3>
+                    <p>Building logistic regression from scratch is an excellent exercise for any aspiring data scientist or machine learning engineer. It provides invaluable insights into the workings of one of the most fundamental algorithms in the field.</p>
                 </div>
             </main>
-            <div id="recent"></div>
         </div>
     </div>
+
     <script src="../js/main.js"></script>
 </body>
 </html>
