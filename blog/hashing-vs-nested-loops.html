@@ -14,16 +14,43 @@
             <main role="main">
                 <div class="content">
                     <h1>Hashing vs. Nested Loops</h1>
-                    <p class="publish-date">Aug 15th, 2024</p>
+                    <p class="publish-date">Sep 9th, 2024</p>
 
-                    <h2>TwoSum Problem in LeetCode</h2>
-                    <p>The TwoSum problem is a classic coding challenge that demonstrates the efficiency gains of using a hash table approach over nested loops. Let's explore both approaches and their time complexities.</p>
+                    <div style="height: 20px;"></div>
+                    
+                    <h3> Introduction</h3>
+                    <p> This blog shows in python programming language the effectiveness of hashing method versus double nested loops by solving the LeetCode twosum exercise, and achieving a 99% percentile time complexity score. This is a deep-dive that goes into theory, and assumes you know very little to know programming languages and concepts. Thus, it's not a specialized deep-dive, but a horizontal one, meant for particularly curious and inquisitive individuals interested in the workings of computer science concepts.</p>
 
-                    <h3>The Problem</h3>
-                    <p>Given a list of integers and a target sum, find two numbers in the list that add up to the target. We need to return the indices of these two numbers.</p>
+                    <div style="height: 15px;"></div>
 
-                    <h3>Nested Loop Approach</h3>
-                    <p>The nested loop approach involves checking every possible pair of numbers in the list. While straightforward, this method can be inefficient for large lists.</p>
+                    <h3>TwoSum Problem</h3>
+                    <p>Given a list of integers and a target sum, find the indices of the two numbers in the list that add up to the target.</p>
+
+                    <div class="code-block">
+                        Input: nums = [2,7,11,15], target = 9
+                        Output: [0,1]
+                        Explanation: Because nums[0] + nums[1] == 9, we return [0, 1].
+                    </div>
+
+                    <div style="height: 15px;"></div>
+
+                    <h4>Nested Loop or 'Brute Force' Approach</h4>
+                    <p>The nested loop approach involves checking every possible pair of numbers in the list using double for-loops, one nested within the other.</p>
+                    
+                    <div class="code-block">
+                        Given an input: [a,b,c,d,e]
+                        
+                        We need to check each possible pair once:
+                        
+                        i.e.,
+                        
+                        [a,b], [a,c], [a,d], [a,e]
+                        [b,c], [b,d], [b,e]
+                        [c,d], [c,e]
+                        [d,e]
+                    </div>
+                    
+                    <p>While straightforward, this method can be inefficient for large lists.</p>
 
                     <h4>Time Complexity Analysis</h4>
                     <p>For a list of size n, the nested loop approach performs approximately (n * (n-1) / 2) * 4 operations. For a list of 1000 elements, this results in about 1,998,000 operations.</p>

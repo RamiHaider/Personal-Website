@@ -369,11 +369,31 @@ nav a:hover {
     color: #404040;
 }
 
-.portfolio-content .tag {
+.portfolio-content .tags {
     position: absolute;
-    top: 20px;
-    right: 20px;
+    top: 10px;
+    right: 10px;
+    display: flex;
+    gap: 5px;
 }
+
+.portfolio-content .tag {
+    font-size: 10px; /* Smaller font size */
+    font-weight: 500;
+    color: #464646;
+    background-color: #f0f0f0;
+    border: 1px solid #464646;
+    padding: 2px 5px; /* Tighter padding */
+    border-radius: 0; /* Square corners */
+    cursor: default; /* Remove pointer cursor if it's not clickable */
+}
+
+/* Specific colors for different tags */
+.tag.machine-learning { background-color: #D6E6FF; }
+.tag.programming { background-color: #FFFFD6; }
+.tag.data-science { background-color: #FFD6D6; }
+.tag.mathematics { background-color: #d9cfc3; }
+.tag.geoscience { background-color: #D6FFE0; }
 
 .portfolio-card-link:hover .portfolio-card {
     transform: translateY(-5px);
@@ -390,3 +410,34 @@ nav a:hover {
     object-fit: cover;
 }
 
+/* Styles for the filter tags at the top (leave these unchanged) */
+.tag-filter .tag {
+    font-size: 12px;
+    padding: 5px 10px;
+    border-radius: 15px;
+    cursor: pointer;
+}
+
+
+
+
+
+
+
+
+.code-block {
+    background-color: #f4f4f4;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 14px;
+    line-height: 1.4;
+    margin: 15px 0;
+    padding: 10px 15px;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    text-align: left;
+    display: inline-block;
+    max-width: 100%;
+}
