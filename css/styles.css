@@ -438,6 +438,10 @@ nav a:hover {
     white-space: pre-wrap;
     word-wrap: break-word;
     text-align: left;
-    display: inline-block;
-    max-width: 100%;
+    width: 100%;
+    box-sizing: border-box;
+    margin-left: -20px; /* This should match the left padding of .content */
+    margin-right: -20px; /* This should match the right padding of .content */
+    padding: 10px 20px; /* Adjust horizontal padding to match .content */
+    width: calc(100% + 40px); /* Increase width to account for negative margins */
 }
