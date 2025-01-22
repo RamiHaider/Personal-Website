@@ -14,6 +14,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    const rootPath = window.location.pathname.startsWith('/blog') ? '../' : './';
+    // Update path resolution to handle both blog and portfolio directories
+    const rootPath = window.location.pathname.includes('/blog/') || window.location.pathname.includes('/portfolio/') ? '../' : './';
     loadComponent('header', `${rootPath}components/header.html`);
 });
