@@ -3,7 +3,12 @@ document.addEventListener('DOMContentLoaded', function() {
         const element = document.getElementById(id);
         if (element) {
             fetch(url)
-                .then(response => response.text())
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.text();
+                })
                 .then(data => {
                     element.innerHTML = data;
                 })
@@ -14,7 +19,27 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Update path resolution to handle both blog and portfolio directories
-    const rootPath = window.location.pathname.includes('/blog/') || window.location.pathname.includes('/portfolio/') ? '../' : './';
+    // Get the current path
+    const currentPath = window.location.pathname;
+    
+    // Check if we're on GitHub Pages
+    const isGitHubPages = window.location.hostname.includes('github.io');
+    
+    // Determine the root path
+    let rootPath = './';
+    if (currentPath.includes('/blog/') || currentPath.includes('/portfolio/')) {
+        rootPath = '../';
+    }
+    
+    // If on GitHub Pages and there's a repository name in the path, adjust accordingly
+    if (isGitHubPages) {
+        const repoName = currentPath.split('/')[1]; // This will get the repository name if it exists
+        if (repoName && repoName !== '') {
+            rootPath = currentPath.includes('/blog/') || currentPath.includes('/portfolio/') 
+                ? `/${repoName}/` 
+                : './';
+        }
+    }
+
     loadComponent('header', `${rootPath}components/header.html`);
 });
