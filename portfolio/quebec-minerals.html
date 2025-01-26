@@ -182,20 +182,8 @@
     <script src="../js/quebec-map.js"></script>
     
     <script>
-        document.addEventListener('DOMContentLoaded', async function() {
-            // Initialize map
-            const quebecMap = new QuebecMap('quebec-map');
-            
-            // Handle base layer changes
-            document.getElementById('baseLayerSelect').addEventListener('change', function(e) {
-                Object.values(quebecMap.baseLayers).forEach(layer => quebecMap.map.removeLayer(layer));
-                quebecMap.baseLayers[e.target.value].addTo(quebecMap.map);
-            });
-            
-            // Handle mineral layer changes
-            document.getElementById('mineralLayerSelect').addEventListener('change', function(e) {
-                quebecMap.showMineralLayer(e.target.value);
-            });
+        document.addEventListener('DOMContentLoaded', () => {
+            window.quebecMap = new QuebecMap('quebec-map');
         });
     </script>
 </body>
