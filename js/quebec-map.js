@@ -99,6 +99,11 @@ class QuebecMap {
 
         // Add results container below the map
         this.createResultsContainer();
+
+        this.supabase = supabase.createClient(
+            'YOUR_SUPABASE_URL',
+            'YOUR_SUPABASE_ANON_KEY'
+        );
     }
 
     async loadData() {
@@ -221,41 +226,47 @@ class QuebecMap {
         this.calculateStatistics(bounds);
     }
 
-    calculateStatistics(bounds) {
+    async calculateStatistics(bounds) {
         const [[minLat, minLng], [maxLat, maxLng]] = bounds;
         
-        // Filter points within bounds
-        const pointsInBounds = this.samplePoints.getLayers()
-            .filter(layer => {
-                const latLng = layer.getLatLng();
-                return latLng.lat >= minLat && 
-                       latLng.lat <= maxLat && 
-                       latLng.lng >= minLng && 
-                       latLng.lng <= maxLng;
+        try {
+            // Fetch points within bounds from Supabase
+            const { data: points, error } = await this.supabase
+                .rpc('get_points_in_bounds', {
+                    min_lat: minLat,
+                    min_lng: minLng,
+                    max_lat: maxLat,
+                    max_lng: maxLng
+                });
+
+            if (error) throw error;
+
+            // Calculate statistics
+            const stats = {
+                AU: { anomalous: 0, totalProb: 0 },
+                AG: { anomalous: 0, totalProb: 0 },
+                CU: { anomalous: 0, totalProb: 0 },
+                CO: { anomalous: 0, totalProb: 0 },
+                NI: { anomalous: 0, totalProb: 0 }
+            };
+
+            points.forEach(point => {
+                Object.keys(stats).forEach(mineral => {
+                    const mineral_lower = mineral.toLowerCase();
+                    if (point[`${mineral_lower}_pred`] === 1) {
+                        stats[mineral].anomalous++;
+                    }
+                    stats[mineral].totalProb += point[`${mineral_lower}_prob`];
+                });
             });
 
-        // Calculate statistics
-        const stats = {
-            AU: { anomalous: 0, totalProb: 0 },
-            AG: { anomalous: 0, totalProb: 0 },
-            CU: { anomalous: 0, totalProb: 0 },
-            CO: { anomalous: 0, totalProb: 0 },
-            NI: { anomalous: 0, totalProb: 0 }
-        };
-
-        pointsInBounds.forEach(point => {
-            const data = point.data.minerals;
-            Object.keys(stats).forEach(mineral => {
-                if (data[mineral].pred === 1) stats[mineral].anomalous++;
-                stats[mineral].totalProb += data[mineral].prob;
-            });
-        });
-
-        // Display results
-        this.displayResults(stats, pointsInBounds.length);
-
-        // Remove loading overlay
-        document.querySelector('.loading-overlay').remove();
+            // Display results
+            this.displayResults(stats, points.length);
+        } catch (error) {
+            console.error('Error fetching points:', error);
+        } finally {
+            document.querySelector('.loading-overlay').remove();
+        }
     }
 
     displayResults(stats, totalPoints) {
