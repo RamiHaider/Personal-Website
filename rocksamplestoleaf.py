@@ -5,7 +5,8 @@ import json
 df = pd.read_csv('assets/samples.csv')
 
 # Create a list of sample points with their binary classifications
-samples = df.sample(n=100000).apply(
+# Using all rows instead of sampling
+samples = df.apply(
     lambda row: {
         'lat': float(row['Latitude']),
         'lng': float(row['Longitude']),
