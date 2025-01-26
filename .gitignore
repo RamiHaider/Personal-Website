@@ -21,4 +21,8 @@ assets/Samples.cpg
 # Common system files
 .DS_Store
 .env
-node_modules/ 
+node_modules/
+
+# Generated mineral heatmaps
+assets/mineral_images/*.png
+assets/mineral_images/*.tif 

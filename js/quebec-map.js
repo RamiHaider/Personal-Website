@@ -1,10 +1,30 @@
-// Constants for mineral types and their thresholds
+// Constants for mineral types and their image overlays
 const MINERALS = {
-    AU: { name: 'Gold', symbol: 'AU', threshold: 0.5 },
-    AG: { name: 'Silver', symbol: 'AG', threshold: 0.5 },
-    CU: { name: 'Copper', symbol: 'CU', threshold: 0.5 },
-    CO: { name: 'Cobalt', symbol: 'CO', threshold: 0.5 },
-    NI: { name: 'Nickel', symbol: 'NI', threshold: 0.5 }
+    AU: { 
+        name: 'Gold', 
+        symbol: 'AU',
+        imagePath: '../assets/mineral_images/AU_heatmap.png'
+    },
+    AG: { 
+        name: 'Silver', 
+        symbol: 'AG',
+        imagePath: '../assets/mineral_images/AG_heatmap.png'
+    },
+    CU: { 
+        name: 'Copper', 
+        symbol: 'CU',
+        imagePath: '../assets/mineral_images/CU_heatmap.png'
+    },
+    CO: { 
+        name: 'Cobalt', 
+        symbol: 'CO',
+        imagePath: '../assets/mineral_images/CO_heatmap.png'
+    },
+    NI: { 
+        name: 'Nickel', 
+        symbol: 'NI',
+        imagePath: '../assets/mineral_images/NI_heatmap.png'
+    }
 };
 
 class QuebecMap {
@@ -14,13 +34,19 @@ class QuebecMap {
         this.data = null;
         this.mapId = mapId;
         
+        // Flip the latitude coordinates in the bounds
+        this.imageBounds = [
+            [62.491, -79.572],  // Northwest corner [lat, lng]
+            [44.993, -56.943]   // Southeast corner [lat, lng]
+        ];
+        
         // Initialize the map
         this.initializeMap();
     }
 
     initializeMap() {
         // Initialize map centered on Quebec
-        this.map = L.map(this.mapId).setView([47.5, -72], 6);
+        this.map = L.map(this.mapId).setView([53.7, -68.2], 5); // Centered between bounds
         
         // Add default satellite layer
         this.baseLayers = {
@@ -77,34 +103,34 @@ class QuebecMap {
         // Remove existing layer if any
         if (this.currentMineralLayer) {
             this.map.removeLayer(this.currentMineralLayer);
+            this.currentMineralLayer = null;
         }
 
+        // If 'none' selected, just return
         if (mineralType === 'none') return;
 
-        // Create new layer
-        const points = this.data.map(point => {
-            const lat = parseFloat(point.Latitude);
-            const lng = parseFloat(point.Longitude);
-            const prob = parseFloat(point[`${mineralType}_prob`]);
-            
-            return {
-                lat,
-                lng,
-                prob
-            };
-        });
+        // Create new image overlay
+        const mineral = MINERALS[mineralType];
+        if (!mineral) return;
 
-        // Create heatmap layer
-        this.currentMineralLayer = L.heatLayer(points.map(p => [p.lat, p.lng, p.prob]), {
-            radius: 25,
-            blur: 15,
-            maxZoom: 10,
-            max: 1.0,
-            gradient: {
-                0.0: 'blue',
-                0.5: 'lime',
-                1.0: 'red'
+        this.currentMineralLayer = L.imageOverlay(
+            mineral.imagePath,
+            this.imageBounds,
+            {
+                opacity: 0.7,
+                interactive: false
             }
-        }).addTo(this.map);
+        ).addTo(this.map);
     }
-} 
+
+    setMineralLayerOpacity(opacity) {
+        if (this.currentMineralLayer) {
+            this.currentMineralLayer.setOpacity(opacity / 100);
+        }
+    }
+}
+
+// Add this to your DOMContentLoaded event handler
+document.getElementById('opacityControl').addEventListener('input', function(e) {
+    quebecMap.setMineralLayerOpacity(e.target.value);
+}); 
