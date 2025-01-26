@@ -96,6 +96,9 @@ class QuebecMap {
         
         // Bind event listeners
         this.bindEvents();
+
+        // Add results container below the map
+        this.createResultsContainer();
     }
 
     async loadData() {
@@ -104,13 +107,17 @@ class QuebecMap {
             const points = await response.json();
             
             points.forEach(point => {
-                L.circleMarker([point.lat, point.lng], {
+                const marker = L.circleMarker([point.lat, point.lng], {
                     radius: 2,
                     color: '#444',
                     fillColor: '#666',
                     fillOpacity: 0.7,
                     weight: 1
-                }).addTo(this.samplePoints);
+                });
+                
+                // Attach the mineral data to the marker
+                marker.data = point;
+                marker.addTo(this.samplePoints);
             });
             
             console.log(`Loaded ${points.length} sample points`);
@@ -136,80 +143,138 @@ class QuebecMap {
             this.setMineralLayerOpacity(e.target.value);
         });
 
-        // Bind map click event for selection
-        this.map.on('click', (e) => {
-            if (this.isSelectionMode) {
-                this.handleMapClick(e);
-            }
+        // Add selection mode toggle button handler
+        document.getElementById('selectionModeToggle')?.addEventListener('click', () => {
+            this.isSelectionMode = !this.isSelectionMode;
+            this.map.getContainer().style.cursor = this.isSelectionMode ? 'crosshair' : 'grab';
+            const button = document.getElementById('selectionModeToggle');
+            button.textContent = this.isSelectionMode ? 'Disable Selection' : 'Enable 5km × 5km Selection';
+            button.classList.toggle('active', this.isSelectionMode);
         });
+
+        // Map click handler
+        this.map.on('click', this.handleMapClick.bind(this));
+    }
+
+    createResultsContainer() {
+        const container = document.createElement('div');
+        container.id = 'selection-results';
+        container.className = 'selection-results';
+        container.style.display = 'none';
+        container.innerHTML = `
+            <h3>Selected Area Statistics</h3>
+            <table class="results-table">
+                <thead>
+                    <tr>
+                        <th>Mineral</th>
+                        <th>Anomalous Samples</th>
+                        <th>Average Probability</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        `;
+        document.getElementById('quebec-map').parentNode.appendChild(container);
+    }
+
+    // Convert km to degrees (approximate)
+    kmToDegrees(km) {
+        return km / 111.32; // at the equator, more precise calculation can be added if needed
+    }
+
+    enableSelectionMode() {
+        this.isSelectionMode = true;
+        this.map.getContainer().style.cursor = 'crosshair';
     }
 
     handleMapClick(e) {
-        // Check rate limit (20 searches per hour)
-        const now = Date.now();
-        if (now - this.lastSearchTime < 3600000) { // 1 hour in milliseconds
-            if (this.searchCount >= 20) {
-                alert('You have reached the maximum number of searches per hour. Please try again later.');
-                return;
-            }
-        } else {
-            // Reset counter if an hour has passed
-            this.searchCount = 0;
-            this.lastSearchTime = now;
-        }
+        if (!this.isSelectionMode) return;
 
-        // Create 5km × 5km selection box
+        // Show loading overlay
+        const loadingOverlay = document.createElement('div');
+        loadingOverlay.className = 'loading-overlay';
+        loadingOverlay.innerHTML = '<div class="spinner"></div><p>Analyzing selection...</p>';
+        document.getElementById('quebec-map').appendChild(loadingOverlay);
+
+        // Calculate 5km × 5km box coordinates
+        const kmSize = 5;
+        const degreeSize = this.kmToDegrees(kmSize);
+        
+        const bounds = [
+            [e.latlng.lat - degreeSize/2, e.latlng.lng - degreeSize/2], // SW
+            [e.latlng.lat + degreeSize/2, e.latlng.lng + degreeSize/2]  // NE
+        ];
+
+        // Remove existing selection box
         if (this.selectionBox) {
             this.map.removeLayer(this.selectionBox);
         }
 
-        const center = e.latlng;
-        const boxSize = 0.045; // Approximately 5km in degrees
-
-        const bounds = [
-            [center.lat - boxSize/2, center.lng - boxSize/2],
-            [center.lat + boxSize/2, center.lng + boxSize/2]
-        ];
-
+        // Draw new selection box
         this.selectionBox = L.rectangle(bounds, {
-            color: 'red',
-            weight: 2,
-            fillOpacity: 0.1
+            color: '#ff7800',
+            weight: 1,
+            fillOpacity: 0.2
         }).addTo(this.map);
 
-        // Show loading overlay
-        document.querySelector('.loading-overlay').style.display = 'flex';
-
-        // Simulate loading time (remove this in production)
-        setTimeout(() => {
-            this.processSelection(bounds);
-        }, 1000);
-
-        // Increment search counter
-        this.searchCount++;
+        // Calculate statistics for points within the box
+        this.calculateStatistics(bounds);
     }
 
-    processSelection(bounds) {
-        // Here you would normally query your database
-        // For now, let's simulate some results
-        const results = {
-            AU: { probability: Math.random(), count: Math.floor(Math.random() * 5) },
-            AG: { probability: Math.random(), count: Math.floor(Math.random() * 5) },
-            CU: { probability: Math.random(), count: Math.floor(Math.random() * 5) },
-            CO: { probability: Math.random(), count: Math.floor(Math.random() * 5) },
-            NI: { probability: Math.random(), count: Math.floor(Math.random() * 5) }
+    calculateStatistics(bounds) {
+        const [[minLat, minLng], [maxLat, maxLng]] = bounds;
+        
+        // Filter points within bounds
+        const pointsInBounds = this.samplePoints.getLayers()
+            .filter(layer => {
+                const latLng = layer.getLatLng();
+                return latLng.lat >= minLat && 
+                       latLng.lat <= maxLat && 
+                       latLng.lng >= minLng && 
+                       latLng.lng <= maxLng;
+            });
+
+        // Calculate statistics
+        const stats = {
+            AU: { anomalous: 0, totalProb: 0 },
+            AG: { anomalous: 0, totalProb: 0 },
+            CU: { anomalous: 0, totalProb: 0 },
+            CO: { anomalous: 0, totalProb: 0 },
+            NI: { anomalous: 0, totalProb: 0 }
         };
 
-        this.showResults(results);
+        pointsInBounds.forEach(point => {
+            const data = point.data.minerals;
+            Object.keys(stats).forEach(mineral => {
+                if (data[mineral].pred === 1) stats[mineral].anomalous++;
+                stats[mineral].totalProb += data[mineral].prob;
+            });
+        });
+
+        // Display results
+        this.displayResults(stats, pointsInBounds.length);
+
+        // Remove loading overlay
+        document.querySelector('.loading-overlay').remove();
     }
 
-    showResults(results) {
-        // Hide loading overlay
-        document.querySelector('.loading-overlay').style.display = 'none';
+    displayResults(stats, totalPoints) {
+        const resultsContainer = document.getElementById('selection-results');
+        const tbody = resultsContainer.querySelector('tbody');
+        tbody.innerHTML = '';
 
-        // Create or update results display
-        // You'll need to implement this based on your UI requirements
-        console.log('Selection Results:', results);
+        Object.entries(stats).forEach(([mineral, data]) => {
+            const avgProb = totalPoints > 0 ? (data.totalProb / totalPoints) : 0;
+            tbody.innerHTML += `
+                <tr>
+                    <td>${mineral}</td>
+                    <td>${data.anomalous} / ${totalPoints}</td>
+                    <td>${(avgProb * 100).toFixed(1)}%</td>
+                </tr>
+            `;
+        });
+
+        resultsContainer.style.display = 'block';
     }
 
     showMineralLayer(mineralType) {
