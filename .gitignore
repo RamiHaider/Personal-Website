@@ -1,15 +1,12 @@
 # Ignore large data files
 assets/samples.csv
-assets/Samples.dbf
-assets/Samples.shp
-assets/Samples.shx
-assets/Samples.prj
-assets/Samples.qix
-assets/Samples.qmd
-assets/Samples.cpg
+assets/rock_samples.json
+assets/Samples.*
+assets/mineral_images/
 
 # General data file patterns
 *.csv
+*.json
 *.dbf
 *.shp
 *.shx
@@ -17,12 +14,14 @@ assets/Samples.cpg
 *.qix
 *.qmd
 *.cpg
+*.tif
+*.png
+
+# Exceptions - keep these files
+!package.json
+!quebec_bounds.json
 
 # Common system files
 .DS_Store
 .env
-node_modules/
-
-# Generated mineral heatmaps
-assets/mineral_images/*.png
-assets/mineral_images/*.tif 
+node_modules/ 
