@@ -49,7 +49,6 @@ const MINERALS = {
 
 class QuebecMap {
     constructor(mapId) {
-        // Initialize map properties
         this.mapId = mapId;
         this.currentMineralLayer = null;
         this.selectionBox = null;
@@ -57,24 +56,15 @@ class QuebecMap {
         this.searchCount = 0;
         this.lastSearchTime = 0;
         
-        // Initialize the map
-        this.initializeMap();
+        this.samplePoints = L.layerGroup();
         
-        // Bind event handlers
-        this.bindEvents();
-    }
-
-
-
-    
-    initializeMap() {
         // Initialize map with bounds restriction
         this.map = L.map(this.mapId, {
             maxBounds: [
                 [43.0, -82.0],  // Southwest
                 [64.0, -54.0]   // Northeast
             ],
-            maxBoundsViscosity: 1.0,  // Makes the bounds "sticky"
+            maxBoundsViscosity: 1.0,
             minZoom: 4,
             maxZoom: 12
         }).setView([53.7, -68.2], 5);
@@ -82,8 +72,7 @@ class QuebecMap {
         // Add base layers
         this.baseLayers = {
             satellite: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-                attribution: 'Tiles &copy; Esri',
-                maxZoom: 19
+                attribution: 'Tiles &copy; Esri'
             }),
             streets: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '&copy; OpenStreetMap contributors'
@@ -98,9 +87,55 @@ class QuebecMap {
         
         // Add scale control
         L.control.scale().addTo(this.map);
+
+        // Add sample points control
+        this.addSamplePointsControl();
+        
+        // Load the rock samples data
+        this.loadData();
+        
+        // Bind event listeners
+        this.bindEvents();
+    }
+
+    async loadData() {
+        try {
+            const response = await fetch('../assets/rock_samples.json');
+            const points = await response.json();
+            
+            points.forEach(point => {
+                L.circleMarker([point.lat, point.lng], {
+                    radius: 2,
+                    color: '#444',
+                    fillColor: '#666',
+                    fillOpacity: 0.7,
+                    weight: 1
+                }).addTo(this.samplePoints);
+            });
+            
+            console.log(`Loaded ${points.length} sample points`);
+        } catch (error) {
+            console.error('Error loading sample points:', error);
+        }
     }
 
     bindEvents() {
+        // Base layer changes
+        document.getElementById('baseLayerSelect')?.addEventListener('change', (e) => {
+            Object.values(this.baseLayers).forEach(layer => this.map.removeLayer(layer));
+            this.baseLayers[e.target.value].addTo(this.map);
+        });
+
+        // Mineral layer changes
+        document.getElementById('mineralLayerSelect')?.addEventListener('change', (e) => {
+            this.showMineralLayer(e.target.value);
+        });
+
+        // Opacity control
+        document.getElementById('opacityControl')?.addEventListener('input', (e) => {
+            this.setMineralLayerOpacity(e.target.value);
+        });
+
         // Bind map click event for selection
         this.map.on('click', (e) => {
             if (this.isSelectionMode) {
@@ -216,23 +251,35 @@ class QuebecMap {
             this.selectionBox = null;
         }
     }
+
+    addSamplePointsControl() {
+        const control = L.control({position: 'topright'});
+        
+        control.onAdd = () => {
+            const div = L.DomUtil.create('div', 'leaflet-control leaflet-bar sample-control');
+            div.innerHTML = `
+                <div class="sample-toggle">
+                    <label>
+                        <input type="checkbox" id="showSamples"> Show Rock Samples
+                    </label>
+                </div>
+            `;
+            return div;
+        };
+        
+        control.addTo(this.map);
+
+        document.getElementById('showSamples').addEventListener('change', (e) => {
+            if (e.target.checked) {
+                this.samplePoints.addTo(this.map);
+            } else {
+                this.map.removeLayer(this.samplePoints);
+            }
+        });
+    }
 }
 
 // Initialize map when document is ready
 document.addEventListener('DOMContentLoaded', () => {
     window.quebecMap = new QuebecMap('quebec-map');
-    
-    // Add event listeners for controls
-    document.getElementById('baseLayerSelect')?.addEventListener('change', (e) => {
-        Object.values(quebecMap.baseLayers).forEach(layer => quebecMap.map.removeLayer(layer));
-        quebecMap.baseLayers[e.target.value].addTo(quebecMap.map);
-    });
-
-    document.getElementById('mineralLayerSelect')?.addEventListener('change', (e) => {
-        quebecMap.showMineralLayer(e.target.value);
-    });
-
-    document.getElementById('opacityControl')?.addEventListener('input', (e) => {
-        quebecMap.setMineralLayerOpacity(e.target.value);
-    });
 });
