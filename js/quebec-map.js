@@ -100,9 +100,10 @@ class QuebecMap {
         // Add results container below the map
         this.createResultsContainer();
 
+        // Initialize Supabase client
         this.supabase = supabase.createClient(
-            'YOUR_SUPABASE_URL',
-            'YOUR_SUPABASE_ANON_KEY'
+            'https://cnbpmepdmtpgrbllufcb.supabase.co',
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNuYnBtZXBkbXRwZ3JibGx1ZmNiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Mzc5MjM4MjEsImV4cCI6MjA1MzQ5OTgyMX0.UqDleR4ucntrg9x6FNgJigKZjKiATFYiMiLiZZj3B2w'
         );
     }
 
@@ -166,19 +167,36 @@ class QuebecMap {
         container.id = 'selection-results';
         container.className = 'selection-results';
         container.style.display = 'none';
+        
+        // Add thresholds info
+        const thresholds = {
+            AU: '100 ppb',
+            AG: '1 ppm',
+            CU: '100 ppm',
+            CO: '20 ppm',
+            NI: '100 ppm'
+        };
+        
         container.innerHTML = `
+            <div class="thresholds-info" style="margin-bottom: 15px; font-size: 0.9em;">
+                <h4>Anomaly Thresholds:</h4>
+                ${Object.entries(thresholds).map(([mineral, threshold]) => 
+                    `<span style="margin-right: 15px;">${mineral}: ${threshold}</span>`
+                ).join('')}
+            </div>
             <h3>Selected Area Statistics</h3>
             <table class="results-table">
                 <thead>
                     <tr>
                         <th>Mineral</th>
-                        <th>Anomalous Samples</th>
-                        <th>Average Probability</th>
+                        <th>Anomalous Probability</th>
+                        <th>Sample Count</th>
                     </tr>
                 </thead>
                 <tbody></tbody>
             </table>
         `;
+        
         document.getElementById('quebec-map').parentNode.appendChild(container);
     }
 
@@ -279,8 +297,8 @@ class QuebecMap {
             tbody.innerHTML += `
                 <tr>
                     <td>${mineral}</td>
+                    <td>${avgProb.toFixed(4)}</td>
                     <td>${data.anomalous} / ${totalPoints}</td>
-                    <td>${(avgProb * 100).toFixed(1)}%</td>
                 </tr>
             `;
         });
@@ -330,14 +348,19 @@ class QuebecMap {
 
     addSamplePointsControl() {
         const control = L.control({position: 'topright'});
+        const MIN_ZOOM = 8;
         
         control.onAdd = () => {
             const div = L.DomUtil.create('div', 'leaflet-control leaflet-bar sample-control');
             div.innerHTML = `
                 <div class="sample-toggle">
                     <label>
-                        <input type="checkbox" id="showSamples"> Show Rock Samples
+                        <input type="checkbox" id="showSamples" disabled> 
+                        Show Rock Samples
                     </label>
+                    <div class="zoom-warning" style="display: block; color: #666; font-size: 0.8em;">
+                        Zoom in further to view samples
+                    </div>
                 </div>
             `;
             return div;
@@ -345,14 +368,121 @@ class QuebecMap {
         
         control.addTo(this.map);
 
+        // Add zoom handler
+        this.map.on('zoomend', () => {
+            const checkbox = document.getElementById('showSamples');
+            const warning = document.querySelector('.zoom-warning');
+            const currentZoom = this.map.getZoom();
+            
+            if (currentZoom < MIN_ZOOM) {
+                checkbox.disabled = true;
+                checkbox.checked = false;
+                warning.style.display = 'block';
+                this.map.removeLayer(this.samplePoints);
+            } else {
+                checkbox.disabled = false;
+                warning.style.display = 'none';
+            }
+        });
+
+        // Handle sample toggle
         document.getElementById('showSamples').addEventListener('change', (e) => {
             if (e.target.checked) {
+                this.loadVisibleSamples();
                 this.samplePoints.addTo(this.map);
             } else {
                 this.map.removeLayer(this.samplePoints);
             }
         });
+
+        // Update samples on map move when enabled
+        this.map.on('moveend', () => {
+            const checkbox = document.getElementById('showSamples');
+            if (checkbox.checked && !checkbox.disabled) {
+                this.loadVisibleSamples();
+            }
+        });
     }
+
+    async loadVisibleSamples() {
+        const bounds = this.map.getBounds();
+        const zoom = this.map.getZoom();
+        
+        if (zoom < 8) {
+            alert("Please zoom in further to view rock samples");
+            return;
+        }
+        
+        try {
+            const loadingOverlay = document.createElement('div');
+            loadingOverlay.className = 'loading-overlay';
+            loadingOverlay.style.display = 'flex';
+            loadingOverlay.innerHTML = '<div class="spinner"></div><p>Loading rock samples...</p>';
+            document.getElementById('quebec-map').appendChild(loadingOverlay);
+            
+            const { data: points, error } = await this.supabase
+                .rpc('get_points_in_bounds', {
+                    min_lat: bounds.getSouth(),
+                    min_lng: bounds.getWest(),
+                    max_lat: bounds.getNorth(),
+                    max_lng: bounds.getEast()
+                });
+
+            if (error) throw error;
+
+            console.log("First point from database:", points[0]); // Debug line
+
+            // Clear existing points
+            this.samplePoints.clearLayers();
+
+            // Add new points with proper coordinate parsing
+            points.forEach(point => {
+                // Parse the location string to get coordinates
+                const locationStr = point.location;
+                console.log("Location string:", locationStr); // Debug line
+                
+                // Extract coordinates using regex
+                const match = locationStr.match(/POINT\(([-\d.]+) ([-\d.]+)\)/);
+                if (match) {
+                    const lng = parseFloat(match[1]);
+                    const lat = parseFloat(match[2]);
+                    
+                    const marker = L.circleMarker([lat, lng], {
+                        radius: 2,
+                        color: '#444',
+                        fillColor: '#666',
+                        fillOpacity: 0.7,
+                        weight: 1
+                    });
+                    marker.addTo(this.samplePoints);
+                }
+            });
+
+            this.samplePoints.addTo(this.map);
+        } catch (error) {
+            console.error('Error loading points:', error);
+            alert('Error loading sample points');
+        } finally {
+            const overlay = document.querySelector('.loading-overlay');
+            if (overlay) overlay.remove();
+        }
+    }
+}
+
+function showLoadingOverlay(message) {
+    const overlay = document.createElement('div');
+    overlay.className = 'loading-overlay';
+    overlay.style.display = 'flex';
+    overlay.innerHTML = `
+        <div class="spinner"></div>
+        <p>${message}</p>
+    `;
+    document.getElementById('quebec-map').appendChild(overlay);
+}
+
+function hideLoadingOverlay() {
+    const overlay = document.querySelector('.loading-overlay');
+    if (overlay) overlay.remove();
 }
 
 // Initialize map when document is ready

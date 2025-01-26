@@ -178,15 +178,13 @@
     
     <!-- After your existing Leaflet script include -->
     <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="../js/quebec-map.js"></script>
     
     <script>
         document.addEventListener('DOMContentLoaded', async function() {
             // Initialize map
             const quebecMap = new QuebecMap('quebec-map');
-            
-            // Load data (this will create the toggle control)
-            await quebecMap.loadData();
             
             // Handle base layer changes
             document.getElementById('baseLayerSelect').addEventListener('change', function(e) {
