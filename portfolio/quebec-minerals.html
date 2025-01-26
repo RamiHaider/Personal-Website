@@ -6,6 +6,11 @@
     <title>Quebec Mineral Deposits AI Prediction - Portfolio</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="../css/styles.css">
+    
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    
+    <!-- Custom CSS for map controls -->
     <style>
         .slide-section {
             margin: 40px 0;
@@ -46,6 +51,40 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
             text-align: center;
         }
+
+        .map-controls {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        
+        .layer-control, .mineral-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .layer-control select, .mineral-control select {
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            background-color: white;
+        }
+        
+        .loading-overlay {
+            display: none;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            border-radius: 8px;
+        }
     </style>
 </head>
 <body>
@@ -74,10 +113,32 @@
 
                     <div class="slide-section">
                         <h2>Interactive Map</h2>
-                        <p>Coming soon: An interactive visualization showing mineral potential predictions across Quebec.</p>
-                        <!-- Placeholder for the interactive map -->
-                        <div style="background-color: #f5f5f5; height: 400px; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin: 20px 0;">
-                            <p>Interactive Map Coming Soon</p>
+                        <p>Explore mineral potential predictions across Quebec using the interactive map below. Toggle between different mineral layers and click regions for detailed analysis.</p>
+                        
+                        <!-- Map container -->
+                        <div id="quebec-map" style="height: 600px; width: 100%; border-radius: 8px; margin: 20px 0;"></div>
+                        
+                        <!-- Map controls -->
+                        <div class="map-controls" style="margin-top: 20px;">
+                            <div class="layer-control">
+                                <label>Base Map:</label>
+                                <select id="baseLayerSelect">
+                                    <option value="satellite">Satellite</option>
+                                    <option value="streets">Streets</option>
+                                    <option value="terrain">Terrain</option>
+                                </select>
+                            </div>
+                            <div class="mineral-control">
+                                <label>Mineral Layer:</label>
+                                <select id="mineralLayerSelect">
+                                    <option value="none">None</option>
+                                    <option value="AU">Gold (Au)</option>
+                                    <option value="AG">Silver (Ag)</option>
+                                    <option value="CU">Copper (Cu)</option>
+                                    <option value="CO">Cobalt (Co)</option>
+                                    <option value="NI">Nickel (Ni)</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
 
@@ -104,5 +165,33 @@
         </div>
     </div>
     <script src="../js/main.js"></script>
+    
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <!-- After your existing Leaflet script include -->
+    <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+    <script src="../js/quebec-map.js"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            // Initialize map
+            const quebecMap = new QuebecMap('quebec-map');
+            
+            // Load data
+            await quebecMap.loadData();
+            
+            // Handle base layer changes
+            document.getElementById('baseLayerSelect').addEventListener('change', function(e) {
+                Object.values(quebecMap.baseLayers).forEach(layer => quebecMap.map.removeLayer(layer));
+                quebecMap.baseLayers[e.target.value].addTo(quebecMap.map);
+            });
+            
+            // Handle mineral layer changes
+            document.getElementById('mineralLayerSelect').addEventListener('change', function(e) {
+                quebecMap.showMineralLayer(e.target.value);
+            });
+        });
+    </script>
 </body>
 </html> 
