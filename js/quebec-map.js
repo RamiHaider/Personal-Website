@@ -157,7 +157,6 @@ class QuebecMap {
         container.className = 'selection-results';
         container.style.display = 'none';
         
-        // Add thresholds info
         const thresholds = {
             AU: '100 ppb',
             AG: '1 ppm',
@@ -167,23 +166,33 @@ class QuebecMap {
         };
         
         container.innerHTML = `
-            <div class="thresholds-info" style="margin-bottom: 15px; font-size: 0.9em;">
-                <h4>Anomaly Thresholds:</h4>
-                ${Object.entries(thresholds).map(([mineral, threshold]) => 
-                    `<span style="margin-right: 15px;">${mineral}: ${threshold}</span>`
-                ).join('')}
+            <div class="results-wrapper">
+                <div class="threshold-card">
+                    <h4>Anomaly Thresholds</h4>
+                    <div class="threshold-grid">
+                        ${Object.entries(thresholds).map(([mineral, threshold]) => 
+                            `<div class="threshold-item">
+                                <span class="mineral">${mineral}</span>
+                                <span class="value">${threshold}</span>
+                             </div>`
+                        ).join('')}
+                    </div>
+                </div>
             </div>
-            <h3>Selected Area Statistics</h3>
-            <table class="results-table">
-                <thead>
-                    <tr>
-                        <th>Mineral</th>
-                        <th>Anomalous Probability</th>
-                        <th>Sample Count</th>
-                    </tr>
-                </thead>
-                <tbody></tbody>
-            </table>
+            <div class="stats-card">
+                <h4>Selected Area Statistics</h4>
+                <div class="total-samples"></div>
+                <table class="results-table">
+                    <thead>
+                        <tr>
+                            <th>Mineral</th>
+                            <th>Anomalous Samples</th>
+                            <th>Probability of Threshold</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
         `;
         
         document.getElementById('quebec-map').parentNode.appendChild(container);
@@ -279,19 +288,28 @@ class QuebecMap {
     displayResults(stats, totalPoints) {
         const resultsContainer = document.getElementById('selection-results');
         const tbody = resultsContainer.querySelector('tbody');
+        const totalSamplesDiv = resultsContainer.querySelector('.total-samples');
+        
         tbody.innerHTML = '';
-
+        totalSamplesDiv.textContent = `Total Samples in Region: ${totalPoints}`;
+        
         Object.entries(stats).forEach(([mineral, data]) => {
-            const avgProb = totalPoints > 0 ? (data.totalProb / totalPoints) : 0;
-            tbody.innerHTML += `
-                <tr>
-                    <td>${mineral}</td>
-                    <td>${avgProb.toFixed(4)}</td>
-                    <td>${data.anomalous} / ${totalPoints}</td>
-                </tr>
+            const row = document.createElement('tr');
+            
+            // Calculate probability - if anomalous samples exist, use their average
+            // otherwise use the overall average
+            const probability = data.anomalous > 0 ? 
+                (data.totalProb / totalPoints) : 
+                (data.totalProb / totalPoints);
+            
+            row.innerHTML = `
+                <td>${MINERALS[mineral].name}</td>
+                <td>${data.anomalous}/${totalPoints}</td>
+                <td>${(probability * 100).toFixed(1)}%</td>
             `;
+            tbody.appendChild(row);
         });
-
+        
         resultsContainer.style.display = 'block';
     }
 
