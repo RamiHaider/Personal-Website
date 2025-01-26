@@ -120,18 +120,11 @@
                         
                         <!-- Map controls -->
                         <div class="map-controls" style="margin-top: 20px;">
-                            <div class="layer-control">
-                                <label>Base Map:</label>
-                                <select id="baseLayerSelect">
-                                    <option value="satellite">Satellite</option>
-                                    <option value="streets">Streets</option>
-                                    <option value="terrain">Terrain</option>
-                                </select>
-                            </div>
                             <div class="mineral-control">
-                                <label>Mineral Layer:</label>
+                                <label>Mineral Heatmap:</label>
                                 <select id="mineralLayerSelect">
                                     <option value="none">None</option>
+                                    <option value="test">Sample Density</option>
                                     <option value="AU">Gold (Au)</option>
                                     <option value="AG">Silver (Ag)</option>
                                     <option value="CU">Copper (Cu)</option>
@@ -143,9 +136,6 @@
                                     <input type="range" id="opacityControl" min="0" max="100" value="70">
                                 </div>
                             </div>
-                            <button id="selectionModeToggle" class="control-button">
-                                Enable 5km × 5km Selection
-                            </button>
                         </div>
                     </div>
 

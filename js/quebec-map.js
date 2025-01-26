@@ -296,27 +296,68 @@ class QuebecMap {
     }
 
     showMineralLayer(mineralType) {
-        // Remove existing layer if any
+        // Remove current layer if it exists
         if (this.currentMineralLayer) {
             this.map.removeLayer(this.currentMineralLayer);
             this.currentMineralLayer = null;
         }
 
-        // If 'none' selected, just return
         if (mineralType === 'none') return;
 
-        // Create new image overlay
+        if (mineralType === 'test') {
+            // Create a heatmap from visible points
+            this.createTestHeatmap();
+            return;
+        }
+
+        // Handle other mineral layers as before...
         const mineral = MINERALS[mineralType];
         if (!mineral) return;
 
         this.currentMineralLayer = L.imageOverlay(
             mineral.imagePath,
             mineral.bounds,
-            {
-                opacity: 0.7,
-                interactive: false
-            }
+            { opacity: 0.7 }
         ).addTo(this.map);
+    }
+
+    async createTestHeatmap() {
+        try {
+            const bounds = this.map.getBounds();
+            const { data: points, error } = await this.supabase
+                .rpc('get_points_in_bounds', {
+                    min_lat: bounds.getSouth(),
+                    min_lng: bounds.getWest(),
+                    max_lat: bounds.getNorth(),
+                    max_lng: bounds.getEast()
+                });
+
+            if (error) throw error;
+
+            // Convert points to heatmap format
+            const heatData = points.map(point => {
+                const locationStr = point.location;
+                const match = locationStr.match(/POINT\(([-\d.]+) ([-\d.]+)\)/);
+                if (match) {
+                    const lng = parseFloat(match[1]);
+                    const lat = parseFloat(match[2]);
+                    return [lat, lng, 1]; // [lat, lng, intensity]
+                }
+                return null;
+            }).filter(point => point !== null);
+
+            // Create heatmap layer
+            this.currentMineralLayer = L.heatLayer(heatData, {
+                radius: 25,
+                blur: 15,
+                maxZoom: 12,
+                max: 1.0,
+                gradient: {0.4: 'blue', 0.65: 'lime', 1: 'red'}
+            }).addTo(this.map);
+
+        } catch (error) {
+            console.error('Error creating heatmap:', error);
+        }
     }
 
     setMineralLayerOpacity(opacity) {
@@ -333,14 +374,17 @@ class QuebecMap {
             const button = document.createElement('button');
             button.id = 'selectionModeToggle';
             button.className = 'control-button';
-            button.textContent = 'Enable 5km × 5km Selection';
+            button.textContent = 'Predict Region';
+            button.style.padding = '6px 10px';
+            button.style.backgroundColor = '#fff';
+            button.style.border = '2px solid rgba(0,0,0,0.2)';
+            button.style.borderRadius = '4px';
+            button.style.cursor = 'pointer';
             div.appendChild(button);
             return div;
         };
         
         control.addTo(this.map);
-        
-        // Create results container
         this.createResultsContainer();
     }
 
@@ -348,8 +392,15 @@ class QuebecMap {
         this.isSelectionMode = !this.isSelectionMode;
         this.map.getContainer().style.cursor = this.isSelectionMode ? 'crosshair' : 'grab';
         const button = document.getElementById('selectionModeToggle');
-        button.textContent = this.isSelectionMode ? 'Disable Selection' : 'Enable 5km × 5km Selection';
-        button.classList.toggle('active', this.isSelectionMode);
+        button.textContent = this.isSelectionMode ? 'Cancel Selection' : 'Predict Region';
+        
+        if (this.isSelectionMode) {
+            button.style.backgroundColor = '#e9ecef';
+            button.style.color = '#212529';
+        } else {
+            button.style.backgroundColor = '#fff';
+            button.style.color = '#000';
+        }
 
         // Clear existing selection if disabling
         if (!this.isSelectionMode && this.selectionBox) {
@@ -367,13 +418,33 @@ class QuebecMap {
         control.onAdd = () => {
             const div = L.DomUtil.create('div', 'leaflet-control leaflet-bar sample-control');
             div.innerHTML = `
-                <div class="sample-toggle">
-                    <label>
-                        <input type="checkbox" id="showSamples" disabled> 
-                        Show Rock Samples
+                <div class="sample-toggle" style="
+                    background: white; 
+                    padding: 6px 8px; 
+                    border-radius: 4px;
+                    box-shadow: 0 1px 5px rgba(0,0,0,0.15);
+                    border: none;
+                ">
+                    <label style="
+                        font-size: 12px; 
+                        display: flex; 
+                        align-items: center; 
+                        gap: 4px;
+                        margin: 0;
+                    ">
+                        <input type="checkbox" id="showSamples" disabled style="
+                            margin: 0;
+                            outline: none;
+                        "> 
+                        Show Samples
                     </label>
-                    <div class="zoom-warning" style="display: block; color: #666; font-size: 0.8em;">
-                        Zoom in further to view samples
+                    <div class="zoom-warning" style="
+                        display: block; 
+                        color: #666; 
+                        font-size: 10px;
+                        margin-top: 2px;
+                    ">
+                        Zoom in to view
                     </div>
                 </div>
             `;
