@@ -1,0 +1,24 @@
+# Ignore large data files
+assets/samples.csv
+assets/Samples.dbf
+assets/Samples.shp
+assets/Samples.shx
+assets/Samples.prj
+assets/Samples.qix
+assets/Samples.qmd
+assets/Samples.cpg
+
+# General data file patterns
+*.csv
+*.dbf
+*.shp
+*.shx
+*.prj
+*.qix
+*.qmd
+*.cpg
+
+# Common system files
+.DS_Store
+.env
+node_modules/ 
