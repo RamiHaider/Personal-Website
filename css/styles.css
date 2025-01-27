@@ -545,3 +545,56 @@ nav a:hover {
 .control-button.active:hover {
     background: #0056b3;
 }
+
+.model-agreement-card {
+    background: white;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border-left: 4px solid #4CAF50;
+}
+
+.confidence-grid {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 10px;
+}
+
+.confidence-score {
+    text-align: center;
+}
+
+.score-value {
+    font-size: 2em;
+    font-weight: 600;
+    color: #2E7D32;
+    display: block;
+}
+
+.score-label {
+    font-size: 0.9em;
+    color: #666;
+}
+
+.agreement-stats {
+    flex: 1;
+    margin-left: 20px;
+}
+
+.stat-item {
+    display: flex;
+    justify-content: space-between;
+    margin: 5px 0;
+    padding: 5px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.stat-label {
+    color: #666;
+}
+
+.stat-value {
+    font-weight: 500;
+    color: #333;
+}

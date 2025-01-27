@@ -205,6 +205,45 @@
                                 </div>
                             </div>
                         </div>
+                        
+                        <!-- Results container - moved from bottom -->
+                        <div id="selection-results" style="display: none;">
+                            <div class="results-wrapper">
+                                <div class="model-agreement-card">
+                                    <h3>Model Confidence</h3>
+                                    <div class="confidence-grid">
+                                        <div class="confidence-score">
+                                            <span class="score-value">0</span>
+                                            <span class="score-label">Confidence Score</span>
+                                        </div>
+                                        <div class="agreement-stats">
+                                            <div class="stat-item">
+                                                <span class="stat-label">Very Strong Signals</span>
+                                                <span class="stat-value" id="strong-signals">0</span>
+                                            </div>
+                                            <div class="stat-item">
+                                                <span class="stat-label">Strong Signals</span>
+                                                <span class="stat-value" id="potential-signals">0</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="stats-card">
+                                    <h3>Selected Area Statistics</h3>
+                                    <div class="total-samples"></div>
+                                    <table class="results-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Mineral</th>
+                                                <th>Anomalous Samples</th>
+                                                <th>Probability of Threshold</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <div class="slide-section">

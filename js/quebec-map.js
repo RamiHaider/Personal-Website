@@ -178,24 +178,46 @@ class QuebecMap {
                         ).join('')}
                     </div>
                 </div>
-            </div>
-            <div class="stats-card">
-                <h4>Selected Area Statistics</h4>
-                <div class="total-samples"></div>
-                <table class="results-table">
-                    <thead>
-                        <tr>
-                            <th>Mineral</th>
-                            <th>Anomalous Samples</th>
-                            <th>Probability of Threshold</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
+
+                <!-- New Model Agreement Section -->
+                <div class="model-agreement-card">
+                    <h4>Model Confidence</h4>
+                    <div class="confidence-grid">
+                        <div class="confidence-score">
+                            <span class="score-value">--</span>
+                            <span class="score-label">Confidence Score</span>
+                        </div>
+                        <div class="agreement-stats">
+                            <div class="stat-item">
+                                <span class="stat-label">Strong Signals</span>
+                                <span class="stat-value" id="strong-signals">--</span>
+                            </div>
+                            <div class="stat-item">
+                                <span class="stat-label">Potential Signals</span>
+                                <span class="stat-value" id="potential-signals">--</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stats-card">
+                    <h4>Selected Area Statistics</h4>
+                    <div class="total-samples"></div>
+                    <table class="results-table">
+                        <thead>
+                            <tr>
+                                <th>Mineral</th>
+                                <th>Anomalous Samples</th>
+                                <th>Probability of Threshold</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
             </div>
         `;
         
-        document.getElementById('quebec-map').parentNode.appendChild(container);
+        return container;
     }
 
     // Convert km to degrees (approximate)
@@ -246,7 +268,12 @@ class QuebecMap {
         const [[minLat, minLng], [maxLat, maxLng]] = bounds;
         
         try {
-            // Fetch points within bounds from Supabase
+            // Show loading overlay
+            const loadingOverlay = document.createElement('div');
+            loadingOverlay.className = 'loading-overlay';
+            loadingOverlay.innerHTML = '<div class="spinner"></div><p>Analyzing region...</p>';
+            document.getElementById('quebec-map').appendChild(loadingOverlay);
+
             const { data: points, error } = await this.supabase
                 .rpc('get_points_in_bounds', {
                     min_lat: minLat,
@@ -259,53 +286,87 @@ class QuebecMap {
 
             // Calculate statistics
             const stats = {
-                AU: { anomalous: 0, totalProb: 0 },
-                AG: { anomalous: 0, totalProb: 0 },
-                CU: { anomalous: 0, totalProb: 0 },
-                CO: { anomalous: 0, totalProb: 0 },
-                NI: { anomalous: 0, totalProb: 0 }
+                AU: { anomalous: 0, totalProb: 0, strongSignals: 0, veryStrongSignals: 0, probValues: [] },
+                AG: { anomalous: 0, totalProb: 0, strongSignals: 0, veryStrongSignals: 0, probValues: [] },
+                CU: { anomalous: 0, totalProb: 0, strongSignals: 0, veryStrongSignals: 0, probValues: [] },
+                CO: { anomalous: 0, totalProb: 0, strongSignals: 0, veryStrongSignals: 0, probValues: [] },
+                NI: { anomalous: 0, totalProb: 0, strongSignals: 0, veryStrongSignals: 0, probValues: [] }
             };
 
             points.forEach(point => {
                 Object.keys(stats).forEach(mineral => {
                     const mineral_lower = mineral.toLowerCase();
-                    if (point[`${mineral_lower}_pred`] === 1) {
+                    const pred = point[`${mineral_lower}_pred`];
+                    const prob = point[`${mineral_lower}_prob`] || 0;
+                    
+                    stats[mineral].probValues.push(prob);
+                    
+                    if (pred === 2) {
+                        stats[mineral].veryStrongSignals++;
                         stats[mineral].anomalous++;
+                        stats[mineral].totalProb += prob;
+                    } else if (pred === 1) {
+                        stats[mineral].strongSignals++;
+                        stats[mineral].anomalous++;
+                        stats[mineral].totalProb += prob;
                     }
-                    stats[mineral].totalProb += point[`${mineral_lower}_prob`];
                 });
             });
 
+            // Create results container if it doesn't exist
+            if (!document.getElementById('selection-results')) {
+                document.getElementById('quebec-map').parentNode.appendChild(this.createResultsContainer());
+            }
+
             // Display results
             this.displayResults(stats, points.length);
+
         } catch (error) {
             console.error('Error fetching points:', error);
         } finally {
-            document.querySelector('.loading-overlay').remove();
+            document.querySelector('.loading-overlay')?.remove();
         }
     }
 
     displayResults(stats, totalPoints) {
         const resultsContainer = document.getElementById('selection-results');
+        if (!resultsContainer) return;
+        
         const tbody = resultsContainer.querySelector('tbody');
         const totalSamplesDiv = resultsContainer.querySelector('.total-samples');
         
         tbody.innerHTML = '';
         totalSamplesDiv.textContent = `Total Samples in Region: ${totalPoints}`;
         
+        // Calculate total signals for confidence score
+        const totalVeryStrong = Object.values(stats).reduce((sum, data) => sum + data.veryStrongSignals, 0);
+        const totalStrong = Object.values(stats).reduce((sum, data) => sum + data.strongSignals, 0);
+        
+        // Update confidence score (40 points per very strong, 15 per strong)
+        const confidenceScore = Math.min(100, (totalVeryStrong * 40) + (totalStrong * 15));
+        resultsContainer.querySelector('.score-value').textContent = confidenceScore;
+        
+        // Update signal counts
+        resultsContainer.querySelector('#strong-signals').textContent = totalVeryStrong;
+        resultsContainer.querySelector('#potential-signals').textContent = totalStrong;
+        
+        // Update table
         Object.entries(stats).forEach(([mineral, data]) => {
             const row = document.createElement('tr');
+            let probability;
             
-            // Calculate probability - if anomalous samples exist, use their average
-            // otherwise use the overall average
-            const probability = data.anomalous > 0 ? 
-                (data.totalProb / totalPoints) : 
-                (data.totalProb / totalPoints);
+            if (data.anomalous > 0) {
+                // If anomalous samples exist, use average of anomalous probabilities
+                probability = (data.totalProb / data.anomalous) * 100;
+            } else {
+                // If no anomalous samples, use maximum probability
+                probability = Math.max(...data.probValues) * 100;
+            }
             
             row.innerHTML = `
                 <td>${MINERALS[mineral].name}</td>
                 <td>${data.anomalous}/${totalPoints}</td>
-                <td>${(probability * 100).toFixed(1)}%</td>
+                <td>${probability.toFixed(1)}%</td>
             `;
             tbody.appendChild(row);
         });
@@ -403,7 +464,6 @@ class QuebecMap {
         };
         
         control.addTo(this.map);
-        this.createResultsContainer();
     }
 
     toggleSelectionMode() {
