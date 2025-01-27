@@ -88,8 +88,7 @@ class QuebecMap {
         // Add layer control
         L.control.layers(this.baseLayers, null, {position: 'topright'}).addTo(this.map);
 
-        // Add other controls
-        this.addSamplePointsControl();
+        // Add selection control (prediction functionality)
         this.addSelectionControl();
 
         // Add this at the end of constructor
@@ -489,162 +488,21 @@ class QuebecMap {
         }
     }
 
-    addSamplePointsControl() {
-        const control = L.control({position: 'topright'});
-        const MIN_ZOOM = 8;
-        
-        control.onAdd = () => {
-            const div = L.DomUtil.create('div', 'leaflet-control leaflet-bar sample-control');
-            div.innerHTML = `
-                <div class="sample-toggle" style="
-                    background: white; 
-                    padding: 6px 8px; 
-                    border-radius: 4px;
-                    box-shadow: 0 1px 5px rgba(0,0,0,0.15);
-                    border: none;
-                ">
-                    <label style="
-                        font-size: 12px; 
-                        display: flex; 
-                        align-items: center; 
-                        gap: 4px;
-                        margin: 0;
-                    ">
-                        <input type="checkbox" id="showSamples" disabled style="
-                            margin: 0;
-                            outline: none;
-                        "> 
-                        Show Samples
-                    </label>
-                    <div class="zoom-warning" style="
-                        display: block; 
-                        color: #666; 
-                        font-size: 10px;
-                        margin-top: 2px;
-                    ">
-                        Zoom in to view
-                    </div>
-                </div>
-            `;
-            return div;
-        };
-        
-        control.addTo(this.map);
-
-        // Add zoom handler
-        this.map.on('zoomend', () => {
-            const checkbox = document.getElementById('showSamples');
-            const warning = document.querySelector('.zoom-warning');
-            const currentZoom = this.map.getZoom();
-            
-            if (currentZoom < MIN_ZOOM) {
-                checkbox.disabled = true;
-                checkbox.checked = false;
-                warning.style.display = 'block';
-                this.map.removeLayer(this.samplePoints);
-            } else {
-                checkbox.disabled = false;
-                warning.style.display = 'none';
-            }
-        });
-
-        // Handle sample toggle
-        document.getElementById('showSamples').addEventListener('change', (e) => {
-            if (e.target.checked) {
-                this.loadVisibleSamples();
-                this.samplePoints.addTo(this.map);
-            } else {
-                this.map.removeLayer(this.samplePoints);
-            }
-        });
-
-        // Update samples on map move when enabled
-        this.map.on('moveend', () => {
-            const checkbox = document.getElementById('showSamples');
-            if (checkbox.checked && !checkbox.disabled) {
-                this.loadVisibleSamples();
-            }
-        });
+    showLoadingOverlay(message) {
+        const overlay = document.createElement('div');
+        overlay.className = 'loading-overlay';
+        overlay.style.display = 'flex';
+        overlay.innerHTML = `
+            <div class="spinner"></div>
+            <p>${message}</p>
+        `;
+        document.getElementById('quebec-map').appendChild(overlay);
     }
 
-    async loadVisibleSamples() {
-        const bounds = this.map.getBounds();
-        const zoom = this.map.getZoom();
-        
-        if (zoom < 8) {
-            alert("Please zoom in further to view rock samples");
-            return;
-        }
-        
-        try {
-            const loadingOverlay = document.createElement('div');
-            loadingOverlay.className = 'loading-overlay';
-            loadingOverlay.style.display = 'flex';
-            loadingOverlay.innerHTML = '<div class="spinner"></div><p>Loading rock samples...</p>';
-            document.getElementById('quebec-map').appendChild(loadingOverlay);
-            
-            // Add a small delay to ensure loading state is visible
-            await new Promise(resolve => setTimeout(resolve, 100));
-            
-            const { data: points, error } = await this.supabase
-                .rpc('get_points_in_bounds', {
-                    min_lat: bounds.getSouth(),
-                    min_lng: bounds.getWest(),
-                    max_lat: bounds.getNorth(),
-                    max_lng: bounds.getEast()
-                });
-
-            if (error) throw error;
-
-            // Clear existing points
-            this.samplePoints.clearLayers();
-
-            // Add new points
-            if (points && points.length > 0) {
-                points.forEach(point => {
-                    const locationStr = point.location;
-                    const match = locationStr.match(/POINT\(([-\d.]+) ([-\d.]+)\)/);
-                    if (match) {
-                        const lng = parseFloat(match[1]);
-                        const lat = parseFloat(match[2]);
-                        const marker = L.circleMarker([lat, lng], {
-                            radius: 2,
-                            color: '#444',
-                            fillColor: '#666',
-                            fillOpacity: 0.7,
-                            weight: 1,
-                            zIndexOffset: 1000
-                        });
-                        marker.addTo(this.samplePoints);
-                    }
-                });
-                this.samplePoints.addTo(this.map);
-                console.log(`Loaded ${points.length} points`);
-            }
-        } catch (error) {
-            console.error('Error loading points:', error);
-            alert('Error loading sample points');
-        } finally {
-            const overlay = document.querySelector('.loading-overlay');
-            if (overlay) overlay.remove();
-        }
+    hideLoadingOverlay() {
+        const overlay = document.querySelector('.loading-overlay');
+        if (overlay) overlay.remove();
     }
-}
-
-function showLoadingOverlay(message) {
-    const overlay = document.createElement('div');
-    overlay.className = 'loading-overlay';
-    overlay.style.display = 'flex';
-    overlay.innerHTML = `
-        <div class="spinner"></div>
-        <p>${message}</p>
-    `;
-    document.getElementById('quebec-map').appendChild(overlay);
-}
-
-function hideLoadingOverlay() {
-    const overlay = document.querySelector('.loading-overlay');
-    if (overlay) overlay.remove();
 }
 
 // Initialize map when document is ready
