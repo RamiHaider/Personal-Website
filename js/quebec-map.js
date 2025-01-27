@@ -3,7 +3,7 @@ const MINERALS = {
     AU: { 
         name: 'Gold', 
         symbol: 'AU',
-        imagePath: '../assets/mineral_images/AU_heatmap.png',
+        imagePath: '../assets/newer-mineral-images/AU_heatmap.png',
         bounds: [
             [44.9930, -79.5720],  // Southwest corner
             [62.4910, -56.9430]   // Northeast corner
@@ -12,7 +12,7 @@ const MINERALS = {
     AG: { 
         name: 'Silver', 
         symbol: 'AG',
-        imagePath: '../assets/mineral_images/AG_heatmap.png',
+        imagePath: '../assets/newer-mineral-images/AG_heatmap.png',
         bounds: [
             [44.9930, -79.5720],
             [62.4910, -56.9430]
@@ -21,7 +21,7 @@ const MINERALS = {
     CU: { 
         name: 'Copper', 
         symbol: 'CU',
-        imagePath: '../assets/mineral_images/CU_heatmap.png',
+        imagePath: '../assets/newer-mineral-images/CU_heatmap.png',
         bounds: [
             [44.9930, -79.5720],
             [62.4910, -56.9430]
@@ -30,7 +30,7 @@ const MINERALS = {
     CO: { 
         name: 'Cobalt', 
         symbol: 'CO',
-        imagePath: '../assets/mineral_images/CO_heatmap.png',
+        imagePath: '../assets/newer-mineral-images/CO_heatmap.png',
         bounds: [
             [44.9930, -79.5720],
             [62.4910, -56.9430]
@@ -39,7 +39,7 @@ const MINERALS = {
     NI: { 
         name: 'Nickel', 
         symbol: 'NI',
-        imagePath: '../assets/mineral_images/NI_heatmap.png',
+        imagePath: '../assets/newer-mineral-images/NI_heatmap.png',
         bounds: [
             [44.9930, -79.5720],
             [62.4910, -56.9430]
@@ -88,8 +88,7 @@ class QuebecMap {
         // Add layer control
         L.control.layers(this.baseLayers, null, {position: 'topright'}).addTo(this.map);
 
-        // Add other controls
-        this.addSamplePointsControl();
+        // Add selection control (prediction functionality)
         this.addSelectionControl();
 
         // Add this at the end of constructor
@@ -149,6 +148,12 @@ class QuebecMap {
 
         // Map click handler
         this.map.on('click', this.handleMapClick.bind(this));
+
+        // Add this to your existing bindEvents method
+        document.getElementById('heatmapViewer').addEventListener('change', (e) => {
+            this.showMineralHeatmap(e.target.value);
+            e.target.value = ''; // Reset selection
+        });
     }
 
     createResultsContainer() {
@@ -178,24 +183,64 @@ class QuebecMap {
                         ).join('')}
                     </div>
                 </div>
-            </div>
-            <div class="stats-card">
-                <h4>Selected Area Statistics</h4>
-                <div class="total-samples"></div>
-                <table class="results-table">
-                    <thead>
-                        <tr>
-                            <th>Mineral</th>
-                            <th>Anomalous Samples</th>
-                            <th>Probability of Threshold</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
+
+                <!-- Updated Mineral Prospectivity Section -->
+                <div class="model-agreement-card">
+                    <h3>Mineral Prospectivity Score</h3>
+                    <div class="confidence-grid">
+                        <div class="confidence-score">
+                            <span class="score-value">0</span>
+                            <button class="info-button" id="scoreInfo" style="
+                                border: none;
+                                background: none;
+                                color: #666;
+                                font-size: 0.8em;
+                                text-decoration: underline;
+                                cursor: pointer;
+                                margin-top: 5px;
+                            ">Click to see calculation</button>
+                        </div>
+                        <div class="agreement-stats">
+                            <div class="stat-item">
+                                <div class="stat-label-group">
+                                    <span class="stat-label">Very Strong Signals</span>
+                                    <span class="stat-sublabel" style="font-size: 0.8em; color: #666;">
+                                        (both models independently predicted these anomalies)
+                                    </span>
+                                </div>
+                                <span class="stat-value" id="strong-signals">0</span>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label-group">
+                                    <span class="stat-label">Strong Signals</span>
+                                    <span class="stat-sublabel" style="font-size: 0.8em; color: #666;">
+                                        (a model independently predicted these anomalies)
+                                    </span>
+                                </div>
+                                <span class="stat-value" id="potential-signals">0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stats-card">
+                    <h3>Selected Area Statistics</h3>
+                    <div class="total-samples"></div>
+                    <table class="results-table">
+                        <thead>
+                            <tr>
+                                <th>Mineral</th>
+                                <th>Anomalous Samples</th>
+                                <th>Probability of Threshold</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
             </div>
         `;
         
-        document.getElementById('quebec-map').parentNode.appendChild(container);
+        return container;
     }
 
     // Convert km to degrees (approximate)
@@ -210,12 +255,6 @@ class QuebecMap {
 
     handleMapClick(e) {
         if (!this.isSelectionMode) return;
-
-        // Show loading overlay
-        const loadingOverlay = document.createElement('div');
-        loadingOverlay.className = 'loading-overlay';
-        loadingOverlay.innerHTML = '<div class="spinner"></div><p>Analyzing selection...</p>';
-        document.getElementById('quebec-map').appendChild(loadingOverlay);
 
         // Calculate 5km × 5km box coordinates
         const kmSize = 5;
@@ -246,7 +285,6 @@ class QuebecMap {
         const [[minLat, minLng], [maxLat, maxLng]] = bounds;
         
         try {
-            // Fetch points within bounds from Supabase
             const { data: points, error } = await this.supabase
                 .rpc('get_points_in_bounds', {
                     min_lat: minLat,
@@ -259,53 +297,115 @@ class QuebecMap {
 
             // Calculate statistics
             const stats = {
-                AU: { anomalous: 0, totalProb: 0 },
-                AG: { anomalous: 0, totalProb: 0 },
-                CU: { anomalous: 0, totalProb: 0 },
-                CO: { anomalous: 0, totalProb: 0 },
-                NI: { anomalous: 0, totalProb: 0 }
+                AU: { anomalous: 0, totalProb: 0, strongSignals: 0, veryStrongSignals: 0, probValues: [] },
+                AG: { anomalous: 0, totalProb: 0, strongSignals: 0, veryStrongSignals: 0, probValues: [] },
+                CU: { anomalous: 0, totalProb: 0, strongSignals: 0, veryStrongSignals: 0, probValues: [] },
+                CO: { anomalous: 0, totalProb: 0, strongSignals: 0, veryStrongSignals: 0, probValues: [] },
+                NI: { anomalous: 0, totalProb: 0, strongSignals: 0, veryStrongSignals: 0, probValues: [] }
             };
 
             points.forEach(point => {
                 Object.keys(stats).forEach(mineral => {
                     const mineral_lower = mineral.toLowerCase();
-                    if (point[`${mineral_lower}_pred`] === 1) {
+                    const pred = point[`${mineral_lower}_pred`];
+                    const prob = point[`${mineral_lower}_prob`] || 0;
+                    
+                    stats[mineral].probValues.push(prob);
+                    
+                    if (pred === 2) {
+                        stats[mineral].veryStrongSignals++;
                         stats[mineral].anomalous++;
+                        stats[mineral].totalProb += prob;
+                    } else if (pred === 1) {
+                        stats[mineral].strongSignals++;
+                        stats[mineral].anomalous++;
+                        stats[mineral].totalProb += prob;
                     }
-                    stats[mineral].totalProb += point[`${mineral_lower}_prob`];
                 });
             });
 
+            // Create results container if it doesn't exist
+            if (!document.getElementById('selection-results')) {
+                document.getElementById('quebec-map').parentNode.appendChild(this.createResultsContainer());
+            }
+
             // Display results
             this.displayResults(stats, points.length);
+
         } catch (error) {
             console.error('Error fetching points:', error);
-        } finally {
-            document.querySelector('.loading-overlay').remove();
         }
     }
 
     displayResults(stats, totalPoints) {
         const resultsContainer = document.getElementById('selection-results');
+        if (!resultsContainer) return;
+        
         const tbody = resultsContainer.querySelector('tbody');
         const totalSamplesDiv = resultsContainer.querySelector('.total-samples');
         
         tbody.innerHTML = '';
         totalSamplesDiv.textContent = `Total Samples in Region: ${totalPoints}`;
         
+        // Calculate prospectivity score components
+        const totalVeryStrong = Object.values(stats).reduce((sum, data) => sum + data.veryStrongSignals, 0);
+        const totalStrong = Object.values(stats).reduce((sum, data) => sum + data.strongSignals, 0);
+
+        // Count minerals with anomalies and their concentrations
+        const mineralsWithAnomalies = Object.values(stats).filter(data => data.anomalous > 0).length;
+        const highConcentrationMinerals = Object.values(stats).filter(data => data.anomalous / totalPoints > 0.5).length;
+
+        // Calculate final score
+        let prospectivityScore = 0;
+        prospectivityScore += totalVeryStrong * 30;  // 30 points per very strong signal
+        prospectivityScore += totalStrong * 15;      // 15 points per strong signal
+        prospectivityScore += (mineralsWithAnomalies >= 2) ? 10 : 0;  // Multiple mineral types bonus
+        prospectivityScore += highConcentrationMinerals * 10;  // Bonus for high concentration
+
+        const finalScore = Math.min(100, prospectivityScore);
+        
+        // Update score display (removed % symbol)
+        resultsContainer.querySelector('.score-value').textContent = `${finalScore.toFixed(0)}`;
+        
+        // Update signal counts
+        resultsContainer.querySelector('#strong-signals').textContent = totalVeryStrong;
+        resultsContainer.querySelector('#potential-signals').textContent = totalStrong;
+        
+        // Set up click handler for score info button
+        const scoreInfoButton = document.getElementById('scoreInfo');
+        if (scoreInfoButton) {
+            scoreInfoButton.onclick = () => {
+                alert(
+                    'Prospectivity Score Calculation:\n\n' +
+                    '• 30 points per Very Strong Signal (both models agree)\n' +
+                    '• 15 points per Strong Signal (single model prediction)\n' +
+                    '• 10 bonus points for 2+ different mineral types\n' +
+                    '• 10 bonus points for high concentration\n\n' +
+                    'Current Breakdown:\n' +
+                    `• Very Strong Signals: ${totalVeryStrong} × 30 = ${totalVeryStrong * 30}\n` +
+                    `• Strong Signals: ${totalStrong} × 15 = ${totalStrong * 15}\n` +
+                    `• Multiple Minerals Bonus: ${(mineralsWithAnomalies >= 2) ? '10' : '0'}\n` +
+                    `• High Concentration Bonus: ${(highConcentrationMinerals > 0) ? '10' : '0'}\n` +
+                    `• Total (capped at 100): ${finalScore.toFixed(0)}`
+                );
+            };
+        }
+        
+        // Update table
         Object.entries(stats).forEach(([mineral, data]) => {
             const row = document.createElement('tr');
+            let probability;
             
-            // Calculate probability - if anomalous samples exist, use their average
-            // otherwise use the overall average
-            const probability = data.anomalous > 0 ? 
-                (data.totalProb / totalPoints) : 
-                (data.totalProb / totalPoints);
+            if (data.anomalous > 0) {
+                probability = (data.totalProb / data.anomalous) * 100;
+            } else {
+                probability = Math.max(...data.probValues) * 100;
+            }
             
             row.innerHTML = `
                 <td>${MINERALS[mineral].name}</td>
                 <td>${data.anomalous}/${totalPoints}</td>
-                <td>${(probability * 100).toFixed(1)}%</td>
+                <td>${probability.toFixed(1)}%</td>
             `;
             tbody.appendChild(row);
         });
@@ -403,7 +503,6 @@ class QuebecMap {
         };
         
         control.addTo(this.map);
-        this.createResultsContainer();
     }
 
     toggleSelectionMode() {
@@ -429,162 +528,71 @@ class QuebecMap {
         }
     }
 
-    addSamplePointsControl() {
-        const control = L.control({position: 'topright'});
-        const MIN_ZOOM = 8;
-        
-        control.onAdd = () => {
-            const div = L.DomUtil.create('div', 'leaflet-control leaflet-bar sample-control');
-            div.innerHTML = `
-                <div class="sample-toggle" style="
-                    background: white; 
-                    padding: 6px 8px; 
-                    border-radius: 4px;
-                    box-shadow: 0 1px 5px rgba(0,0,0,0.15);
-                    border: none;
-                ">
-                    <label style="
-                        font-size: 12px; 
-                        display: flex; 
-                        align-items: center; 
-                        gap: 4px;
-                        margin: 0;
-                    ">
-                        <input type="checkbox" id="showSamples" disabled style="
-                            margin: 0;
-                            outline: none;
-                        "> 
-                        Show Samples
-                    </label>
-                    <div class="zoom-warning" style="
-                        display: block; 
-                        color: #666; 
-                        font-size: 10px;
-                        margin-top: 2px;
-                    ">
-                        Zoom in to view
-                    </div>
-                </div>
-            `;
-            return div;
-        };
-        
-        control.addTo(this.map);
-
-        // Add zoom handler
-        this.map.on('zoomend', () => {
-            const checkbox = document.getElementById('showSamples');
-            const warning = document.querySelector('.zoom-warning');
-            const currentZoom = this.map.getZoom();
-            
-            if (currentZoom < MIN_ZOOM) {
-                checkbox.disabled = true;
-                checkbox.checked = false;
-                warning.style.display = 'block';
-                this.map.removeLayer(this.samplePoints);
-            } else {
-                checkbox.disabled = false;
-                warning.style.display = 'none';
-            }
-        });
-
-        // Handle sample toggle
-        document.getElementById('showSamples').addEventListener('change', (e) => {
-            if (e.target.checked) {
-                this.loadVisibleSamples();
-                this.samplePoints.addTo(this.map);
-            } else {
-                this.map.removeLayer(this.samplePoints);
-            }
-        });
-
-        // Update samples on map move when enabled
-        this.map.on('moveend', () => {
-            const checkbox = document.getElementById('showSamples');
-            if (checkbox.checked && !checkbox.disabled) {
-                this.loadVisibleSamples();
-            }
-        });
+    showLoadingOverlay(message) {
+        const overlay = document.createElement('div');
+        overlay.className = 'loading-overlay';
+        overlay.style.display = 'flex';
+        overlay.innerHTML = `
+            <div class="spinner"></div>
+            <p>${message}</p>
+        `;
+        document.getElementById('quebec-map').appendChild(overlay);
     }
 
-    async loadVisibleSamples() {
-        const bounds = this.map.getBounds();
-        const zoom = this.map.getZoom();
-        
-        if (zoom < 8) {
-            alert("Please zoom in further to view rock samples");
-            return;
-        }
-        
-        try {
-            const loadingOverlay = document.createElement('div');
-            loadingOverlay.className = 'loading-overlay';
-            loadingOverlay.style.display = 'flex';
-            loadingOverlay.innerHTML = '<div class="spinner"></div><p>Loading rock samples...</p>';
-            document.getElementById('quebec-map').appendChild(loadingOverlay);
-            
-            // Add a small delay to ensure loading state is visible
-            await new Promise(resolve => setTimeout(resolve, 100));
-            
-            const { data: points, error } = await this.supabase
-                .rpc('get_points_in_bounds', {
-                    min_lat: bounds.getSouth(),
-                    min_lng: bounds.getWest(),
-                    max_lat: bounds.getNorth(),
-                    max_lng: bounds.getEast()
-                });
-
-            if (error) throw error;
-
-            // Clear existing points
-            this.samplePoints.clearLayers();
-
-            // Add new points
-            if (points && points.length > 0) {
-                points.forEach(point => {
-                    const locationStr = point.location;
-                    const match = locationStr.match(/POINT\(([-\d.]+) ([-\d.]+)\)/);
-                    if (match) {
-                        const lng = parseFloat(match[1]);
-                        const lat = parseFloat(match[2]);
-                        const marker = L.circleMarker([lat, lng], {
-                            radius: 2,
-                            color: '#444',
-                            fillColor: '#666',
-                            fillOpacity: 0.7,
-                            weight: 1,
-                            zIndexOffset: 1000
-                        });
-                        marker.addTo(this.samplePoints);
-                    }
-                });
-                this.samplePoints.addTo(this.map);
-                console.log(`Loaded ${points.length} points`);
-            }
-        } catch (error) {
-            console.error('Error loading points:', error);
-            alert('Error loading sample points');
-        } finally {
-            const overlay = document.querySelector('.loading-overlay');
-            if (overlay) overlay.remove();
-        }
+    hideLoadingOverlay() {
+        const overlay = document.querySelector('.loading-overlay');
+        if (overlay) overlay.remove();
     }
-}
 
-function showLoadingOverlay(message) {
-    const overlay = document.createElement('div');
-    overlay.className = 'loading-overlay';
-    overlay.style.display = 'flex';
-    overlay.innerHTML = `
-        <div class="spinner"></div>
-        <p>${message}</p>
-    `;
-    document.getElementById('quebec-map').appendChild(overlay);
-}
+    showMineralHeatmap(mineralType) {
+        if (!mineralType) return;
+        
+        const modal = document.createElement('div');
+        modal.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.2);
+            z-index: 1000;
+            max-width: 800px;
+            width: 90%;
+        `;
 
-function hideLoadingOverlay() {
-    const overlay = document.querySelector('.loading-overlay');
-    if (overlay) overlay.remove();
+        const closeButton = document.createElement('button');
+        closeButton.textContent = '×';
+        closeButton.style.cssText = `
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            border: none;
+            background: white;
+            font-size: 24px;
+            cursor: pointer;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            color: #000;
+        `;
+        closeButton.onclick = () => modal.remove();
+
+        const img = document.createElement('img');
+        img.src = MINERALS[mineralType].imagePath;
+        img.alt = `${MINERALS[mineralType].name} heatmap`;
+        img.style.width = '100%';
+        img.style.borderRadius = '4px';
+
+        modal.appendChild(closeButton);
+        modal.appendChild(img);
+        document.body.appendChild(modal);
+    }
 }
 
 // Initialize map when document is ready
