@@ -180,23 +180,8 @@
             <main role="main">
                 <div class="content">
                     <h1>Predicting Quebec's Mineral Deposits with AI</h1>
-                    <img src="../assets/images/QuebecPrediction.png" alt="Quebec Mineral Prediction" style="width: 100%; max-width: 800px; border-radius: 8px; margin: 20px 0;">
-                    
-                    <div class="slide-section">
-                        <h2>Project Overview</h2>
-                        <p>An innovative approach to mineral exploration in Quebec using deep learning and geospatial analysis. This project combines magnetic imagery with geological data to predict high-potential areas for various mineral deposits including Au, Ag, Cu, Co, and Ni.</p>
 
-                        <div class="key-point">
-                            <h3>Key Features</h3>
-                            <ul>
-                                <li>Interactive map visualization of mineral potential</li>
-                                <li>Deep learning model for deposit prediction</li>
-                                <li>Integration of multiple geological data sources</li>
-                                <li>Real-time prediction capabilities</li>
-                            </ul>
-                        </div>
-                    </div>
-
+                    <!-- Interactive Map Section -->
                     <div class="slide-section">
                         <h2>Interactive Map</h2>
                         <p>Explore mineral potential predictions across Quebec using the interactive map below. Toggle between different mineral layers and click regions for detailed analysis.</p>
@@ -218,52 +203,30 @@
                                 </select>
                             </div>
                         </div>
-                        
-                        <!-- Results container - moved from bottom -->
-                        <div id="selection-results" style="display: none;">
-                            <div class="results-wrapper">
-                                <div class="model-agreement-card">
-                                    <h3>Model Confidence</h3>
-                                    <div class="confidence-grid">
-                                        <div class="confidence-score">
-                                            <span class="score-value">0</span>
-                                            <span class="score-label">Confidence Score</span>
-                                        </div>
-                                        <div class="agreement-stats">
-                                            <div class="stat-item">
-                                                <span class="stat-label">Very Strong Signals</span>
-                                                <span class="stat-value" id="strong-signals">0</span>
-                                            </div>
-                                            <div class="stat-item">
-                                                <span class="stat-label">Strong Signals</span>
-                                                <span class="stat-value" id="potential-signals">0</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="stats-card">
-                                    <h3>Selected Area Statistics</h3>
-                                    <div class="total-samples"></div>
-                                    <table class="results-table">
-                                        <thead>
-                                            <tr>
-                                                <th>Mineral</th>
-                                                <th>Anomalous Samples</th>
-                                                <th>Probability of Threshold</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody></tbody>
-                                    </table>
-                                </div>
-                            </div>
+                    </div>
+
+                    <!-- Project Overview Section (moved down) -->
+                    <div class="slide-section">
+                        <h2>Project Overview</h2>
+                        <p>An innovative approach to mineral exploration in Quebec using deep learning and geospatial analysis. This project combines magnetic imagery with geological data to predict high-potential areas for various mineral deposits including Au, Ag, Cu, Co, and Ni.</p>
+
+                        <div class="key-point">
+                            <h3>Key Features</h3>
+                            <ul>
+                                <li>Interactive map visualization of mineral potential</li>
+                                <li>Deep learning model for deposit prediction</li>
+                                <li>Integration of multiple geological data sources</li>
+                                <li>Real-time prediction capabilities</li>
+                            </ul>
                         </div>
                     </div>
 
+                    <!-- Technical Details Section -->
                     <div class="slide-section">
                         <h2>Technical Details</h2>
                         <div class="key-point">
                             <h3>Methodology</h3>
-                            <ul>
+                            <ul class="bullet-list">
                                 <li>Deep learning architecture for geospatial analysis</li>
                                 <li>Integration of magnetic survey data</li>
                                 <li>Geological feature engineering</li>
@@ -272,29 +235,26 @@
                         </div>
                     </div>
 
+                    <!-- Project Status Section -->
                     <div class="slide-section">
                         <h2>Project Status</h2>
-                        <p>This project is currently in development. Check back soon for the interactive map and detailed analysis.</p>
+                        <p>This project is currently in development. Check back soon for updates and additional features.</p>
                     </div>
 
                 </div>
             </main>
         </div>
     </div>
-    <script src="../js/main.js"></script>
-    
+
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-    
-    <!-- After your existing Leaflet script include -->
     <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="../js/quebec-map.js"></script>
     
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            window.quebecMap = new QuebecMap('quebec-map');
-        });
-    </script>
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <!-- Custom JS -->
+    <script src="../js/header.js"></script>
+    <script src="../js/quebec-map.js"></script>
 </body>
-</html> 
+</html>
