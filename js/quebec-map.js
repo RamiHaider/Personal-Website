@@ -3,7 +3,7 @@ const MINERALS = {
     AU: { 
         name: 'Gold', 
         symbol: 'AU',
-        imagePath: '../assets/mineral_images/AU_heatmap.png',
+        imagePath: '../assets/newer-mineral-images/AU_heatmap.png',
         bounds: [
             [44.9930, -79.5720],  // Southwest corner
             [62.4910, -56.9430]   // Northeast corner
@@ -12,7 +12,7 @@ const MINERALS = {
     AG: { 
         name: 'Silver', 
         symbol: 'AG',
-        imagePath: '../assets/mineral_images/AG_heatmap.png',
+        imagePath: '../assets/newer-mineral-images/AG_heatmap.png',
         bounds: [
             [44.9930, -79.5720],
             [62.4910, -56.9430]
@@ -21,7 +21,7 @@ const MINERALS = {
     CU: { 
         name: 'Copper', 
         symbol: 'CU',
-        imagePath: '../assets/mineral_images/CU_heatmap.png',
+        imagePath: '../assets/newer-mineral-images/CU_heatmap.png',
         bounds: [
             [44.9930, -79.5720],
             [62.4910, -56.9430]
@@ -30,7 +30,7 @@ const MINERALS = {
     CO: { 
         name: 'Cobalt', 
         symbol: 'CO',
-        imagePath: '../assets/mineral_images/CO_heatmap.png',
+        imagePath: '../assets/newer-mineral-images/CO_heatmap.png',
         bounds: [
             [44.9930, -79.5720],
             [62.4910, -56.9430]
@@ -39,7 +39,7 @@ const MINERALS = {
     NI: { 
         name: 'Nickel', 
         symbol: 'NI',
-        imagePath: '../assets/mineral_images/NI_heatmap.png',
+        imagePath: '../assets/newer-mineral-images/NI_heatmap.png',
         bounds: [
             [44.9930, -79.5720],
             [62.4910, -56.9430]
@@ -90,6 +90,7 @@ class QuebecMap {
 
         // Add selection control (prediction functionality)
         this.addSelectionControl();
+        this.addImageViewerControl();
 
         // Add this at the end of constructor
         this.bindEvents();
@@ -148,6 +149,12 @@ class QuebecMap {
 
         // Map click handler
         this.map.on('click', this.handleMapClick.bind(this));
+
+        // Add this to your existing bindEvents method
+        document.getElementById('heatmapViewer').addEventListener('change', (e) => {
+            this.showMineralHeatmap(e.target.value);
+            e.target.value = ''; // Reset selection
+        });
     }
 
     createResultsContainer() {
@@ -502,6 +509,134 @@ class QuebecMap {
     hideLoadingOverlay() {
         const overlay = document.querySelector('.loading-overlay');
         if (overlay) overlay.remove();
+    }
+
+    addImageViewerControl() {
+        const control = L.control({position: 'topright'});
+        
+        control.onAdd = () => {
+            const div = L.DomUtil.create('div', 'leaflet-control leaflet-bar');
+            const button = document.createElement('button');
+            button.id = 'imageViewerToggle';
+            button.className = 'control-button';
+            button.textContent = 'View Mineral Maps';
+            button.style.padding = '6px 10px';
+            button.style.backgroundColor = '#fff';
+            button.style.border = '2px solid rgba(0,0,0,0.2)';
+            button.style.borderRadius = '4px';
+            button.style.cursor = 'pointer';
+            
+            button.addEventListener('click', () => this.showImageViewer());
+            div.appendChild(button);
+            return div;
+        };
+        
+        control.addTo(this.map);
+    }
+
+    showImageViewer() {
+        const modal = document.createElement('div');
+        modal.className = 'mineral-image-viewer';
+        modal.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.2);
+            z-index: 1000;
+            max-width: 800px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+        `;
+
+        const closeButton = document.createElement('button');
+        closeButton.textContent = '×';
+        closeButton.style.cssText = `
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            border: none;
+            background: none;
+            font-size: 24px;
+            cursor: pointer;
+            padding: 5px;
+        `;
+        closeButton.onclick = () => modal.remove();
+
+        const content = document.createElement('div');
+        content.style.cssText = `
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        `;
+
+        Object.entries(MINERALS).forEach(([key, mineral]) => {
+            const card = document.createElement('div');
+            card.style.cssText = `
+                text-align: center;
+                padding: 10px;
+            `;
+            
+            card.innerHTML = `
+                <h3 style="margin-bottom: 10px;">${mineral.name}</h3>
+                <img src="${mineral.imagePath}" 
+                     alt="${mineral.name} heatmap" 
+                     style="max-width: 100%; height: auto; border-radius: 4px;">
+            `;
+            
+            content.appendChild(card);
+        });
+
+        modal.appendChild(closeButton);
+        modal.appendChild(content);
+        document.body.appendChild(modal);
+    }
+
+    showMineralHeatmap(mineralType) {
+        if (!mineralType) return;
+        
+        const modal = document.createElement('div');
+        modal.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.2);
+            z-index: 1000;
+            max-width: 800px;
+            width: 90%;
+        `;
+
+        const closeButton = document.createElement('button');
+        closeButton.textContent = '×';
+        closeButton.style.cssText = `
+            position: absolute;
+            right: 10px;
+            top: 10px;
+            border: none;
+            background: none;
+            font-size: 24px;
+            cursor: pointer;
+        `;
+        closeButton.onclick = () => modal.remove();
+
+        const img = document.createElement('img');
+        img.src = MINERALS[mineralType].imagePath;
+        img.alt = `${MINERALS[mineralType].name} heatmap`;
+        img.style.width = '100%';
+        img.style.borderRadius = '4px';
+
+        modal.appendChild(closeButton);
+        modal.appendChild(img);
+        document.body.appendChild(modal);
     }
 }
 

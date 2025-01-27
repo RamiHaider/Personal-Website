@@ -153,6 +153,24 @@
             font-weight: 500;
             color: #495057;
         }
+
+        .mineral-card {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .mineral-card h4 {
+            margin: 0 0 10px 0;
+            color: #333;
+        }
+
+        .mineral-card img {
+            width: 100%;
+            height: auto;
+            border-radius: 4px;
+        }
     </style>
 </head>
 <body>
@@ -188,21 +206,16 @@
                         
                         <!-- Map controls -->
                         <div class="map-controls" style="margin-top: 20px;">
-                            <div class="mineral-control">
-                                <label>Mineral Heatmap:</label>
-                                <select id="mineralLayerSelect">
-                                    <option value="none">None</option>
-                                    <option value="test">Sample Density</option>
+                            <div class="mineral-viewer-control">
+                                <label>View Mineral Heatmaps:</label>
+                                <select id="heatmapViewer" style="margin-left: 10px;">
+                                    <option value="">Select a mineral...</option>
                                     <option value="AU">Gold (Au)</option>
                                     <option value="AG">Silver (Ag)</option>
                                     <option value="CU">Copper (Cu)</option>
                                     <option value="CO">Cobalt (Co)</option>
                                     <option value="NI">Nickel (Ni)</option>
                                 </select>
-                                <div class="opacity-control">
-                                    <label>Opacity:</label>
-                                    <input type="range" id="opacityControl" min="0" max="100" value="70">
-                                </div>
                             </div>
                         </div>
                         
