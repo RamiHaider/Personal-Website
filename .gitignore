@@ -25,3 +25,7 @@ assets/mineral_images/
 .DS_Store
 .env
 node_modules/ 
+
+# Allow specific PNG files
+!assets/heatmaps/*.png
+!assets/images/*.png
