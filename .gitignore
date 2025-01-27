@@ -29,3 +29,4 @@ node_modules/
 # Allow specific PNG files
 !assets/heatmaps/*.png
 !assets/images/*.png
+!assets/newer-mineral-images/*.png
