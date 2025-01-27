@@ -719,3 +719,7 @@ nav a:hover {
 .date-info .update-date {
     display: inline;  /* This ensures it stays on the same line */
 }
+
+.spacer {
+    margin: 2rem 0;  /* Adjust the size as needed */
+}
