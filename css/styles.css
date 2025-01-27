@@ -634,3 +634,72 @@ nav a:hover {
 .stack-badges img {
     height: 25px;
 }
+
+/* Contact Form Styles */
+.contact-container {
+    max-width: 600px;
+    margin: 30px auto;
+}
+
+.contact-form {
+    background: #f8f9fa;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: #404040;
+}
+
+.form-group input,
+.form-group textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: border-color 0.3s;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+    border-color: #c5a91c;
+    outline: none;
+}
+
+.form-description {
+    font-size: 12px;
+    color: #666;
+    margin-top: 4px;
+}
+
+.submit-btn {
+    background-color: #c5a91c;
+    color: white;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s;
+    width: 100%;
+}
+
+.submit-btn:hover {
+    background-color: #a48f17;
+}
+
+.email-text {
+    text-align: center;
+    margin-top: 30px;
+    color: #666;
+    font-size: 14px;
+}

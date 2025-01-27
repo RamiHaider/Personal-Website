@@ -27,15 +27,21 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Determine the root path
     let rootPath = './';
-    if (currentPath.includes('/blog/') || currentPath.includes('/portfolio/') || currentPath.includes('/activities/')) {
+    if (currentPath.includes('/blog/') || 
+        currentPath.includes('/portfolio/') || 
+        currentPath.includes('/activities/') || 
+        currentPath.includes('/contact/')) {
         rootPath = '../';
     }
     
     // If on GitHub Pages and there's a repository name in the path, adjust accordingly
     if (isGitHubPages) {
-        const repoName = currentPath.split('/')[1]; // This will get the repository name if it exists
+        const repoName = currentPath.split('/')[1];
         if (repoName && repoName !== '') {
-            rootPath = currentPath.includes('/blog/') || currentPath.includes('/portfolio/') 
+            rootPath = currentPath.includes('/blog/') || 
+                      currentPath.includes('/portfolio/') || 
+                      currentPath.includes('/activities/') || 
+                      currentPath.includes('/contact/') 
                 ? `/${repoName}/` 
                 : './';
         }
