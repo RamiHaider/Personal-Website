@@ -90,7 +90,6 @@ class QuebecMap {
 
         // Add selection control (prediction functionality)
         this.addSelectionControl();
-        this.addImageViewerControl();
 
         // Add this at the end of constructor
         this.bindEvents();
@@ -185,29 +184,47 @@ class QuebecMap {
                     </div>
                 </div>
 
-                <!-- New Model Agreement Section -->
+                <!-- Updated Mineral Prospectivity Section -->
                 <div class="model-agreement-card">
-                    <h4>Model Confidence</h4>
+                    <h3>Mineral Prospectivity Score</h3>
                     <div class="confidence-grid">
                         <div class="confidence-score">
-                            <span class="score-value">--</span>
-                            <span class="score-label">Confidence Score</span>
+                            <span class="score-value">0</span>
+                            <button class="info-button" id="scoreInfo" style="
+                                border: none;
+                                background: none;
+                                color: #666;
+                                font-size: 0.8em;
+                                text-decoration: underline;
+                                cursor: pointer;
+                                margin-top: 5px;
+                            ">Click to see calculation</button>
                         </div>
                         <div class="agreement-stats">
                             <div class="stat-item">
-                                <span class="stat-label">Strong Signals</span>
-                                <span class="stat-value" id="strong-signals">--</span>
+                                <div class="stat-label-group">
+                                    <span class="stat-label">Very Strong Signals</span>
+                                    <span class="stat-sublabel" style="font-size: 0.8em; color: #666;">
+                                        (both models independently predicted these anomalies)
+                                    </span>
+                                </div>
+                                <span class="stat-value" id="strong-signals">0</span>
                             </div>
                             <div class="stat-item">
-                                <span class="stat-label">Potential Signals</span>
-                                <span class="stat-value" id="potential-signals">--</span>
+                                <div class="stat-label-group">
+                                    <span class="stat-label">Strong Signals</span>
+                                    <span class="stat-sublabel" style="font-size: 0.8em; color: #666;">
+                                        (a model independently predicted these anomalies)
+                                    </span>
+                                </div>
+                                <span class="stat-value" id="potential-signals">0</span>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <div class="stats-card">
-                    <h4>Selected Area Statistics</h4>
+                    <h3>Selected Area Statistics</h3>
                     <div class="total-samples"></div>
                     <table class="results-table">
                         <thead>
@@ -344,17 +361,49 @@ class QuebecMap {
         tbody.innerHTML = '';
         totalSamplesDiv.textContent = `Total Samples in Region: ${totalPoints}`;
         
-        // Calculate total signals for confidence score
+        // Calculate prospectivity score components
         const totalVeryStrong = Object.values(stats).reduce((sum, data) => sum + data.veryStrongSignals, 0);
         const totalStrong = Object.values(stats).reduce((sum, data) => sum + data.strongSignals, 0);
+
+        // Count minerals with anomalies and their concentrations
+        const mineralsWithAnomalies = Object.values(stats).filter(data => data.anomalous > 0).length;
+        const highConcentrationMinerals = Object.values(stats).filter(data => data.anomalous / totalPoints > 0.5).length;
+
+        // Calculate final score
+        let prospectivityScore = 0;
+        prospectivityScore += totalVeryStrong * 30;  // 30 points per very strong signal
+        prospectivityScore += totalStrong * 15;      // 15 points per strong signal
+        prospectivityScore += (mineralsWithAnomalies >= 2) ? 10 : 0;  // Multiple mineral types bonus
+        prospectivityScore += highConcentrationMinerals * 10;  // Bonus for high concentration
+
+        const finalScore = Math.min(100, prospectivityScore);
         
-        // Update confidence score (40 points per very strong, 15 per strong)
-        const confidenceScore = Math.min(100, (totalVeryStrong * 40) + (totalStrong * 15));
-        resultsContainer.querySelector('.score-value').textContent = confidenceScore;
+        // Update score display (removed % symbol)
+        resultsContainer.querySelector('.score-value').textContent = `${finalScore.toFixed(0)}`;
         
         // Update signal counts
         resultsContainer.querySelector('#strong-signals').textContent = totalVeryStrong;
         resultsContainer.querySelector('#potential-signals').textContent = totalStrong;
+        
+        // Set up click handler for score info button
+        const scoreInfoButton = document.getElementById('scoreInfo');
+        if (scoreInfoButton) {
+            scoreInfoButton.onclick = () => {
+                alert(
+                    'Prospectivity Score Calculation:\n\n' +
+                    '• 30 points per Very Strong Signal (both models agree)\n' +
+                    '• 15 points per Strong Signal (single model prediction)\n' +
+                    '• 10 bonus points for 2+ different mineral types\n' +
+                    '• 10 bonus points for high concentration\n\n' +
+                    'Current Breakdown:\n' +
+                    `• Very Strong Signals: ${totalVeryStrong} × 30 = ${totalVeryStrong * 30}\n` +
+                    `• Strong Signals: ${totalStrong} × 15 = ${totalStrong * 15}\n` +
+                    `• Multiple Minerals Bonus: ${(mineralsWithAnomalies >= 2) ? '10' : '0'}\n` +
+                    `• High Concentration Bonus: ${(highConcentrationMinerals > 0) ? '10' : '0'}\n` +
+                    `• Total (capped at 100): ${finalScore.toFixed(0)}`
+                );
+            };
+        }
         
         // Update table
         Object.entries(stats).forEach(([mineral, data]) => {
@@ -362,10 +411,8 @@ class QuebecMap {
             let probability;
             
             if (data.anomalous > 0) {
-                // If anomalous samples exist, use average of anomalous probabilities
                 probability = (data.totalProb / data.anomalous) * 100;
             } else {
-                // If no anomalous samples, use maximum probability
                 probability = Math.max(...data.probValues) * 100;
             }
             
@@ -509,92 +556,6 @@ class QuebecMap {
     hideLoadingOverlay() {
         const overlay = document.querySelector('.loading-overlay');
         if (overlay) overlay.remove();
-    }
-
-    addImageViewerControl() {
-        const control = L.control({position: 'topright'});
-        
-        control.onAdd = () => {
-            const div = L.DomUtil.create('div', 'leaflet-control leaflet-bar');
-            const button = document.createElement('button');
-            button.id = 'imageViewerToggle';
-            button.className = 'control-button';
-            button.textContent = 'View Mineral Maps';
-            button.style.padding = '6px 10px';
-            button.style.backgroundColor = '#fff';
-            button.style.border = '2px solid rgba(0,0,0,0.2)';
-            button.style.borderRadius = '4px';
-            button.style.cursor = 'pointer';
-            
-            button.addEventListener('click', () => this.showImageViewer());
-            div.appendChild(button);
-            return div;
-        };
-        
-        control.addTo(this.map);
-    }
-
-    showImageViewer() {
-        const modal = document.createElement('div');
-        modal.className = 'mineral-image-viewer';
-        modal.style.cssText = `
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 20px rgba(0,0,0,0.2);
-            z-index: 1000;
-            max-width: 800px;
-            width: 90%;
-            max-height: 90vh;
-            overflow-y: auto;
-        `;
-
-        const closeButton = document.createElement('button');
-        closeButton.textContent = '×';
-        closeButton.style.cssText = `
-            position: absolute;
-            right: 10px;
-            top: 10px;
-            border: none;
-            background: none;
-            font-size: 24px;
-            cursor: pointer;
-            padding: 5px;
-        `;
-        closeButton.onclick = () => modal.remove();
-
-        const content = document.createElement('div');
-        content.style.cssText = `
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            margin-top: 20px;
-        `;
-
-        Object.entries(MINERALS).forEach(([key, mineral]) => {
-            const card = document.createElement('div');
-            card.style.cssText = `
-                text-align: center;
-                padding: 10px;
-            `;
-            
-            card.innerHTML = `
-                <h3 style="margin-bottom: 10px;">${mineral.name}</h3>
-                <img src="${mineral.imagePath}" 
-                     alt="${mineral.name} heatmap" 
-                     style="max-width: 100%; height: auto; border-radius: 4px;">
-            `;
-            
-            content.appendChild(card);
-        });
-
-        modal.appendChild(closeButton);
-        modal.appendChild(content);
-        document.body.appendChild(modal);
     }
 
     showMineralHeatmap(mineralType) {
