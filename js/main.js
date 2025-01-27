@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Determine the root path
     let rootPath = './';
-    if (currentPath.includes('/blog/') || currentPath.includes('/portfolio/')) {
+    if (currentPath.includes('/blog/') || currentPath.includes('/portfolio/') || currentPath.includes('/activities/')) {
         rootPath = '../';
     }
     

@@ -598,3 +598,39 @@ nav a:hover {
     font-weight: 500;
     color: #333;
 }
+
+/* GitHub Stats Section */
+.github-stats {
+    margin-top: 30px;
+}
+
+.stats-card {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    margin: 20px 0;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.github-stat-img {
+    width: 100%;
+    max-width: 600px;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+}
+
+.dev-stack {
+    margin-top: 40px;
+}
+
+.stack-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.stack-badges img {
+    height: 25px;
+}
