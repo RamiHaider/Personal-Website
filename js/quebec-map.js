@@ -256,12 +256,6 @@ class QuebecMap {
     handleMapClick(e) {
         if (!this.isSelectionMode) return;
 
-        // Show loading overlay
-        const loadingOverlay = document.createElement('div');
-        loadingOverlay.className = 'loading-overlay';
-        loadingOverlay.innerHTML = '<div class="spinner"></div><p>Analyzing selection...</p>';
-        document.getElementById('quebec-map').appendChild(loadingOverlay);
-
         // Calculate 5km × 5km box coordinates
         const kmSize = 5;
         const degreeSize = this.kmToDegrees(kmSize);
@@ -291,12 +285,6 @@ class QuebecMap {
         const [[minLat, minLng], [maxLat, maxLng]] = bounds;
         
         try {
-            // Show loading overlay
-            const loadingOverlay = document.createElement('div');
-            loadingOverlay.className = 'loading-overlay';
-            loadingOverlay.innerHTML = '<div class="spinner"></div><p>Analyzing region...</p>';
-            document.getElementById('quebec-map').appendChild(loadingOverlay);
-
             const { data: points, error } = await this.supabase
                 .rpc('get_points_in_bounds', {
                     min_lat: minLat,
@@ -346,8 +334,6 @@ class QuebecMap {
 
         } catch (error) {
             console.error('Error fetching points:', error);
-        } finally {
-            document.querySelector('.loading-overlay')?.remove();
         }
     }
 
@@ -583,9 +569,17 @@ class QuebecMap {
             right: 10px;
             top: 10px;
             border: none;
-            background: none;
+            background: white;
             font-size: 24px;
             cursor: pointer;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            color: #000;
         `;
         closeButton.onclick = () => modal.remove();
 
