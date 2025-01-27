@@ -13,7 +13,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Add 'selected' class to clicked tag
             this.classList.add('selected');
 
-            const selectedTag = this.textContent.toLowerCase();
+            const selectedTag = this.textContent.toLowerCase().replace(/[-\s]/g, '');
             
             portfolioCards.forEach(card => {
                 const cardTags = card.querySelectorAll('.tag');
@@ -22,7 +22,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 } else {
                     let shouldShow = false;
                     cardTags.forEach(cardTag => {
-                        if (cardTag.textContent.toLowerCase() === selectedTag) {
+                        const cardTagText = cardTag.textContent.toLowerCase().replace(/[-\s]/g, '');
+                        if (cardTagText === selectedTag) {
                             shouldShow = true;
                         }
                     });
