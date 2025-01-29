@@ -83,6 +83,45 @@ class QuebecMap {
         // Add default base layer
         this.baseLayers.OpenStreetMap.addTo(this.map);
 
+        // Add geology layer
+        fetch('../assets/tiles/geology.geojson')
+            .then(response => response.json())
+            .then(data => {
+                console.log('Geology data loaded, first feature properties:', data.features[0].properties);
+                
+                this.geologyLayer = L.geoJSON(data, {
+                    style: feature => ({
+                        fillColor: `rgb(${feature.properties.RVB})`,
+                        color: 'transparent',
+                        fillOpacity: 0.8,
+                        weight: 0
+                    })
+                });
+
+                // Add to layer control as an overlay
+                this.layerControl.addOverlay(this.geologyLayer, 'Bedrock Geology');
+            })
+            .catch(error => {
+                console.error('Error loading geology:', error);
+            });
+
+        // Add faults layer
+        fetch('../assets/tiles/faults.geojson')
+            .then(response => response.json())
+            .then(data => {
+                this.faultsLayer = L.geoJSON(data, {
+                    style: {
+                        color: '#FF0000',
+                        weight: 1.5,
+                        opacity: 0.7
+                    }
+                });
+                this.layerControl.addOverlay(this.faultsLayer, 'Faults');
+            })
+            .catch(error => {
+                console.error('Error loading faults:', error);
+            });
+
         // Initialize the layer control
         this.layerControl = L.control.layers(this.baseLayers, null, {
             position: 'topright',
@@ -95,10 +134,11 @@ class QuebecMap {
             .then(data => {
                 this.maskLayer = L.geoJSON(data, {
                     style: {
-                        color: '#ff7800',
+                        color: 'black',
+                        fillColor: 'black',
                         weight: 1,
-                        opacity: 0.65,
-                        fillOpacity: 0.4
+                        opacity: 0.9,
+                        fillOpacity: 0.9
                     }
                 }).addTo(this.map);
 
