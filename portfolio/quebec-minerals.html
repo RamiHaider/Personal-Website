@@ -24,6 +24,7 @@
             background: none;
             box-shadow: none;
             padding: 0;
+            gap: 10px;
         }
         
         .slide-image {
@@ -60,11 +61,11 @@
 
         .map-controls {
             display: flex;
-            gap: 20px;
+            gap: 10px;
             flex-wrap: wrap;
             justify-content: center;
-            width: 90%;
-            margin: 20px auto;
+            width: 80%;
+            margin: 10px auto;
         }
         
         .layer-control, .mineral-control {
@@ -208,8 +209,8 @@
         }
 
         .alert-container {
-            width: 90%;
-            margin: 0 auto 20px;
+            width: 80%;
+            margin: 0 auto 10px;
             display: flex;
             justify-content: center;
         }
@@ -270,17 +271,38 @@
         }
 
         #quebec-map {
-            height: 450px;
-            width: 90%;
+            height: 400px;
+            width: 80%;
             border-radius: 8px;
-            margin: 20px auto;
+            margin: 10px auto;
         }
 
         .mineral-viewer-control {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
+            gap: 8px;
+            font-size: 0.9em;
+        }
+
+        .selection-instruction.success {
+            background: rgba(22, 22, 22, 0.7);  /* 90% black background */
+            color: #ffffff;  /* Slightly adjusted green for better contrast on dark */
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+        }
+
+        .selection-instruction.success:before {
+            content: '✓';
+            font-weight: bold;
+        }
+
+        .map-section p {
+            margin: 10px 0;  /* Reduced margin */
+            line-height: 1.4;  /* Better line height for readability */
         }
     </style>
 </head>
@@ -299,7 +321,10 @@
                     <!-- Interactive Map Section -->
                     <div class="slide-section map-section">
                         <h2>Interactive Map</h2>
-                        <p>Explore mineral potential predictions across Quebec using the interactive map below. Toggle between different mineral layers and click regions for detailed analysis.</p>
+                        <p style="max-width: 700px; text-align: center;">
+                            View mineralization potential heatmaps and analyze 
+                            surficial potential by region across Quebec.
+                        </p>
                         
                         <div class="alert-container">
                             <div class="leaflet-control leaflet-bar alert-message">

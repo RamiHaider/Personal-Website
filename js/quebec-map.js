@@ -299,7 +299,6 @@ class QuebecMap {
         await new Promise(resolve => setTimeout(resolve, 1000));
 
         try {
-            // Calculate statistics
             await this.calculateStatistics(bounds);
         } catch (error) {
             console.error('Error calculating statistics:', error);
@@ -307,8 +306,8 @@ class QuebecMap {
             // Hide loading overlay
             this.hideLoadingOverlay();
             
-            // Show selection instruction again for next prediction
-            this.showSelectionInstruction();
+            // Show success message instead of regular instruction
+            this.showSelectionInstruction(true);
         }
     }
 
@@ -572,14 +571,25 @@ class QuebecMap {
         }
     }
 
-    showSelectionInstruction() {
+    showSelectionInstruction(isSuccess = false) {
         // Remove any existing instruction first
         this.removeSelectionInstruction();
         
         const instruction = document.createElement('div');
         instruction.id = 'selection-instruction';
-        instruction.className = 'selection-instruction';
-        instruction.innerHTML = 'Click anywhere on the map to predict a region';
+        instruction.className = `selection-instruction ${isSuccess ? 'success' : ''}`;
+        
+        if (isSuccess) {
+            instruction.innerHTML = 'Prediction Complete! See analysis below';
+            
+            // After 5 seconds, show regular instruction
+            setTimeout(() => {
+                this.showSelectionInstruction(false);
+            }, 5000);
+        } else {
+            instruction.innerHTML = 'Click anywhere on the map to predict a region';
+        }
+        
         document.getElementById('quebec-map').appendChild(instruction);
     }
 
