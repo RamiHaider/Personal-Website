@@ -274,7 +274,7 @@
             height: 400px;
             width: 80%;
             border-radius: 8px;
-            margin: 10px auto;
+            margin: 10px 0;
         }
 
         .mineral-viewer-control {
@@ -304,6 +304,94 @@
             margin: 10px 0;  /* Reduced margin */
             line-height: 1.4;  /* Better line height for readability */
         }
+
+        .selection-results {
+            width: 80%;
+            padding: 20px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin: 20px auto;
+            overflow: hidden;
+        }
+
+        .results-wrapper {
+            max-width: 100%;
+            gap: 10px;
+            padding: 0;
+        }
+
+        .results-header {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .results-header h3 {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .total-samples {
+            color: #444;
+            font-size: 1.1rem;
+            font-weight: 500;
+        }
+
+        .model-agreement-card {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            text-align: center;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .score-section {
+            margin-bottom: 15px;
+        }
+
+        .score-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .signal-counts {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 10px;
+        }
+
+        .signal-count {
+            color: #666;
+        }
+
+        .results-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        .results-table th,
+        .results-table td {
+            padding: 12px;
+            text-align: center;
+            border-bottom: 1px solid #eee;
+        }
+
+        .results-table th {
+            font-weight: 500;
+            font-size: 1.1rem;
+            color: #333;
+        }
+
+        .probability-low { color: #dc2626; }
+        .probability-medium { color: #f59e0b; }
+        .probability-high { color: #16a34a; }
     </style>
 </head>
 <body>

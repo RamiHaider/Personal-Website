@@ -305,77 +305,35 @@ class QuebecMap {
         container.className = 'selection-results';
         container.style.display = 'none';
         
-        const thresholds = {
-            AU: '100 ppb',
-            AG: '1 ppm',
-            CU: '100 ppm',
-            CO: '20 ppm',
-            NI: '100 ppm'
-        };
-        
         container.innerHTML = `
             <div class="results-wrapper">
-                <div class="threshold-card">
-                    <h4>Anomaly Thresholds</h4>
-                    <div class="threshold-grid">
-                        ${Object.entries(thresholds).map(([mineral, threshold]) => 
-                            `<div class="threshold-item">
-                                <span class="mineral">${mineral}</span>
-                                <span class="value">${threshold}</span>
-                             </div>`
-                        ).join('')}
-                    </div>
+                <div class="results-header">
+                    <h3>Analysis Results</h3>
+                    <p class="total-samples"></p>
                 </div>
 
-                <!-- Updated Mineral Prospectivity Section -->
                 <div class="model-agreement-card">
-                    <h3>Mineral Prospectivity Score</h3>
-                    <div class="confidence-grid">
-                        <div class="confidence-score">
-                            <span class="score-value">0</span>
-                            <button class="info-button" id="scoreInfo" style="
-                                border: none;
-                                background: none;
-                                color: #666;
-                                font-size: 0.8em;
-                                text-decoration: underline;
-                                cursor: pointer;
-                                margin-top: 5px;
-                            ">Click to see calculation</button>
-                        </div>
-                        <div class="agreement-stats">
-                            <div class="stat-item">
-                                <div class="stat-label-group">
-                                    <span class="stat-label">Strong Signal</span>
-                                </div>
-
-                                <span class="stat-value" id="strong-signals">0</span>
-                            </div>
-                            <div class="stat-item">
-                                <div class="stat-label-group">
-                                    <span class="stat-label">Anomalous Signals</span>
-                                </div>
-                                <span class="stat-value" id="potential-signals">0</span>
-                            </div>
-                        </div>
+                    <div class="score-section">
+                        <h4>Prospectivity Score</h4>
+                        <div class="score-value">0</div>
+                    </div>
+                    <div class="signal-counts">
+                        <div class="signal-count">Strong: <span id="strong-signals">0</span></div>
+                        <div class="signal-count">Anomalous: <span id="potential-signals">0</span></div>
                     </div>
                 </div>
 
-                <div class="stats-card">
-                    <h3>Selected Area Statistics</h3>
-                    <div class="total-samples"></div>
-                        <table class="results-table">
-                            <thead>
-                                <tr>
-                                    <th>Mineral</th>
-                                    <th>Anomalous Samples</th>
-                                    <th>Strong Samples</th>
-                                    <th>Max Probability</th>
-                                </tr>
-                            </thead>
-                            <tbody></tbody>
-                        </table>
-                </div>
+                <table class="results-table">
+                    <thead>
+                        <tr>
+                            <th>Mineral</th>
+                            <th>Anomalous</th>
+                            <th>Strong</th>
+                            <th>Probability</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
             </div>
         `;
         
@@ -506,20 +464,48 @@ class QuebecMap {
         const totalSamplesDiv = resultsContainer.querySelector('.total-samples');
         
         tbody.innerHTML = '';
-        totalSamplesDiv.textContent = `Total Samples in Region: ${totalPoints}`;
+        totalSamplesDiv.textContent = `Based on ${totalPoints} rock samples`;
         
         // Calculate total strong and anomalous signals
         const totalStrong = Object.values(stats).reduce((sum, data) => sum + data.strong, 0);
         const totalAnomalous = Object.values(stats).reduce((sum, data) => sum + data.anomalous, 0);
-    
+
         // Update signal counts
         resultsContainer.querySelector('#strong-signals').textContent = totalStrong;
         resultsContainer.querySelector('#potential-signals').textContent = totalAnomalous;
         
         // Calculate prospectivity score
+        let prospectivityScore = this.calculateProspectivityScore(stats, totalPoints);
+        resultsContainer.querySelector('.score-value').textContent = prospectivityScore.toFixed(0);
+        
+        // Update table with colored probabilities
+        Object.entries(stats).forEach(([mineral, data]) => {
+            const row = document.createElement('tr');
+            const probability = (data.maxProb * 100).toFixed(1);
+            const probClass = probability < 30 ? 'probability-low' : 
+                             probability < 60 ? 'probability-medium' : 
+                             'probability-high';
+            
+            row.innerHTML = `
+                <td>${MINERALS[mineral].name}</td>
+                <td>${data.anomalous}</td>
+                <td>${data.strong}</td>
+                <td class="${probClass}">${probability}%</td>
+            `;
+            tbody.appendChild(row);
+        });
+        
+        resultsContainer.style.display = 'block';
+    }
+
+    calculateProspectivityScore(stats, totalPoints) {
+        // Calculate total strong and anomalous signals
+        const totalStrong = Object.values(stats).reduce((sum, data) => sum + data.strong, 0);
+        const totalAnomalous = Object.values(stats).reduce((sum, data) => sum + data.anomalous, 0);
+        
         let prospectivityScore = 0;
-        prospectivityScore += totalStrong * 30;      // 30 points per strong signal (was very strong)
-        prospectivityScore += totalAnomalous * 15;   // 15 points per anomalous signal (was strong)
+        prospectivityScore += totalStrong * 30;      // 30 points per strong signal
+        prospectivityScore += totalAnomalous * 15;   // 15 points per anomalous signal
         
         // Add bonuses for multiple minerals
         const mineralsWithSignals = Object.values(stats)
@@ -530,45 +516,8 @@ class QuebecMap {
         const highConcentrationMinerals = Object.values(stats)
             .filter(data => (data.strong + data.anomalous) / totalPoints > 0.5).length;
         prospectivityScore += highConcentrationMinerals * 10;
-    
-        const finalScore = Math.min(100, prospectivityScore);
-        
-        // Update score display
-        resultsContainer.querySelector('.score-value').textContent = finalScore.toFixed(0);
-        
-        // Update info button click handler
-        const scoreInfoButton = document.getElementById('scoreInfo');
-        if (scoreInfoButton) {
-            scoreInfoButton.onclick = () => {
-                alert(
-                    'Prospectivity Score Calculation:\n\n' +
-                    '• 30 points per Strong Signal (pred = 2)\n' +
-                    '• 15 points per Anomalous Signal (pred = 1)\n' +
-                    '• 10 bonus points for 2+ different mineral types\n' +
-                    '• 10 bonus points per mineral with high concentration\n\n' +
-                    'Current Breakdown:\n' +
-                    `• Strong Signals: ${totalStrong} × 30 = ${totalStrong * 30}\n` +
-                    `• Anomalous Signals: ${totalAnomalous} × 15 = ${totalAnomalous * 15}\n` +
-                    `• Multiple Minerals Bonus: ${(mineralsWithSignals >= 2) ? '10' : '0'}\n` +
-                    `• High Concentration Bonus: ${highConcentrationMinerals * 10}\n` +
-                    `• Total (capped at 100): ${finalScore}`
-                );
-            };
-        }
-        
-        // Update table
-        Object.entries(stats).forEach(([mineral, data]) => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${MINERALS[mineral].name}</td>
-                <td>${data.anomalous}/${totalPoints}</td>
-                <td>${data.strong}/${totalPoints}</td>
-                <td>${(data.maxProb * 100).toFixed(1)}%</td>
-            `;
-            tbody.appendChild(row);
-        });
-        
-        resultsContainer.style.display = 'block';
+
+        return Math.min(100, prospectivityScore); // Cap at 100
     }
 
     showMineralLayer(mineralType) {
