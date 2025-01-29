@@ -307,7 +307,7 @@
 
         .selection-results {
             width: 80%;
-            padding: 20px;
+            padding: 10px 20px;
             background: white;
             border-radius: 8px;
             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
@@ -323,25 +323,26 @@
 
         .results-header {
             text-align: center;
-            margin-bottom: 10px;
+            margin-bottom: 5px;
         }
 
         .results-header h3 {
             font-size: 1.8rem;
             font-weight: 800;
             color: #333;
-            margin-bottom: 8px;
+            margin: 0 0 5px 0;
         }
 
         .total-samples {
             color: #444;
             font-size: 1.1rem;
             font-weight: 500;
+            margin: 0 0 10px 0;
         }
 
         .model-agreement-card {
             background: #f8f9fa;
-            padding: 15px;
+            padding: 10px 15px; /* Reduced padding */
             border-radius: 8px;
             margin: 10px 0;
             text-align: center;
@@ -350,13 +351,33 @@
         }
 
         .score-section {
-            margin-bottom: 15px;
+            margin-bottom: 8px; /* Reduced margin */
+        }
+
+        .score-section h4 {
+            margin: 0 0 5px 0; /* Tighter spacing */
+            color: #4b5563;
+            font-weight: 500;
         }
 
         .score-value {
             font-size: 2.5rem;
-            font-weight: bold;
-            color: #333;
+            font-weight: 900; /* Increased from bold to 900 */
+            margin: 0;
+            transition: color 0.3s ease;
+        }
+
+        /* Score color classes */
+        .score-low {
+            color: #4b5563; /* Gray */
+        }
+
+        .score-medium {
+            color: #d97706; /* Dark orange */
+        }
+
+        .score-high {
+            color: #059669; /* Green */
         }
 
         .signal-counts {
@@ -389,9 +410,18 @@
             color: #333;
         }
 
-        .probability-low { color: #dc2626; }
-        .probability-medium { color: #f59e0b; }
-        .probability-high { color: #16a34a; }
+        /* Update probability colors to match score colors */
+        .probability-low {
+            color: #4b5563; /* Same gray as score-low */
+        }
+
+        .probability-medium {
+            color: #d97706; /* Same dark orange as score-medium */
+        }
+
+        .probability-high {
+            color: #059669; /* Same green as score-high */
+        }
     </style>
 </head>
 <body>

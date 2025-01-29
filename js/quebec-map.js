@@ -476,13 +476,26 @@ class QuebecMap {
         
         // Calculate prospectivity score
         let prospectivityScore = this.calculateProspectivityScore(stats, totalPoints);
-        resultsContainer.querySelector('.score-value').textContent = prospectivityScore.toFixed(0);
+        
+        // Update score display with color
+        const scoreElement = resultsContainer.querySelector('.score-value');
+        scoreElement.textContent = prospectivityScore.toFixed(0);
+        
+        // Add color class based on score
+        scoreElement.classList.remove('score-low', 'score-medium', 'score-high');
+        if (prospectivityScore < 40) {
+            scoreElement.classList.add('score-low');
+        } else if (prospectivityScore < 60) {
+            scoreElement.classList.add('score-medium');
+        } else {
+            scoreElement.classList.add('score-high');
+        }
         
         // Update table with colored probabilities
         Object.entries(stats).forEach(([mineral, data]) => {
             const row = document.createElement('tr');
             const probability = (data.maxProb * 100).toFixed(1);
-            const probClass = probability < 30 ? 'probability-low' : 
+            const probClass = probability < 40 ? 'probability-low' : 
                              probability < 60 ? 'probability-medium' : 
                              'probability-high';
             
