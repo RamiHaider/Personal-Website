@@ -422,6 +422,72 @@
         .probability-high {
             color: #059669; /* Same green as score-high */
         }
+
+        /* Add these styles */
+        .info-icon {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            background: #e2e8f0;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 16px;
+            font-size: 12px;
+            color: #4b5563;
+            cursor: help;
+            margin-left: 4px;
+            position: relative;
+        }
+
+        .tooltip {
+            visibility: hidden;
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1f2937;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            white-space: nowrap;
+            z-index: 10;
+            margin-bottom: 5px;
+            width: max-content;
+            max-width: 300px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .info-icon:hover .tooltip {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* Add arrow to tooltip */
+        .tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            margin-left: -5px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: #1f2937 transparent transparent transparent;
+        }
+
+        .mineral-icon {
+            width: 20px;
+            height: 20px;
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+
+        .mineral-name {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
     </style>
 </head>
 <body>
@@ -472,15 +538,6 @@
 
                     <!-- Project Overview Section (moved down) -->
                     <div class="slide-section">
-                        <h2>How it works</h2>
-                        <o>
-                            <li>Drag and Zoom to the Area you want to predict</li>
-                            <li>Click 'Predict Region' Button</li>
-                            <li>Click on the Area you want to predict</li>
-                            <li> Scroll down to see the Results</li>
-                            <li> *Please note, some areas do not have data, and the statistics will show as Null or Infinity. Look at the heatmap maps to get ani dea of the available regions to predict</li>
-                        </o>
-
                         <div class="key-point">
                             <h3>Future Releases</h3>
                             <ul>
@@ -488,15 +545,12 @@
                                 <li>Show the actual point data</li>
                                 <li>Show which areas do not have data</li>
                                 <li>Will be 100% Open Source and Free to use, Including the Trained Model and everything else </li>
+                                <li> Will soon have documentation and a detailed blog post about the project - Keep updated here <a href="../blog/quebecai.html">Blog Post</a></li>
                             </ul>
                         </div>
                     </div>
 
-                    <!-- Project Status Section -->
-                    <div class="slide-section">
-                        <h2>Project Status</h2>
-                        <p>Interested in the technical aspects? Like the data, the preprocessing, basically, the entire process? Check out the <a href="../blog/quebecai.html">detailed blog post</a> about this project.</p>
-                    </div>
+
 
                 </div>
             </main>

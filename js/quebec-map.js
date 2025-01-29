@@ -4,6 +4,7 @@ const MINERALS = {
         name: 'Gold', 
         symbol: 'AU',
         imagePath: '../assets/newer-mineral-images/AU_heatmap.png',
+        iconPath: '../assets/mineralicons/goldore.png',
         bounds: [
             [44.9930, -79.5720],  // Southwest corner
             [62.4910, -56.9430]   // Northeast corner
@@ -13,6 +14,7 @@ const MINERALS = {
         name: 'Silver', 
         symbol: 'AG',
         imagePath: '../assets/newer-mineral-images/AG_heatmap.png',
+        iconPath: '../assets/mineralicons/silverore.png',
         bounds: [
             [44.9930, -79.5720],
             [62.4910, -56.9430]
@@ -22,6 +24,7 @@ const MINERALS = {
         name: 'Copper', 
         symbol: 'CU',
         imagePath: '../assets/newer-mineral-images/CU_heatmap.png',
+        iconPath: '../assets/mineralicons/copperore.png',
         bounds: [
             [44.9930, -79.5720],
             [62.4910, -56.9430]
@@ -31,6 +34,7 @@ const MINERALS = {
         name: 'Cobalt', 
         symbol: 'CO',
         imagePath: '../assets/newer-mineral-images/CO_heatmap.png',
+        iconPath: '../assets/mineralicons/cobaltore.png',
         bounds: [
             [44.9930, -79.5720],
             [62.4910, -56.9430]
@@ -40,6 +44,7 @@ const MINERALS = {
         name: 'Nickel', 
         symbol: 'NI',
         imagePath: '../assets/newer-mineral-images/NI_heatmap.png',
+        iconPath: '../assets/mineralicons/nickelore.png',
         bounds: [
             [44.9930, -79.5720],
             [62.4910, -56.9430]
@@ -305,21 +310,44 @@ class QuebecMap {
         container.className = 'selection-results';
         container.style.display = 'none';
         
+        const thresholds = {
+            AU: '100 ppb',
+            AG: '1 ppm',
+            CU: '100 ppm',
+            CO: '20 ppm',
+            NI: '100 ppm'
+        };
+        
+        const thresholdsText = Object.entries(thresholds)
+            .map(([mineral, value]) => `${mineral}: ${value}`)
+            .join('<br>');
+        
         container.innerHTML = `
             <div class="results-wrapper">
                 <div class="results-header">
                     <h3>Analysis Results</h3>
                     <p class="total-samples"></p>
+                    <div class="signal-counts">
+                        <div class="signal-count">Strong: <span id="strong-signals">0</span></div>
+                        <div class="signal-count">Anomalous: <span id="potential-signals">0</span></div>
+                    </div>
                 </div>
 
                 <div class="model-agreement-card">
                     <div class="score-section">
-                        <h4>Prospectivity Score</h4>
+                        <h4>
+                            Prospectivity Score
+                            <span class="info-icon">i
+                                <span class="tooltip">
+                                    Score calculation:<br>
+                                    • Strong signals: 30 points each<br>
+                                    • Anomalous signals: 15 points each<br>
+                                    • Multiple minerals bonus: 10 points<br>
+                                    • High concentration bonus: 10 points per mineral
+                                </span>
+                            </span>
+                        </h4>
                         <div class="score-value">0</div>
-                    </div>
-                    <div class="signal-counts">
-                        <div class="signal-count">Strong: <span id="strong-signals">0</span></div>
-                        <div class="signal-count">Anomalous: <span id="potential-signals">0</span></div>
                     </div>
                 </div>
 
@@ -327,8 +355,24 @@ class QuebecMap {
                     <thead>
                         <tr>
                             <th>Mineral</th>
-                            <th>Anomalous</th>
-                            <th>Strong</th>
+                            <th>
+                                Anomalous
+                                <span class="info-icon">i
+                                    <span class="tooltip">
+                                        Anomalous Thresholds:<br>${thresholdsText}
+                                    </span>
+                                </span>
+                            </th>
+                            <th>
+                                Strong
+                                <span class="info-icon">i
+                                    <span class="tooltip">
+                                        Two independent AI models have predicted<br>
+                                        this area as anomalous, indicating higher<br>
+                                        confidence in the prediction.
+                                    </span>
+                                </span>
+                            </th>
                             <th>Probability</th>
                         </tr>
                     </thead>
@@ -500,7 +544,12 @@ class QuebecMap {
                              'probability-high';
             
             row.innerHTML = `
-                <td>${MINERALS[mineral].name}</td>
+                <td>
+                    <div class="mineral-name">
+                        <img src="${MINERALS[mineral].iconPath}" alt="${MINERALS[mineral].name}" class="mineral-icon">
+                        ${MINERALS[mineral].name}
+                    </div>
+                </td>
                 <td>${data.anomalous}</td>
                 <td>${data.strong}</td>
                 <td class="${probClass}">${probability}%</td>
