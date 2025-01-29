@@ -48,7 +48,7 @@ const MINERALS = {
 };
 
 class QuebecMap {
-    constructor(mapId) {
+    constructor(elementId) {
         // Initialize Supabase client first
         this.supabase = supabase.createClient(
             'https://cnbpmepdmtpgrbllufcb.supabase.co',
@@ -56,28 +56,40 @@ class QuebecMap {
         );
 
         // Initialize map
-        this.map = L.map(mapId, {
+        this.map = L.map(elementId, {
             center: [52, -68],
             zoom: 5,
-            minZoom: 3,
-            maxZoom: 12
+            attributionControl: false  // Remove attribution
         });
 
         // Initialize layers group for sample points
         this.samplePoints = L.layerGroup();
         
-        // Initialize base layers
+        // Initialize base layers with no attribution
         this.baseLayers = {
-            'OpenStreetMap': L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap contributors'
-            }),
-            'Satellite': L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-                attribution: '© Esri'
+            'default': L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: ''  // Remove attribution text
             })
         };
 
         // Add default base layer
-        this.baseLayers['OpenStreetMap'].addTo(this.map);
+        this.baseLayers.default.addTo(this.map);
+
+        // Add custom CSS to modify zoom controls
+        const style = document.createElement('style');
+        style.textContent = `
+            .leaflet-control-zoom {
+                margin: 10px !important;
+            }
+            .leaflet-control-zoom-in,
+            .leaflet-control-zoom-out {
+                width: 24px !important;
+                height: 24px !important;
+                line-height: 22px !important;
+                font-size: 14px !important;
+            }
+        `;
+        document.head.appendChild(style);
 
         // Add scale control
         L.control.scale({
