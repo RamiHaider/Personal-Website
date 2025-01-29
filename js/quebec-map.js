@@ -70,7 +70,7 @@ class QuebecMap {
         // Initialize layers group for sample points
         this.samplePoints = L.layerGroup();
         
-        // Initialize base layers - keeping just OpenStreetMap and Satellite
+        // Initialize base layers
         this.baseLayers = {
             'OpenStreetMap': L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: ''
@@ -83,7 +83,33 @@ class QuebecMap {
         // Add default base layer
         this.baseLayers.OpenStreetMap.addTo(this.map);
 
-        // Add custom CSS to modify zoom controls
+        // Initialize the layer control
+        this.layerControl = L.control.layers(this.baseLayers, null, {
+            position: 'topright',
+            collapsed: false
+        }).addTo(this.map);
+
+        // Try adding masking layer using GeoJSON
+        fetch('../assets/tiles/masking.geojson')
+            .then(response => response.json())
+            .then(data => {
+                this.maskLayer = L.geoJSON(data, {
+                    style: {
+                        color: '#ff7800',
+                        weight: 1,
+                        opacity: 0.65,
+                        fillOpacity: 0.4
+                    }
+                }).addTo(this.map);
+
+                // Add to layer control as overlay
+                this.layerControl.addOverlay(this.maskLayer, 'No Data Mask');
+            })
+            .catch(error => {
+                console.error('Error loading mask GeoJSON:', error);
+            });
+
+        // Add custom CSS for zoom controls
         const style = document.createElement('style');
         style.textContent = `
             .leaflet-control-zoom {
@@ -102,39 +128,10 @@ class QuebecMap {
         // Add scale control
         L.control.scale({
             metric: true,
-            imperial: false
+            imperial: false  // This removes the miles
         }).addTo(this.map);
 
-        // Add layer control
-        L.control.layers(this.baseLayers, null, {
-            position: 'topright',
-            collapsed: false
-        }).addTo(this.map);
-
-        // Test direct WMS request
-        fetch('https://servicesvectoriels.atlas.gouv.qc.ca/IDS_SGM_WMS/service.svc/get?' + 
-            'SERVICE=WMS&' +
-            'VERSION=1.1.1&' +
-            'REQUEST=GetMap&' +
-            'LAYERS=SGM:Geologie_regionale&' +
-            'STYLES=&' +
-            'SRS=EPSG:4269&' +
-            'BBOX=-85.0,40.0,-50.0,65.0&' +
-            'WIDTH=256&' +
-            'HEIGHT=256&' +
-            'FORMAT=image/png')
-            .then(response => {
-                console.log('WMS Response:', response);
-                return response.blob();
-            })
-            .then(blob => {
-                console.log('WMS Blob:', blob);
-            })
-            .catch(error => {
-                console.error('WMS Error:', error);
-            });
-
-        // Add selection control (prediction functionality)
+        // Add selection control
         this.addSelectionControl();
 
         // Add this at the end of constructor
