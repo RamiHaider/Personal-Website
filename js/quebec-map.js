@@ -283,8 +283,8 @@ class QuebecMap {
             fillOpacity: 0.2
         }).addTo(this.map);
 
-        // Add artificial delay for UX
-        await new Promise(resolve => setTimeout(resolve, 1500));
+        // Add artificial delay for UX - reduced from 1500 to 1000ms
+        await new Promise(resolve => setTimeout(resolve, 1000));
 
         try {
             // Calculate statistics
@@ -292,21 +292,11 @@ class QuebecMap {
         } catch (error) {
             console.error('Error calculating statistics:', error);
         } finally {
-            // Hide loading overlay and remove selection instruction
+            // Hide loading overlay
             this.hideLoadingOverlay();
-            this.removeSelectionInstruction();
             
-            // Turn off selection mode
-            this.isSelectionMode = false;
-            this.map.getContainer().style.cursor = 'grab';
-            
-            // Update button state
-            const button = document.getElementById('selectionModeToggle');
-            if (button) {
-                button.textContent = 'Predict Region';
-                button.style.backgroundColor = '#fff';
-                button.style.color = '#000';
-            }
+            // Show selection instruction again for next prediction
+            this.showSelectionInstruction();
         }
     }
 
@@ -530,25 +520,30 @@ class QuebecMap {
 
     toggleSelectionMode() {
         this.isSelectionMode = !this.isSelectionMode;
+        this.map.getContainer().style.cursor = this.isSelectionMode ? 'crosshair' : 'grab';
         const button = document.getElementById('selectionModeToggle');
         
         if (this.isSelectionMode) {
             // Enter selection mode
-            this.map.getContainer().style.cursor = 'crosshair';
-            if (button) {
-                button.textContent = 'Cancel Selection';
-                button.style.backgroundColor = '#e9ecef';
-                button.style.color = '#212529';
-            }
+            button.textContent = 'Cancel Selection';
+            button.style.backgroundColor = '#e9ecef';
+            button.style.color = '#212529';
+            
+            // Disable dragging
+            this.map.dragging.disable();
+            
+            // Show selection instruction
             this.showSelectionInstruction();
         } else {
             // Exit selection mode
-            this.map.getContainer().style.cursor = 'grab';
-            if (button) {
-                button.textContent = 'Predict Region';
-                button.style.backgroundColor = '#fff';
-                button.style.color = '#000';
-            }
+            button.style.backgroundColor = '#fff';
+            button.style.color = '#000';
+            button.textContent = 'Predict Region';
+            
+            // Re-enable dragging
+            this.map.dragging.enable();
+            
+            // Remove instruction if exists
             this.removeSelectionInstruction();
             
             // Clear existing selection if any
@@ -566,6 +561,9 @@ class QuebecMap {
     }
 
     showSelectionInstruction() {
+        // Remove any existing instruction first
+        this.removeSelectionInstruction();
+        
         const instruction = document.createElement('div');
         instruction.id = 'selection-instruction';
         instruction.className = 'selection-instruction';
