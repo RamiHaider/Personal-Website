@@ -87,18 +87,15 @@ class QuebecMap {
         fetch('../assets/tiles/geology.geojson')
             .then(response => response.json())
             .then(data => {
-                console.log('Geology data loaded, first feature properties:', data.features[0].properties);
-                
                 this.geologyLayer = L.geoJSON(data, {
                     style: feature => ({
                         fillColor: `rgb(${feature.properties.RVB})`,
                         color: 'transparent',
                         fillOpacity: 0.8,
-                        weight: 0
+                        weight: 0,
+                        pane: 'overlayPane'  // Bottom layer
                     })
                 });
-
-                // Add to layer control as an overlay
                 this.layerControl.addOverlay(this.geologyLayer, 'Bedrock Geology');
             })
             .catch(error => {
@@ -111,9 +108,10 @@ class QuebecMap {
             .then(data => {
                 this.faultsLayer = L.geoJSON(data, {
                     style: {
-                        color: '#FF0000',
-                        weight: 1.5,
-                        opacity: 0.7
+                        color: 'black',
+                        weight: 1,
+                        opacity: 0.7,
+                        pane: 'markerPane'  // Middle layer
                     }
                 });
                 this.layerControl.addOverlay(this.faultsLayer, 'Faults');
@@ -128,7 +126,7 @@ class QuebecMap {
             collapsed: false
         }).addTo(this.map);
 
-        // Try adding masking layer using GeoJSON
+        // Update masking layer to be on top
         fetch('../assets/tiles/masking.geojson')
             .then(response => response.json())
             .then(data => {
@@ -138,15 +136,14 @@ class QuebecMap {
                         fillColor: 'black',
                         weight: 1,
                         opacity: 0.9,
-                        fillOpacity: 0.9
+                        fillOpacity: 0.9,
+                        pane: 'popupPane'  // Top layer
                     }
                 }).addTo(this.map);
-
-                // Add to layer control as overlay
                 this.layerControl.addOverlay(this.maskLayer, 'No Data Mask');
             })
             .catch(error => {
-                console.error('Error loading mask GeoJSON:', error);
+                console.error('Error loading mask:', error);
             });
 
         // Add custom CSS for zoom controls
