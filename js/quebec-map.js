@@ -49,6 +49,11 @@ const MINERALS = {
 
 class QuebecMap {
     constructor(elementId) {
+        // Add at the start of constructor
+        this.isProcessing = false;
+        this.lastPredictionTime = 0;
+        this.PREDICTION_COOLDOWN = 2000; // 2 seconds cooldown
+        
         // Initialize Supabase client first
         this.supabase = supabase.createClient(
             'https://cnbpmepdmtpgrbllufcb.supabase.co',
@@ -388,44 +393,55 @@ class QuebecMap {
     }
 
     async handleMapClick(e) {
-        if (!this.isSelectionMode) return;
-
-        // Show loading overlay
-        this.showLoadingOverlay('Predicting on Region...');
-        
-        // Remove existing selection box
-        if (this.selectionBox) {
-            this.map.removeLayer(this.selectionBox);
+        // Check if we're already processing or in cooldown
+        const now = Date.now();
+        if (this.isProcessing) {
+            console.log('Already processing a prediction...');
+            return;
+        }
+        if (now - this.lastPredictionTime < this.PREDICTION_COOLDOWN) {
+            console.log('Please wait before making another prediction...');
+            return;
         }
 
-        // Calculate bounds
-        const kmSize = 5;
-        const degreeSize = this.kmToDegrees(kmSize);
-        const bounds = [
-            [e.latlng.lat - degreeSize/2, e.latlng.lng - degreeSize/2],
-            [e.latlng.lat + degreeSize/2, e.latlng.lng + degreeSize/2]
-        ];
-
-        // Draw new selection box
-        this.selectionBox = L.rectangle(bounds, {
-            color: '#ff7800',
-            weight: 1,
-            fillOpacity: 0.2
-        }).addTo(this.map);
-
-        // Add artificial delay for UX - reduced from 1500 to 1000ms
-        await new Promise(resolve => setTimeout(resolve, 1000));
-
         try {
-            await this.calculateStatistics(bounds);
-        } catch (error) {
-            console.error('Error calculating statistics:', error);
-        } finally {
-            // Hide loading overlay
-            this.hideLoadingOverlay();
+            this.isProcessing = true;
+            this.lastPredictionTime = now;
             
-            // Show success message instead of regular instruction
+            // Show loading state
+            this.showLoadingOverlay('Analyzing region...');
+
+            // Create selection box (radius of about 10km)
+            const center = e.latlng;
+            const radius = 0.045; // Changed from 0.1 to 0.045 (roughly 5km)
+            const bounds = [
+                [center.lat - radius, center.lng - radius],
+                [center.lat + radius, center.lng + radius]
+            ];
+
+            // Clear existing selection
+            if (this.selectionBox) {
+                this.map.removeLayer(this.selectionBox);
+            }
+
+            // Create new selection box
+            this.selectionBox = L.rectangle(bounds, {
+                color: '#3388ff',
+                weight: 1,
+                fillOpacity: 0.2
+            }).addTo(this.map);
+
+            // Calculate statistics for the selected region
+            await this.calculateStatistics(bounds);
+            
+            // Show success message
             this.showSelectionInstruction(true);
+
+        } catch (error) {
+            console.error('Error in prediction:', error);
+        } finally {
+            this.hideLoadingOverlay();
+            this.isProcessing = false;
         }
     }
 
