@@ -142,17 +142,25 @@ class QuebecMap {
         });
 
         // Add selection mode toggle button handler
-        document.getElementById('selectionModeToggle')?.addEventListener('click', () => {
-            this.toggleSelectionMode();
+        const selectionButton = document.getElementById('selectionModeToggle');
+        if (selectionButton) {
+            selectionButton.addEventListener('click', (e) => {
+                e.stopPropagation(); // Prevent the click from reaching the map
+                this.toggleSelectionMode();
+            });
+        }
+
+        // Map click handler - only bind when selection mode is active
+        this.map.on('click', (e) => {
+            if (this.isSelectionMode) {
+                this.handleMapClick(e);
+            }
         });
 
-        // Map click handler
-        this.map.on('click', this.handleMapClick.bind(this));
-
-        // Add this to your existing bindEvents method
+        // Heatmap viewer
         document.getElementById('heatmapViewer').addEventListener('change', (e) => {
             this.showMineralHeatmap(e.target.value);
-            e.target.value = ''; // Reset selection
+            e.target.value = '';
         });
     }
 
@@ -249,22 +257,24 @@ class QuebecMap {
         this.map.getContainer().style.cursor = 'crosshair';
     }
 
-    handleMapClick(e) {
+    async handleMapClick(e) {
         if (!this.isSelectionMode) return;
 
-        // Calculate 5km × 5km box coordinates
-        const kmSize = 5;
-        const degreeSize = this.kmToDegrees(kmSize);
+        // Show loading overlay
+        this.showLoadingOverlay('Predicting on Region...');
         
-        const bounds = [
-            [e.latlng.lat - degreeSize/2, e.latlng.lng - degreeSize/2], // SW
-            [e.latlng.lat + degreeSize/2, e.latlng.lng + degreeSize/2]  // NE
-        ];
-
         // Remove existing selection box
         if (this.selectionBox) {
             this.map.removeLayer(this.selectionBox);
         }
+
+        // Calculate bounds
+        const kmSize = 5;
+        const degreeSize = this.kmToDegrees(kmSize);
+        const bounds = [
+            [e.latlng.lat - degreeSize/2, e.latlng.lng - degreeSize/2],
+            [e.latlng.lat + degreeSize/2, e.latlng.lng + degreeSize/2]
+        ];
 
         // Draw new selection box
         this.selectionBox = L.rectangle(bounds, {
@@ -273,8 +283,31 @@ class QuebecMap {
             fillOpacity: 0.2
         }).addTo(this.map);
 
-        // Calculate statistics for points within the box
-        this.calculateStatistics(bounds);
+        // Add artificial delay for UX
+        await new Promise(resolve => setTimeout(resolve, 1500));
+
+        try {
+            // Calculate statistics
+            await this.calculateStatistics(bounds);
+        } catch (error) {
+            console.error('Error calculating statistics:', error);
+        } finally {
+            // Hide loading overlay and remove selection instruction
+            this.hideLoadingOverlay();
+            this.removeSelectionInstruction();
+            
+            // Turn off selection mode
+            this.isSelectionMode = false;
+            this.map.getContainer().style.cursor = 'grab';
+            
+            // Update button state
+            const button = document.getElementById('selectionModeToggle');
+            if (button) {
+                button.textContent = 'Predict Region';
+                button.style.backgroundColor = '#fff';
+                button.style.color = '#000';
+            }
+        }
     }
 
     async calculateStatistics(bounds) {
@@ -497,36 +530,73 @@ class QuebecMap {
 
     toggleSelectionMode() {
         this.isSelectionMode = !this.isSelectionMode;
-        this.map.getContainer().style.cursor = this.isSelectionMode ? 'crosshair' : 'grab';
         const button = document.getElementById('selectionModeToggle');
-        button.textContent = this.isSelectionMode ? 'Cancel Selection' : 'Predict Region';
         
         if (this.isSelectionMode) {
-            button.style.backgroundColor = '#e9ecef';
-            button.style.color = '#212529';
+            // Enter selection mode
+            this.map.getContainer().style.cursor = 'crosshair';
+            if (button) {
+                button.textContent = 'Cancel Selection';
+                button.style.backgroundColor = '#e9ecef';
+                button.style.color = '#212529';
+            }
+            this.showSelectionInstruction();
         } else {
-            button.style.backgroundColor = '#fff';
-            button.style.color = '#000';
-        }
-
-        // Clear existing selection if disabling
-        if (!this.isSelectionMode && this.selectionBox) {
-            this.map.removeLayer(this.selectionBox);
-            this.selectionBox = null;
+            // Exit selection mode
+            this.map.getContainer().style.cursor = 'grab';
+            if (button) {
+                button.textContent = 'Predict Region';
+                button.style.backgroundColor = '#fff';
+                button.style.color = '#000';
+            }
+            this.removeSelectionInstruction();
+            
+            // Clear existing selection if any
+            if (this.selectionBox) {
+                this.map.removeLayer(this.selectionBox);
+                this.selectionBox = null;
+            }
+            
+            // Hide results container
             const resultsContainer = document.getElementById('selection-results');
-            if (resultsContainer) resultsContainer.style.display = 'none';
+            if (resultsContainer) {
+                resultsContainer.style.display = 'none';
+            }
         }
     }
 
-    showLoadingOverlay(message) {
+    showSelectionInstruction() {
+        const instruction = document.createElement('div');
+        instruction.id = 'selection-instruction';
+        instruction.className = 'selection-instruction';
+        instruction.innerHTML = 'Click anywhere on the map to predict a region';
+        document.getElementById('quebec-map').appendChild(instruction);
+    }
+
+    removeSelectionInstruction() {
+        const instruction = document.getElementById('selection-instruction');
+        if (instruction) instruction.remove();
+    }
+
+    showLoadingOverlay(message = 'Loading...') {
         const overlay = document.createElement('div');
         overlay.className = 'loading-overlay';
-        overlay.style.display = 'flex';
         overlay.innerHTML = `
-            <div class="spinner"></div>
-            <p>${message}</p>
+            <div class="loading-content">
+                <div class="spinner"></div>
+                <p class="loading-text">${message}</p>
+            </div>
         `;
         document.getElementById('quebec-map').appendChild(overlay);
+        
+        // Fade in animation
+        requestAnimationFrame(() => {
+            overlay.style.opacity = '0';
+            overlay.style.display = 'flex';
+            requestAnimationFrame(() => {
+                overlay.style.opacity = '1';
+            });
+        });
     }
 
     hideLoadingOverlay() {
