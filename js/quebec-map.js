@@ -83,50 +83,24 @@ class QuebecMap {
         // Add default base layer
         this.baseLayers.OpenStreetMap.addTo(this.map);
 
-        // Add geology layer
-        fetch('../assets/tiles/geology.geojson')
-            .then(response => response.json())
-            .then(data => {
-                this.geologyLayer = L.geoJSON(data, {
-                    style: feature => ({
-                        fillColor: `rgb(${feature.properties.RVB})`,
-                        color: 'transparent',
-                        fillOpacity: 0.8,
-                        weight: 0,
-                        pane: 'overlayPane'  // Bottom layer
-                    })
-                });
-                this.layerControl.addOverlay(this.geologyLayer, 'Bedrock Geology');
-            })
-            .catch(error => {
-                console.error('Error loading geology:', error);
-            });
+        // Initialize the layer control with custom groups
+        this.layerControl = L.control.layers(
+            // Base layers (will be under "Basemaps" group)
+            {
+                'OpenStreetMap': this.baseLayers.OpenStreetMap,
+                'Satellite': this.baseLayers.Satellite
+            },
+            // Overlays (empty initially)
+            {},
+            {
+                position: 'topright',
+                collapsed: false,
+                groupsep: '<hr style="margin: 5px 0;">', // Add separator line
+                sortLayers: false
+            }
+        ).addTo(this.map);
 
-        // Add faults layer
-        fetch('../assets/tiles/faults.geojson')
-            .then(response => response.json())
-            .then(data => {
-                this.faultsLayer = L.geoJSON(data, {
-                    style: {
-                        color: 'black',
-                        weight: 1,
-                        opacity: 0.7,
-                        pane: 'markerPane'  // Middle layer
-                    }
-                });
-                this.layerControl.addOverlay(this.faultsLayer, 'Faults');
-            })
-            .catch(error => {
-                console.error('Error loading faults:', error);
-            });
-
-        // Initialize the layer control
-        this.layerControl = L.control.layers(this.baseLayers, null, {
-            position: 'topright',
-            collapsed: false
-        }).addTo(this.map);
-
-        // Update masking layer to be on top
+        // Add mask layer first and enable by default
         fetch('../assets/tiles/masking.geojson')
             .then(response => response.json())
             .then(data => {
@@ -137,13 +111,89 @@ class QuebecMap {
                         weight: 1,
                         opacity: 0.9,
                         fillOpacity: 0.9,
-                        pane: 'popupPane'  // Top layer
+                        pane: 'popupPane'
                     }
-                }).addTo(this.map);
+                }).addTo(this.map);  // Add to map by default
                 this.layerControl.addOverlay(this.maskLayer, 'No Data Mask');
-            })
-            .catch(error => {
-                console.error('Error loading mask:', error);
+            });
+
+        // Add a separator and Geology group header
+        const separator = document.createElement('div');
+        separator.innerHTML = '<hr style="margin: 5px 0;"><div style="font-weight: bold; margin: 5px 0;">Geology:</div>';
+        this.layerControl._overlaysList.appendChild(separator);
+
+        // Add geology layers
+        fetch('../assets/tiles/geology.geojson')
+            .then(response => response.json())
+            .then(data => {
+                this.geologyLayer = L.geoJSON(data, {
+                    style: feature => ({
+                        fillColor: `rgb(${feature.properties.RVB})`,
+                        color: 'transparent',
+                        fillOpacity: 0.8,
+                        weight: 0,
+                        pane: 'overlayPane'
+                    })
+                });
+                this.layerControl.addOverlay(this.geologyLayer, 'Bedrock Geology');
+            });
+
+        fetch('../assets/tiles/faults.geojson')
+            .then(response => response.json())
+            .then(data => {
+                this.faultsLayer = L.geoJSON(data, {
+                    style: {
+                        color: 'black',
+                        weight: 1,
+                        opacity: 0.7,
+                        pane: 'markerPane'
+                    }
+                });
+                this.layerControl.addOverlay(this.faultsLayer, 'Faults');
+            });
+
+        // Add another separator and Anomalous Points header
+        const pointsSeparator = document.createElement('div');
+        pointsSeparator.innerHTML = '<hr style="margin: 5px 0;"><div style="font-weight: bold; margin: 5px 0;">Anomalous Points:</div>';
+        this.layerControl._overlaysList.appendChild(pointsSeparator);
+
+        // Add cobalt points
+        fetch('../assets/tiles/Co-2.geojson')
+            .then(response => response.json())
+            .then(data => {
+                this.cobaltSuperAnom = L.geoJSON(data, {
+                    pointToLayer: (feature, latlng) => {
+                        return L.circleMarker(latlng, {
+                            radius: 4,
+                            fillColor: '#ff0000',
+                            color: '#000',
+                            weight: 1,
+                            opacity: 1,
+                            fillOpacity: 0.8,
+                            pane: 'markerPane'
+                        });
+                    }
+                });
+                this.layerControl.addOverlay(this.cobaltSuperAnom, 'Cobalt: Super Anom');
+            });
+
+        fetch('../assets/tiles/Co-1.geojson')
+            .then(response => response.json())
+            .then(data => {
+                this.cobaltAnom = L.geoJSON(data, {
+                    pointToLayer: (feature, latlng) => {
+                        return L.circleMarker(latlng, {
+                            radius: 4,
+                            fillColor: '#ff7800',
+                            color: '#000',
+                            weight: 1,
+                            opacity: 1,
+                            fillOpacity: 0.8,
+                            pane: 'markerPane'
+                        });
+                    }
+                });
+                this.layerControl.addOverlay(this.cobaltAnom, 'Cobalt: Anomalous');
             });
 
         // Add custom CSS for zoom controls
