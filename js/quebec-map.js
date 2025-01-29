@@ -65,15 +65,18 @@ class QuebecMap {
         // Initialize layers group for sample points
         this.samplePoints = L.layerGroup();
         
-        // Initialize base layers with no attribution
+        // Initialize base layers with multiple options
         this.baseLayers = {
-            'default': L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: ''  // Remove attribution text
+            'OpenStreetMap': L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: ''
+            }),
+            'Satellite': L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                attribution: ''
             })
         };
 
         // Add default base layer
-        this.baseLayers.default.addTo(this.map);
+        this.baseLayers.OpenStreetMap.addTo(this.map);
 
         // Add custom CSS to modify zoom controls
         const style = document.createElement('style');
