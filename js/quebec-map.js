@@ -203,19 +203,14 @@ class QuebecMap {
                         <div class="agreement-stats">
                             <div class="stat-item">
                                 <div class="stat-label-group">
-                                    <span class="stat-label">Very Strong Signals</span>
-                                    <span class="stat-sublabel" style="font-size: 0.8em; color: #666;">
-                                        (both models independently predicted these anomalies)
-                                    </span>
+                                    <span class="stat-label">Strong Signal</span>
                                 </div>
+
                                 <span class="stat-value" id="strong-signals">0</span>
                             </div>
                             <div class="stat-item">
                                 <div class="stat-label-group">
-                                    <span class="stat-label">Strong Signals</span>
-                                    <span class="stat-sublabel" style="font-size: 0.8em; color: #666;">
-                                        (a model independently predicted these anomalies)
-                                    </span>
+                                    <span class="stat-label">Anomalous Signals</span>
                                 </div>
                                 <span class="stat-value" id="potential-signals">0</span>
                             </div>
@@ -226,16 +221,17 @@ class QuebecMap {
                 <div class="stats-card">
                     <h3>Selected Area Statistics</h3>
                     <div class="total-samples"></div>
-                    <table class="results-table">
-                        <thead>
-                            <tr>
-                                <th>Mineral</th>
-                                <th>Anomalous Samples</th>
-                                <th>Probability of Threshold</th>
-                            </tr>
-                        </thead>
-                        <tbody></tbody>
-                    </table>
+                        <table class="results-table">
+                            <thead>
+                                <tr>
+                                    <th>Mineral</th>
+                                    <th>Anomalous Samples</th>
+                                    <th>Strong Samples</th>
+                                    <th>Max Probability</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
                 </div>
             </div>
         `;
@@ -292,51 +288,48 @@ class QuebecMap {
                     max_lat: maxLat,
                     max_lng: maxLng
                 });
-
+    
             if (error) throw error;
-
+    
             // Calculate statistics
             const stats = {
-                AU: { anomalous: 0, totalProb: 0, strongSignals: 0, veryStrongSignals: 0, probValues: [] },
-                AG: { anomalous: 0, totalProb: 0, strongSignals: 0, veryStrongSignals: 0, probValues: [] },
-                CU: { anomalous: 0, totalProb: 0, strongSignals: 0, veryStrongSignals: 0, probValues: [] },
-                CO: { anomalous: 0, totalProb: 0, strongSignals: 0, veryStrongSignals: 0, probValues: [] },
-                NI: { anomalous: 0, totalProb: 0, strongSignals: 0, veryStrongSignals: 0, probValues: [] }
+                AU: { anomalous: 0, strong: 0, maxProb: 0 },
+                AG: { anomalous: 0, strong: 0, maxProb: 0 },
+                CU: { anomalous: 0, strong: 0, maxProb: 0 },
+                CO: { anomalous: 0, strong: 0, maxProb: 0 },
+                NI: { anomalous: 0, strong: 0, maxProb: 0 }
             };
-
+    
             points.forEach(point => {
                 Object.keys(stats).forEach(mineral => {
                     const mineral_lower = mineral.toLowerCase();
                     const pred = point[`${mineral_lower}_pred`];
                     const prob = point[`${mineral_lower}_prob`] || 0;
                     
-                    stats[mineral].probValues.push(prob);
+                    // Update max probability if this is higher
+                    stats[mineral].maxProb = Math.max(stats[mineral].maxProb, prob);
                     
                     if (pred === 2) {
-                        stats[mineral].veryStrongSignals++;
-                        stats[mineral].anomalous++;
-                        stats[mineral].totalProb += prob;
+                        stats[mineral].strong++;
                     } else if (pred === 1) {
-                        stats[mineral].strongSignals++;
                         stats[mineral].anomalous++;
-                        stats[mineral].totalProb += prob;
                     }
                 });
             });
-
+    
             // Create results container if it doesn't exist
             if (!document.getElementById('selection-results')) {
                 document.getElementById('quebec-map').parentNode.appendChild(this.createResultsContainer());
             }
-
+    
             // Display results
             this.displayResults(stats, points.length);
-
+    
         } catch (error) {
             console.error('Error fetching points:', error);
         }
     }
-
+    
     displayResults(stats, totalPoints) {
         const resultsContainer = document.getElementById('selection-results');
         if (!resultsContainer) return;
@@ -347,46 +340,50 @@ class QuebecMap {
         tbody.innerHTML = '';
         totalSamplesDiv.textContent = `Total Samples in Region: ${totalPoints}`;
         
-        // Calculate prospectivity score components
-        const totalVeryStrong = Object.values(stats).reduce((sum, data) => sum + data.veryStrongSignals, 0);
-        const totalStrong = Object.values(stats).reduce((sum, data) => sum + data.strongSignals, 0);
-
-        // Count minerals with anomalies and their concentrations
-        const mineralsWithAnomalies = Object.values(stats).filter(data => data.anomalous > 0).length;
-        const highConcentrationMinerals = Object.values(stats).filter(data => data.anomalous / totalPoints > 0.5).length;
-
-        // Calculate final score
+        // Calculate total strong and anomalous signals
+        const totalStrong = Object.values(stats).reduce((sum, data) => sum + data.strong, 0);
+        const totalAnomalous = Object.values(stats).reduce((sum, data) => sum + data.anomalous, 0);
+    
+        // Update signal counts
+        resultsContainer.querySelector('#strong-signals').textContent = totalStrong;
+        resultsContainer.querySelector('#potential-signals').textContent = totalAnomalous;
+        
+        // Calculate prospectivity score
         let prospectivityScore = 0;
-        prospectivityScore += totalVeryStrong * 30;  // 30 points per very strong signal
-        prospectivityScore += totalStrong * 15;      // 15 points per strong signal
-        prospectivityScore += (mineralsWithAnomalies >= 2) ? 10 : 0;  // Multiple mineral types bonus
-        prospectivityScore += highConcentrationMinerals * 10;  // Bonus for high concentration
-
+        prospectivityScore += totalStrong * 30;      // 30 points per strong signal (was very strong)
+        prospectivityScore += totalAnomalous * 15;   // 15 points per anomalous signal (was strong)
+        
+        // Add bonuses for multiple minerals
+        const mineralsWithSignals = Object.values(stats)
+            .filter(data => (data.strong + data.anomalous) > 0).length;
+        if (mineralsWithSignals >= 2) prospectivityScore += 10;
+        
+        // Add bonus for high concentration
+        const highConcentrationMinerals = Object.values(stats)
+            .filter(data => (data.strong + data.anomalous) / totalPoints > 0.5).length;
+        prospectivityScore += highConcentrationMinerals * 10;
+    
         const finalScore = Math.min(100, prospectivityScore);
         
-        // Update score display (removed % symbol)
-        resultsContainer.querySelector('.score-value').textContent = `${finalScore.toFixed(0)}`;
+        // Update score display
+        resultsContainer.querySelector('.score-value').textContent = finalScore.toFixed(0);
         
-        // Update signal counts
-        resultsContainer.querySelector('#strong-signals').textContent = totalVeryStrong;
-        resultsContainer.querySelector('#potential-signals').textContent = totalStrong;
-        
-        // Set up click handler for score info button
+        // Update info button click handler
         const scoreInfoButton = document.getElementById('scoreInfo');
         if (scoreInfoButton) {
             scoreInfoButton.onclick = () => {
                 alert(
                     'Prospectivity Score Calculation:\n\n' +
-                    '• 30 points per Very Strong Signal (both models agree)\n' +
-                    '• 15 points per Strong Signal (single model prediction)\n' +
+                    '• 30 points per Strong Signal (pred = 2)\n' +
+                    '• 15 points per Anomalous Signal (pred = 1)\n' +
                     '• 10 bonus points for 2+ different mineral types\n' +
-                    '• 10 bonus points for high concentration\n\n' +
+                    '• 10 bonus points per mineral with high concentration\n\n' +
                     'Current Breakdown:\n' +
-                    `• Very Strong Signals: ${totalVeryStrong} × 30 = ${totalVeryStrong * 30}\n` +
-                    `• Strong Signals: ${totalStrong} × 15 = ${totalStrong * 15}\n` +
-                    `• Multiple Minerals Bonus: ${(mineralsWithAnomalies >= 2) ? '10' : '0'}\n` +
-                    `• High Concentration Bonus: ${(highConcentrationMinerals > 0) ? '10' : '0'}\n` +
-                    `• Total (capped at 100): ${finalScore.toFixed(0)}`
+                    `• Strong Signals: ${totalStrong} × 30 = ${totalStrong * 30}\n` +
+                    `• Anomalous Signals: ${totalAnomalous} × 15 = ${totalAnomalous * 15}\n` +
+                    `• Multiple Minerals Bonus: ${(mineralsWithSignals >= 2) ? '10' : '0'}\n` +
+                    `• High Concentration Bonus: ${highConcentrationMinerals * 10}\n` +
+                    `• Total (capped at 100): ${finalScore}`
                 );
             };
         }
@@ -394,18 +391,11 @@ class QuebecMap {
         // Update table
         Object.entries(stats).forEach(([mineral, data]) => {
             const row = document.createElement('tr');
-            let probability;
-            
-            if (data.anomalous > 0) {
-                probability = (data.totalProb / data.anomalous) * 100;
-            } else {
-                probability = Math.max(...data.probValues) * 100;
-            }
-            
             row.innerHTML = `
                 <td>${MINERALS[mineral].name}</td>
                 <td>${data.anomalous}/${totalPoints}</td>
-                <td>${probability.toFixed(1)}%</td>
+                <td>${data.strong}/${totalPoints}</td>
+                <td>${(data.maxProb * 100).toFixed(1)}%</td>
             `;
             tbody.appendChild(row);
         });
