@@ -21,6 +21,7 @@
 !assets/images/**/*.png
 !assets/newer-mineral-images/*.png
 !assets/images/*.png
+!assets/mineralicons/*.png
 
 # Common system files
 .DS_Store
