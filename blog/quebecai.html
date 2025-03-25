@@ -18,42 +18,61 @@
             padding: 20px;
             position: relative;
         }
-        .content-wrapper {
+        /* New container for content + sidebar */
+        .content-container {
             display: flex;
-            gap: 40px;
+            background-color: white;
+            border-radius: 0 0 20px 20px;
+            margin-top: 0;
             position: relative;
+            overflow: hidden;
         }
+
+        /* Replace main-content styles */
         .main-content {
-            width: 80%;
-            padding-right: 20px;
-        }
-        .nav-container {
-            width: 20%;
-            background-color: rgba(197, 169, 28, 0.03);
-            padding: 20px;
-            position: fixed;
-            right: calc((100% - 1200px) / 2 + 20px);
-            top: 0;
-            bottom: 0;
-            overflow-y: auto;
-            border-left: 1px solid rgba(197, 169, 28, 0.1);
+            width: 75%;
+            padding: 40px;
             box-sizing: border-box;
         }
+
+        /* Replace nav-container with sidebar */
+        .sidebar {
+            width: 25%;
+            background-color: rgba(197, 169, 28, 0.03);
+            border-left: 1px solid rgba(197, 169, 28, 0.1);
+            padding: 40px 20px;
+            position: sticky;
+            top: 0;
+            align-self: flex-start;
+            height: 100vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+            box-sizing: border-box;
+        }
+
+        /* Update nav-section styles */
         .nav-section {
             margin-bottom: 25px;
             width: 100%;
+            box-sizing: border-box;
         }
+
         .nav-section-title {
             font-weight: 600;
             color: #333;
             margin-bottom: 10px;
             font-size: 14px;
-            white-space: nowrap;
+            white-space: normal;
+            width: 100%;
+            box-sizing: border-box;
         }
+
         .nav-subsection {
             padding-left: 15px;
             width: 100%;
+            box-sizing: border-box;
         }
+
         .nav-link {
             text-decoration: none;
             color: #666;
@@ -61,9 +80,12 @@
             line-height: 1.8;
             display: block;
             transition: color 0.2s;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            white-space: normal;
+            overflow-wrap: break-word;
+            word-wrap: break-word;
+            hyphens: auto;
+            width: 100%;
+            box-sizing: border-box;
         }
         .nav-link:hover {
             color: #c5a91c;
@@ -72,7 +94,7 @@
             color: #c5a91c;
         }
         @media (max-width: 1200px) {
-            .nav-container {
+            .sidebar {
                 right: 20px;
             }
         }
@@ -144,34 +166,31 @@
     <div class="container">
         <div id="header"></div>
 
-        <div class="main-content-wrapper">
-            <main role="main">
-                <div class="content">
-                    <h1>Quebec Mineral Potential Prediction: A Multi-Modal Deep Learning Approach</h1>
-                    <div class="date-info" data-upload-date="2023-07-15" data-file-path="portfolio/quebec-minerals/quebec-mineral-portfolio.md">
-                        <p>Original Upload: 2025-01-27</p>
-                        <p>Last Updated: <span class="update-date"></span></p>
-                    </div>
-                    <div class="spacer"></div>
+        <div class="content-container">
+            <div class="main-content">
+                <h1>Quebec Mineral Potential Prediction: A Multi-Modal Deep Learning Approach</h1>
+                <div class="date-info" data-upload-date="2023-07-15" data-file-path="portfolio/quebec-minerals/quebec-mineral-portfolio.md">
+                    <p>Original Upload: 2025-01-27</p>
+                    <p>Last Updated: <span class="update-date"></span></p>
+                </div>
+                <div class="spacer"></div>
 
-                    <div class="content-wrapper">
-                        <div class="main-content">
-                            <div class="github-reference">
-                                <h3>Open Source Project</h3>
-                                <p>This project is fully open source and available on GitHub. You can find the complete source code, data, and documentation at:</p>
-                                <p><a href="https://github.com/RamiHaider/Quebec-Mineral-Prediction" target="_blank">https://github.com/RamiHaider/Quebec-Mineral-Prediction</a></p>
-                                <p>The repository includes all necessary code, notebooks, and data preprocessing scripts. Feel free to clone, fork, or contribute to the project!</p>
-                            </div>
+                <div class="github-reference">
+                    <h3>Open Source Project</h3>
+                    <p>This project is fully open source and available on GitHub. You can find the complete source code, data, and documentation at:</p>
+                    <p><a href="https://github.com/RamiHaider/Quebec-Mineral-Prediction" target="_blank">https://github.com/RamiHaider/Quebec-Mineral-Prediction</a></p>
+                    <p>The repository includes all necessary code, notebooks, and data preprocessing scripts. Feel free to clone, fork, or contribute to the project!</p>
+                </div>
 
-                            <div class="project-overview">
-                                <h2>Project Overview</h2>
-                                <p>As a geologist who has traversed land claims across Ontario in search of gold, I've combined my field experience with my enthusiasm for machine learning to create a mineral prospectivity mapper. This project aims to build a multi-modal deep learning model to predict mineral potential across Quebec, combining geochemical data, geological features, and magnetic imagery to predict probabilities of anomalous values for Au, Ag, Cu, Co, and Ni.</p>
-                                <p>My goal was to develop an interactive GUI that allows users to select a region of reasonable size (approximately 5km × 5km) and receive prediction results broken down by these five key minerals.</p>
-                            </div>
+                <div class="project-overview">
+                    <h2>Project Overview</h2>
+                    <p>As a geologist who has traversed land claims across Ontario in search of gold, I've combined my field experience with my enthusiasm for machine learning to create a mineral prospectivity mapper. This project aims to build a multi-modal deep learning model to predict mineral potential across Quebec, combining geochemical data, geological features, and magnetic imagery to predict probabilities of anomalous values for Au, Ag, Cu, Co, and Ni.</p>
+                    <p>My goal was to develop an interactive GUI that allows users to select a region of reasonable size (approximately 5km × 5km) and receive prediction results broken down by these five key minerals.</p>
+                </div>
 
-                            <div class="project-structure">
-                                <h2>Project Structure</h2>
-                                <pre class="code-block">PROJECT_ROOT/
+                <div class="project-structure">
+                    <h2>Project Structure</h2>
+                    <pre class="code-block">PROJECT_ROOT/
 ├── mag_images/         # 434,864 magnetic images (170x170 pixels, ~12KB each)
 │   └── [1-434864].jpg
 └── Training/
@@ -181,211 +200,211 @@
     ├── models/
     └── notebooks/
         └── 01_data_exploration.ipynb</pre>
-                            </div>
+                </div>
 
-                            <div class="hardware-constraints">
-                                <h2>Hardware Constraints</h2>
-                                <p>The entire project was developed on a MacBook M2 with 8GB RAM and approximately 10GB of free storage. MPS support was available for GPU acceleration, which proved crucial for training the CNN models within memory limitations.</p>
-                            </div>
+                <div class="hardware-constraints">
+                    <h2>Hardware Constraints</h2>
+                    <p>The entire project was developed on a MacBook M2 with 8GB RAM and approximately 10GB of free storage. MPS support was available for GPU acceleration, which proved crucial for training the CNN models within memory limitations.</p>
+                </div>
 
-                            <div class="data-collection">
-                                <h2>Data Collection & Preprocessing</h2>
-                                <h3>Data Sources</h3>
-                                <p>I collected data from Quebec's public geoscientific database (SIGEOM):</p>
+                <div class="data-collection">
+                    <h2>Data Collection & Preprocessing</h2>
+                    <h3>Data Sources</h3>
+                    <p>I collected data from Quebec's public geoscientific database (SIGEOM):</p>
+                    <ul>
+                        <li><strong>Geological Data:</strong>
+                            <ul>
+                                <li>Downloaded shape files from `GEOL_SIGEOM_QC.SHP`</li>
+                                <li>Selected specific layers:
+                                    <ol>
+                                        <li>Faille Regionale (Regional Faults)</li>
+                                        <li>Contact geologique (Geological Contacts)</li>
+                                        <li>Zone Geologique (Geological Zones)</li>
+                                    </ol>
+                                </li>
+                            </ul>
+                        </li>
+                        <li><strong>Geochemical Data:</strong>
+                            <ul>
+                                <li>From `GEOCH_SIGEOM_QC.SHP`, I extracted rock sample data</li>
+                            </ul>
+                        </li>
+                        <li><strong>Geophysical Data:</strong>
+                            <ul>
+                                <li>High-resolution magnetic survey data from:
+                                    <ul>
+                                        <li>`Quebec_MAG_Dv1_TIFF`</li>
+                                        <li>`Quebec_MAG_TIFF`</li>
+                                    </ul>
+                                </li>
+                                <li>Selected DV1 variant due to better information content and computational constraints</li>
+                            </ul>
+                        </li>
+                    </ul>
+
+                    <h3>QGIS Preprocessing Pipeline</h3>
+                    <div class="preprocessing-steps">
+                        <h4>Initial Setup</h4>
+                        <ol>
+                            <li><strong>Data Loading:</strong>
                                 <ul>
-                                    <li><strong>Geological Data:</strong>
-                                        <ul>
-                                            <li>Downloaded shape files from `GEOL_SIGEOM_QC.SHP`</li>
-                                            <li>Selected specific layers:
-                                                <ol>
-                                                    <li>Faille Regionale (Regional Faults)</li>
-                                                    <li>Contact geologique (Geological Contacts)</li>
-                                                    <li>Zone Geologique (Geological Zones)</li>
-                                                </ol>
-                                            </li>
-                                        </ul>
-                                    </li>
-                                    <li><strong>Geochemical Data:</strong>
-                                        <ul>
-                                            <li>From `GEOCH_SIGEOM_QC.SHP`, I extracted rock sample data</li>
-                                        </ul>
-                                    </li>
-                                    <li><strong>Geophysical Data:</strong>
-                                        <ul>
-                                            <li>High-resolution magnetic survey data from:
-                                                <ul>
-                                                    <li>`Quebec_MAG_Dv1_TIFF`</li>
-                                                    <li>`Quebec_MAG_TIFF`</li>
-                                                </ul>
-                                            </li>
-                                            <li>Selected DV1 variant due to better information content and computational constraints</li>
-                                        </ul>
-                                    </li>
+                                    <li>Loaded all shape files into QGIS</li>
+                                    <li>Verified data integrity and extents</li>
+                                    <li>Created a project file to maintain layer organization</li>
+                                    <li>Set up layer styling for better visualization</li>
                                 </ul>
+                            </li>
+                            <li><strong>Coordinate System Transformation:</strong>
+                                <ul>
+                                    <li>Original data was in WGS84 (degrees), which isn't suitable for distance calculations</li>
+                                    <li>Transformed all layers to EPSG:32918 (Quebec Lambert Conformal Conic)</li>
+                                    <li>This projection is specifically optimized for Quebec and provides measurements in meters</li>
+                                    <li>Verified transformation accuracy using control points</li>
+                                </ul>
+                            </li>
+                        </ol>
 
-                                <h3>QGIS Preprocessing Pipeline</h3>
-                                <div class="preprocessing-steps">
-                                    <h4>Initial Setup</h4>
-                                    <ol>
-                                        <li><strong>Data Loading:</strong>
-                                            <ul>
-                                                <li>Loaded all shape files into QGIS</li>
-                                                <li>Verified data integrity and extents</li>
-                                                <li>Created a project file to maintain layer organization</li>
-                                                <li>Set up layer styling for better visualization</li>
-                                            </ul>
-                                        </li>
-                                        <li><strong>Coordinate System Transformation:</strong>
-                                            <ul>
-                                                <li>Original data was in WGS84 (degrees), which isn't suitable for distance calculations</li>
-                                                <li>Transformed all layers to EPSG:32918 (Quebec Lambert Conformal Conic)</li>
-                                                <li>This projection is specifically optimized for Quebec and provides measurements in meters</li>
-                                                <li>Verified transformation accuracy using control points</li>
-                                            </ul>
-                                        </li>
-                                    </ol>
+                        <h4>Data Cleaning and Preparation</h4>
+                        <ol>
+                            <li><strong>Attribute Cleaning:</strong>
+                                <ul>
+                                    <li>Removed unnecessary columns to reduce data size</li>
+                                    <li>Standardized field names and data types</li>
+                                    <li>Handled missing values and outliers</li>
+                                    <li>Created consistent attribute tables across all layers</li>
+                                </ul>
+                            </li>
+                            <li><strong>Geometry Processing:</strong>
+                                <ul>
+                                    <li>Fixed topology errors in geological boundaries</li>
+                                    <li>Simplified complex geometries for better performance</li>
+                                    <li>Ensured consistent geometry types across layers</li>
+                                    <li>Validated spatial relationships between layers</li>
+                                </ul>
+                            </li>
+                        </ol>
 
-                                    <h4>Data Cleaning and Preparation</h4>
-                                    <ol>
-                                        <li><strong>Attribute Cleaning:</strong>
-                                            <ul>
-                                                <li>Removed unnecessary columns to reduce data size</li>
-                                                <li>Standardized field names and data types</li>
-                                                <li>Handled missing values and outliers</li>
-                                                <li>Created consistent attribute tables across all layers</li>
-                                            </ul>
-                                        </li>
-                                        <li><strong>Geometry Processing:</strong>
-                                            <ul>
-                                                <li>Fixed topology errors in geological boundaries</li>
-                                                <li>Simplified complex geometries for better performance</li>
-                                                <li>Ensured consistent geometry types across layers</li>
-                                                <li>Validated spatial relationships between layers</li>
-                                            </ul>
-                                        </li>
-                                    </ol>
+                        <h4>Masking Operations</h4>
+                        <ol>
+                            <li><strong>Geophysical Coverage Masking:</strong>
+                                <ul>
+                                    <li>Created a polygon layer representing the geophysical data coverage area (approximately 70% of Quebec)</li>
+                                    <li>Used this as a mask to limit analysis to regions with complete data</li>
+                                    <li>Applied this mask to:
+                                        <ul>
+                                            <li>Rock sample points</li>
+                                            <li>Geological zones</li>
+                                            <li>Fault networks</li>
+                                            <li>Geological contacts</li>
+                                        </ul>
+                                    </li>
+                                    <li>Generated a clean boundary for the study area</li>
+                                </ul>
+                            </li>
+                            <li><strong>Buffer Analysis:</strong>
+                                <ul>
+                                    <li>Created distance buffers around faults and contacts</li>
+                                    <li>Generated proximity zones for geological features</li>
+                                    <li>Calculated intersection areas between different geological units</li>
+                                    <li>Created composite masks for specific mineral associations</li>
+                                </ul>
+                            </li>
+                        </ol>
 
-                                    <h4>Masking Operations</h4>
-                                    <ol>
-                                        <li><strong>Geophysical Coverage Masking:</strong>
-                                            <ul>
-                                                <li>Created a polygon layer representing the geophysical data coverage area (approximately 70% of Quebec)</li>
-                                                <li>Used this as a mask to limit analysis to regions with complete data</li>
-                                                <li>Applied this mask to:
-                                                    <ul>
-                                                        <li>Rock sample points</li>
-                                                        <li>Geological zones</li>
-                                                        <li>Fault networks</li>
-                                                        <li>Geological contacts</li>
-                                                    </ul>
-                                                </li>
-                                                <li>Generated a clean boundary for the study area</li>
-                                            </ul>
-                                        </li>
-                                        <li><strong>Buffer Analysis:</strong>
-                                            <ul>
-                                                <li>Created distance buffers around faults and contacts</li>
-                                                <li>Generated proximity zones for geological features</li>
-                                                <li>Calculated intersection areas between different geological units</li>
-                                                <li>Created composite masks for specific mineral associations</li>
-                                            </ul>
-                                        </li>
-                                    </ol>
+                        <h4>Feature Extraction</h4>
+                        <ol>
+                            <li><strong>Distance Calculations:</strong>
+                                <ul>
+                                    <li>Calculated distance to nearest fault using Field Calculator</li>
+                                    <li>Generated distance to geological contacts</li>
+                                    <li>Created distance matrices for key geological features</li>
+                                    <li>Optimized distance calculations using spatial indexes</li>
+                                </ul>
+                            </li>
+                            <li><strong>Geological Attribute Extraction:</strong>
+                                <ul>
+                                    <li>Performed spatial intersection to add geological information</li>
+                                    <li>Extracted lithological and stratigraphic attributes</li>
+                                    <li>Created composite geological indicators</li>
+                                    <li>Generated geological complexity metrics</li>
+                                </ul>
+                            </li>
+                        </ol>
 
-                                    <h4>Feature Extraction</h4>
-                                    <ol>
-                                        <li><strong>Distance Calculations:</strong>
-                                            <ul>
-                                                <li>Calculated distance to nearest fault using Field Calculator</li>
-                                                <li>Generated distance to geological contacts</li>
-                                                <li>Created distance matrices for key geological features</li>
-                                                <li>Optimized distance calculations using spatial indexes</li>
-                                            </ul>
-                                        </li>
-                                        <li><strong>Geological Attribute Extraction:</strong>
-                                            <ul>
-                                                <li>Performed spatial intersection to add geological information</li>
-                                                <li>Extracted lithological and stratigraphic attributes</li>
-                                                <li>Created composite geological indicators</li>
-                                                <li>Generated geological complexity metrics</li>
-                                            </ul>
-                                        </li>
-                                    </ol>
+                        <h4>Grid Generation</h4>
+                        <ol>
+                            <li><strong>Prediction Grid Creation:</strong>
+                                <ul>
+                                    <li>Generated a regular grid of points at 1km spacing</li>
+                                    <li>Set extent to cover Quebec province</li>
+                                    <li>Applied coverage mask to grid points</li>
+                                    <li>Added unique identifiers and coordinates</li>
+                                </ul>
+                            </li>
+                            <li><strong>Grid Processing:</strong>
+                                <ul>
+                                    <li>Calculated distances to faults and contacts</li>
+                                    <li>Intersected with geological zones</li>
+                                    <li>Added geological attributes</li>
+                                    <li>Generated final feature set for prediction</li>
+                                </ul>
+                            </li>
+                        </ol>
 
-                                    <h4>Grid Generation</h4>
-                                    <ol>
-                                        <li><strong>Prediction Grid Creation:</strong>
-                                            <ul>
-                                                <li>Generated a regular grid of points at 1km spacing</li>
-                                                <li>Set extent to cover Quebec province</li>
-                                                <li>Applied coverage mask to grid points</li>
-                                                <li>Added unique identifiers and coordinates</li>
-                                            </ul>
-                                        </li>
-                                        <li><strong>Grid Processing:</strong>
-                                            <ul>
-                                                <li>Calculated distances to faults and contacts</li>
-                                                <li>Intersected with geological zones</li>
-                                                <li>Added geological attributes</li>
-                                                <li>Generated final feature set for prediction</li>
-                                            </ul>
-                                        </li>
-                                    </ol>
+                        <h4>Data Export</h4>
+                        <ol>
+                            <li><strong>Output Preparation:</strong>
+                                <ul>
+                                    <li>Created output folder structure</li>
+                                    <li>Exported processed samples to CSV</li>
+                                    <li>Generated grid point data</li>
+                                    <li>Created metadata documentation</li>
+                                </ul>
+                            </li>
+                            <li><strong>Quality Control:</strong>
+                                <ul>
+                                    <li>Verified data completeness</li>
+                                    <li>Checked attribute consistency</li>
+                                    <li>Validated spatial relationships</li>
+                                    <li>Generated summary statistics</li>
+                                </ul>
+                            </li>
+                        </ol>
+                    </div>
+                </div>
 
-                                    <h4>Data Export</h4>
-                                    <ol>
-                                        <li><strong>Output Preparation:</strong>
-                                            <ul>
-                                                <li>Created output folder structure</li>
-                                                <li>Exported processed samples to CSV</li>
-                                                <li>Generated grid point data</li>
-                                                <li>Created metadata documentation</li>
-                                            </ul>
-                                        </li>
-                                        <li><strong>Quality Control:</strong>
-                                            <ul>
-                                                <li>Verified data completeness</li>
-                                                <li>Checked attribute consistency</li>
-                                                <li>Validated spatial relationships</li>
-                                                <li>Generated summary statistics</li>
-                                            </ul>
-                                        </li>
-                                    </ol>
-                                </div>
-                            </div>
+                <div class="magnetic-image-generation">
+                    <h2>Magnetic Image Generation</h2>
+                    <p>The next critical step was to generate magnetic imagery for both rock samples and grid points. This process proved more challenging than anticipated due to memory and I/O constraints.</p>
 
-                            <div class="magnetic-image-generation">
-                                <h2>Magnetic Image Generation</h2>
-                                <p>The next critical step was to generate magnetic imagery for both rock samples and grid points. This process proved more challenging than anticipated due to memory and I/O constraints.</p>
-
-                                <h3>Initial Approach</h3>
-                                <p>I created a Python environment for this task:</p>
-                                <pre class="code-block">python3 -m venv env
+                    <h3>Initial Approach</h3>
+                    <p>I created a Python environment for this task:</p>
+                    <pre class="code-block">python3 -m venv env
 source env/bin/activate
 pip install numpy pandas tqdm rasterio</pre>
 
-                                <h3>Performance Analysis</h3>
-                                <p>I conducted an in-depth analysis that revealed:</p>
-                                <ul>
-                                    <li><strong>Rock Samples:</strong>
-                                        <ul>
-                                            <li>Clustering coefficient: 6.25</li>
-                                            <li>Maximum samples per cell: 12,099</li>
-                                            <li>Strong spatial clustering due to geological exploration patterns</li>
-                                        </ul>
-                                    </li>
-                                    <li><strong>Grid Points:</strong>
-                                        <ul>
-                                            <li>Clustering coefficient: 0.26</li>
-                                            <li>Maximum samples per cell: 146</li>
-                                            <li>Evenly distributed with minimal spatial locality</li>
-                                        </ul>
-                                    </li>
-                                </ul>
+                    <h3>Performance Analysis</h3>
+                    <p>I conducted an in-depth analysis that revealed:</p>
+                    <ul>
+                        <li><strong>Rock Samples:</strong>
+                            <ul>
+                                <li>Clustering coefficient: 6.25</li>
+                                <li>Maximum samples per cell: 12,099</li>
+                                <li>Strong spatial clustering due to geological exploration patterns</li>
+                            </ul>
+                        </li>
+                        <li><strong>Grid Points:</strong>
+                            <ul>
+                                <li>Clustering coefficient: 0.26</li>
+                                <li>Maximum samples per cell: 146</li>
+                                <li>Evenly distributed with minimal spatial locality</li>
+                            </ul>
+                        </li>
+                    </ul>
 
-                                <h3>Optimized Solution</h3>
-                                <p>To address these challenges, I implemented:</p>
-                                <pre class="code-block"># Extract window in source projection (WGS84)
+                    <h3>Optimized Solution</h3>
+                    <p>To address these challenges, I implemented:</p>
+                    <pre class="code-block"># Extract window in source projection (WGS84)
 src_window = rasterio.windows.from_bounds(
     min_lon, min_lat, max_lon, max_lat, src.transform
 )
@@ -393,7 +412,7 @@ src_window = rasterio.windows.from_bounds(
 # Read data in original projection
 data = src.read(window=src_window)</pre>
 
-                                <pre class="code-block">def process_spatial_chunk(points_df, chunk_size=50000):
+                    <pre class="code-block">def process_spatial_chunk(points_df, chunk_size=50000):
     # Group points into 50km × 50km chunks
     points_df['chunk_x'] = (points_df['Easting'] // chunk_size) * chunk_size
     points_df['chunk_y'] = (points_df['Northing'] // chunk_size) * chunk_size
@@ -402,15 +421,15 @@ data = src.read(window=src_window)</pre>
     for (chunk_x, chunk_y), chunk_df in points_df.groupby(['chunk_x', 'chunk_y']):
         # Process all points in this spatial chunk
         process_points_in_chunk(chunk_df, chunk_x, chunk_y, chunk_size)</pre>
-                            </div>
+                </div>
 
-                            <div class="model-architecture">
-                                <h2>Model Architecture</h2>
-                                <p>The heart of this project is the multi-modal approach combining two model types:</p>
+                <div class="model-architecture">
+                    <h2>Model Architecture</h2>
+                    <p>The heart of this project is the multi-modal approach combining two model types:</p>
 
-                                <h3>Convolutional Neural Network (CNN)</h3>
-                                <p>For processing the magnetic imagery, I designed a specialized CNN architecture after extensive experimentation:</p>
-                                <pre class="code-block">def build_cnn_model(input_shape=(170, 170, 3), num_classes=5):
+                    <h3>Convolutional Neural Network (CNN)</h3>
+                    <p>For processing the magnetic imagery, I designed a specialized CNN architecture after extensive experimentation:</p>
+                    <pre class="code-block">def build_cnn_model(input_shape=(170, 170, 3), num_classes=5):
     # Input layer
     inputs = Input(shape=input_shape)
     
@@ -443,9 +462,9 @@ data = src.read(window=src_window)</pre>
     model = Model(inputs=inputs, outputs=outputs)
     return model</pre>
 
-                                <h3>Gradient Boosted Trees (GBT)</h3>
-                                <p>For the tabular geological data, I implemented a series of Gradient Boosted Tree models using scikit-learn:</p>
-                                <pre class="code-block">def train_gbt_models(X_train, y_train, features):
+                    <h3>Gradient Boosted Trees (GBT)</h3>
+                    <p>For the tabular geological data, I implemented a series of Gradient Boosted Tree models using scikit-learn:</p>
+                    <pre class="code-block">def train_gbt_models(X_train, y_train, features):
     """Train separate GBT models for each target mineral"""
     models = {}
     
@@ -474,12 +493,12 @@ data = src.read(window=src_window)</pre>
         print(f"  Training AUC: {auc_score:.4f}")
     
     return models</pre>
-                            </div>
+                </div>
 
-                            <div class="performance-results">
-                                <h2>Performance Results</h2>
-                                <p>After just one epoch, the CNN model achieved impressive results:</p>
-                                <pre class="code-block">Training Loss: 0.4294
+                <div class="performance-results">
+                    <h2>Performance Results</h2>
+                    <p>After just one epoch, the CNN model achieved impressive results:</p>
+                    <pre class="code-block">Training Loss: 0.4294
 Validation Loss: 0.3686
 
 Prediction Summary:
@@ -504,76 +523,76 @@ NI:
   Actually positive: 3426.0
   AUC Score: 0.8039</pre>
 
-                                <h3>Detailed Evaluation Metrics (CNN Model)</h3>
-                                <p>A comprehensive evaluation of each mineral prediction model revealed:</p>
-                                <ul>
-                                    <li><strong>AU (Gold):</strong>
-                                        <ul>
-                                            <li>Precision: 0.3458 (Configuration: Medium_Balanced)</li>
-                                            <li>Recall: 0.3289</li>
-                                            <li>F1-Score: 0.3371</li>
-                                        </ul>
-                                    </li>
-                                    <li><strong>AG (Silver):</strong>
-                                        <ul>
-                                            <li>Precision: 0.3590 (Configuration: Medium_SmallGeo)</li>
-                                            <li>Recall: 0.0956</li>
-                                            <li>F1-Score: 0.1511</li>
-                                        </ul>
-                                    </li>
-                                    <li><strong>CU (Copper):</strong>
-                                        <ul>
-                                            <li>Precision: 0.3548 (Configuration: Medium_DeepGeo)</li>
-                                            <li>Recall: 0.0591</li>
-                                            <li>F1-Score: 0.1015</li>
-                                        </ul>
-                                    </li>
-                                    <li><strong>CO (Cobalt):</strong>
-                                        <ul>
-                                            <li>Precision: 0.7600 (Configuration: Medium_LowDropout)</li>
-                                            <li>Recall: 0.1301</li>
-                                            <li>F1-Score: 0.2219</li>
-                                        </ul>
-                                    </li>
-                                    <li><strong>NI (Nickel):</strong>
-                                        <ul>
-                                            <li>Precision: 0.4570 (Configuration: Medium_LowDropout)</li>
-                                            <li>Recall: 0.3382</li>
-                                            <li>F1-Score: 0.3894</li>
-                                        </ul>
-                                    </li>
-                                </ul>
-                            </div>
+                    <h3>Detailed Evaluation Metrics (CNN Model)</h3>
+                    <p>A comprehensive evaluation of each mineral prediction model revealed:</p>
+                    <ul>
+                        <li><strong>AU (Gold):</strong>
+                            <ul>
+                                <li>Precision: 0.3458 (Configuration: Medium_Balanced)</li>
+                                <li>Recall: 0.3289</li>
+                                <li>F1-Score: 0.3371</li>
+                            </ul>
+                        </li>
+                        <li><strong>AG (Silver):</strong>
+                            <ul>
+                                <li>Precision: 0.3590 (Configuration: Medium_SmallGeo)</li>
+                                <li>Recall: 0.0956</li>
+                                <li>F1-Score: 0.1511</li>
+                            </ul>
+                        </li>
+                        <li><strong>CU (Copper):</strong>
+                            <ul>
+                                <li>Precision: 0.3548 (Configuration: Medium_DeepGeo)</li>
+                                <li>Recall: 0.0591</li>
+                                <li>F1-Score: 0.1015</li>
+                            </ul>
+                        </li>
+                        <li><strong>CO (Cobalt):</strong>
+                            <ul>
+                                <li>Precision: 0.7600 (Configuration: Medium_LowDropout)</li>
+                                <li>Recall: 0.1301</li>
+                                <li>F1-Score: 0.2219</li>
+                            </ul>
+                        </li>
+                        <li><strong>NI (Nickel):</strong>
+                            <ul>
+                                <li>Precision: 0.4570 (Configuration: Medium_LowDropout)</li>
+                                <li>Recall: 0.3382</li>
+                                <li>F1-Score: 0.3894</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
 
-                            <div class="visualization-results">
-                                <h2>Visualization Results</h2>
-                                <div class="image-grid">
-                                    <figure>
-                                        <img src="../assets/images/Quebec-Minerals/mineral_predictions_map.png" alt="Mineral Predictions Map">
-                                        <figcaption>Mineral Predictions Map showing the spatial distribution of predicted mineral potential across Quebec.</figcaption>
-                                    </figure>
-                                    <figure>
-                                        <img src="../assets/images/Quebec-Minerals/gold_potential_heatmap.png" alt="Gold Potential Heatmap">
-                                        <figcaption>Gold Potential Heatmap highlighting areas with high predicted gold mineralization potential.</figcaption>
-                                    </figure>
-                                    <figure>
-                                        <img src="../assets/images/Quebec-Minerals/mineral_correlations.png" alt="Mineral Correlations">
-                                        <figcaption>Mineral Correlations showing the relationships between different mineral predictions.</figcaption>
-                                    </figure>
-                                    <figure>
-                                        <img src="../assets/images/Quebec-Minerals/predictions_vs_samples.png" alt="Predictions vs Samples">
-                                        <figcaption>Comparison of model predictions against known mineral samples.</figcaption>
-                                    </figure>
-                                </div>
-                            </div>
+                <div class="visualization-results">
+                    <h2>Visualization Results</h2>
+                    <div class="image-grid">
+                        <figure>
+                            <img src="../assets/images/Quebec-Minerals/mineral_predictions_map.png" alt="Mineral Predictions Map">
+                            <figcaption>Mineral Predictions Map showing the spatial distribution of predicted mineral potential across Quebec.</figcaption>
+                        </figure>
+                        <figure>
+                            <img src="../assets/images/Quebec-Minerals/gold_potential_heatmap.png" alt="Gold Potential Heatmap">
+                            <figcaption>Gold Potential Heatmap highlighting areas with high predicted gold mineralization potential.</figcaption>
+                        </figure>
+                        <figure>
+                            <img src="../assets/images/Quebec-Minerals/mineral_correlations.png" alt="Mineral Correlations">
+                            <figcaption>Mineral Correlations showing the relationships between different mineral predictions.</figcaption>
+                        </figure>
+                        <figure>
+                            <img src="../assets/images/Quebec-Minerals/predictions_vs_samples.png" alt="Predictions vs Samples">
+                            <figcaption>Comparison of model predictions against known mineral samples.</figcaption>
+                        </figure>
+                    </div>
+                </div>
 
-                            <div class="web-application">
-                                <h2>Web Application Implementation</h2>
-                                <p>The final step was to create an interactive web application to make these predictions accessible to users.</p>
+                <div class="web-application">
+                    <h2>Web Application Implementation</h2>
+                    <p>The final step was to create an interactive web application to make these predictions accessible to users.</p>
 
-                                <h3>Database Design</h3>
-                                <p>I designed a Supabase database with PostGIS extension for spatial data:</p>
-                                <pre class="code-block">-- Enable PostGIS extension for spatial queries
+                    <h3>Database Design</h3>
+                    <p>I designed a Supabase database with PostGIS extension for spatial data:</p>
+                    <pre class="code-block">-- Enable PostGIS extension for spatial queries
 CREATE EXTENSION IF NOT EXISTS postgis;
 
 -- Create mineral samples table
@@ -596,9 +615,9 @@ CREATE TABLE mineral_samples (
 -- Create spatial index
 CREATE INDEX samples_location_idx ON mineral_samples USING GIST (location);</pre>
 
-                                <h3>Frontend Implementation</h3>
-                                <p>The frontend was built using vanilla JavaScript with Leaflet.js for mapping capabilities:</p>
-                                <pre class="code-block">class QuebecMap {
+                    <h3>Frontend Implementation</h3>
+                    <p>The frontend was built using vanilla JavaScript with Leaflet.js for mapping capabilities:</p>
+                    <pre class="code-block">class QuebecMap {
     constructor(mapId) {
         // Initialize Supabase client first
         this.supabase = supabase.createClient(
@@ -631,137 +650,134 @@ CREATE INDEX samples_location_idx ON mineral_samples USING GIST (location);</pre
         L.control.layers(this.baseLayers).addTo(this.map);
     }
 }</pre>
-                            </div>
-                        </div>
+                </div>
+            </div>
 
-                        <nav class="nav-container">
-                            <div class="nav-section">
-                                <div class="nav-section-title">Project Overview</div>
-                                <div class="nav-subsection">
-                                    <a href="#project-overview" class="nav-link">Project Goals</a>
-                                    <a href="#hardware-constraints" class="nav-link">Hardware Constraints</a>
-                                    <a href="#technical-challenges" class="nav-link">Technical Challenges</a>
-                                    <a href="#key-results" class="nav-link">Key Results Summary</a>
-                                </div>
-                            </div>
-
-                            <div class="nav-section">
-                                <div class="nav-section-title">Data Collection</div>
-                                <div class="nav-subsection">
-                                    <a href="#sigeom-database" class="nav-link">SIGEOM Database</a>
-                                    <a href="#geological-data" class="nav-link">Geological Data</a>
-                                    <a href="#geochemical-data" class="nav-link">Geochemical Data</a>
-                                    <a href="#geophysical-data" class="nav-link">Geophysical Data</a>
-                                </div>
-                            </div>
-
-                            <div class="nav-section">
-                                <div class="nav-section-title">QGIS Preprocessing</div>
-                                <div class="nav-subsection">
-                                    <a href="#feature-engineering" class="nav-link">Feature Engineering</a>
-                                    <a href="#distance-calculations" class="nav-link">Distance Calculations</a>
-                                    <a href="#masking-operations" class="nav-link">Masking Operations</a>
-                                    <a href="#prediction-grid" class="nav-link">Prediction Grid Generation</a>
-                                </div>
-                            </div>
-
-                            <div class="nav-section">
-                                <div class="nav-section-title">Data Preprocessing</div>
-                                <div class="nav-subsection">
-                                    <a href="#one-hot-encoding" class="nav-link">One-hot Encoding</a>
-                                    <a href="#feature-scaling" class="nav-link">Feature Scaling</a>
-                                    <a href="#missing-values" class="nav-link">Missing Value Imputation</a>
-                                    <a href="#correlation-analysis" class="nav-link">Correlation Analysis</a>
-                                    <a href="#feature-selection" class="nav-link">Feature Selection</a>
-                                </div>
-                            </div>
-
-                            <div class="nav-section">
-                                <div class="nav-section-title">Magnetic Image Generation</div>
-                                <div class="nav-subsection">
-                                    <a href="#memory-constraints" class="nav-link">Memory Constraints</a>
-                                    <a href="#spatial-chunking" class="nav-link">Spatial Chunking</a>
-                                    <a href="#disk-io" class="nav-link">Disk I/O Performance</a>
-                                </div>
-                            </div>
-
-                            <div class="nav-section">
-                                <div class="nav-section-title">Model Architecture</div>
-                                <div class="nav-subsection">
-                                    <a href="#cnn-design" class="nav-link">CNN Design</a>
-                                    <a href="#gradient-boosted-trees" class="nav-link">Gradient Boosted Trees</a>
-                                    <a href="#model-fusion" class="nav-link">Model Fusion Strategy</a>
-                                </div>
-                            </div>
-
-                            <div class="nav-section">
-                                <div class="nav-section-title">Training Process</div>
-                                <div class="nav-subsection">
-                                    <a href="#class-imbalance" class="nav-link">Class Imbalance Handling</a>
-                                    <a href="#hyperparameter-tuning" class="nav-link">Hyperparameter Tuning</a>
-                                    <a href="#memory-efficient-training" class="nav-link">Memory-Efficient Training</a>
-                                </div>
-                            </div>
-
-                            <div class="nav-section">
-                                <div class="nav-section-title">Performance Results</div>
-                                <div class="nav-subsection">
-                                    <a href="#model-metrics" class="nav-link">Model Metrics</a>
-                                    <a href="#mineral-performance" class="nav-link">Mineral-Specific Performance</a>
-                                    <a href="#feature-importance" class="nav-link">Feature Importance</a>
-                                </div>
-                            </div>
-
-                            <div class="nav-section">
-                                <div class="nav-section-title">Spatial Analysis</div>
-                                <div class="nav-subsection">
-                                    <a href="#prediction-patterns" class="nav-link">Prediction Patterns</a>
-                                    <a href="#geological-correlation" class="nav-link">Geological Correlation</a>
-                                </div>
-                            </div>
-
-                            <div class="nav-section">
-                                <div class="nav-section-title">Database Design</div>
-                                <div class="nav-subsection">
-                                    <a href="#postgresql-postgis" class="nav-link">PostgreSQL with PostGIS</a>
-                                    <a href="#schema-design" class="nav-link">Schema Design</a>
-                                    <a href="#spatial-indexing" class="nav-link">Spatial Indexing</a>
-                                    <a href="#stored-procedures" class="nav-link">Stored Procedures</a>
-                                    <a href="#rpc-functions" class="nav-link">RPC Functions</a>
-                                </div>
-                            </div>
-
-                            <div class="nav-section">
-                                <div class="nav-section-title">Web Application</div>
-                                <div class="nav-subsection">
-                                    <a href="#architecture-overview" class="nav-link">Architecture Overview</a>
-                                    <a href="#frontend-implementation" class="nav-link">Frontend Implementation</a>
-                                    <a href="#leaflet-integration" class="nav-link">Leaflet.js Map Integration</a>
-                                    <a href="#supabase-integration" class="nav-link">Supabase Client Integration</a>
-                                    <a href="#api-endpoints" class="nav-link">API Endpoint Design</a>
-                                </div>
-                            </div>
-
-                            <div class="nav-section">
-                                <div class="nav-section-title">Performance Optimizations</div>
-                                <div class="nav-subsection">
-                                    <a href="#query-optimization" class="nav-link">Database Query Optimization</a>
-                                    <a href="#spatial-index-utilization" class="nav-link">Spatial Index Utilization</a>
-                                    <a href="#client-caching" class="nav-link">Client-Side Caching</a>
-                                </div>
-                            </div>
-
-                            <div class="nav-section">
-                                <div class="nav-section-title">Future Directions</div>
-                                <div class="nav-subsection">
-                                    <a href="#model-improvements" class="nav-link">Model Improvements</a>
-                                    <a href="#additional-data" class="nav-link">Additional Data Sources</a>
-                                </div>
-                            </div>
-                        </nav>
+            <div class="sidebar">
+                <div class="nav-section">
+                    <div class="nav-section-title">Project Overview</div>
+                    <div class="nav-subsection">
+                        <a href="#project-overview" class="nav-link">Project Goals</a>
+                        <a href="#hardware-constraints" class="nav-link">Hardware Constraints</a>
+                        <a href="#technical-challenges" class="nav-link">Technical Challenges</a>
+                        <a href="#key-results" class="nav-link">Key Results Summary</a>
                     </div>
                 </div>
-            </main>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">Data Collection</div>
+                    <div class="nav-subsection">
+                        <a href="#sigeom-database" class="nav-link">SIGEOM Database</a>
+                        <a href="#geological-data" class="nav-link">Geological Data</a>
+                        <a href="#geochemical-data" class="nav-link">Geochemical Data</a>
+                        <a href="#geophysical-data" class="nav-link">Geophysical Data</a>
+                    </div>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">QGIS Preprocessing</div>
+                    <div class="nav-subsection">
+                        <a href="#feature-engineering" class="nav-link">Feature Engineering</a>
+                        <a href="#distance-calculations" class="nav-link">Distance Calculations</a>
+                        <a href="#masking-operations" class="nav-link">Masking Operations</a>
+                        <a href="#prediction-grid" class="nav-link">Prediction Grid Generation</a>
+                    </div>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">Data Preprocessing</div>
+                    <div class="nav-subsection">
+                        <a href="#one-hot-encoding" class="nav-link">One-hot Encoding</a>
+                        <a href="#feature-scaling" class="nav-link">Feature Scaling</a>
+                        <a href="#missing-values" class="nav-link">Missing Value Imputation</a>
+                        <a href="#correlation-analysis" class="nav-link">Correlation Analysis</a>
+                        <a href="#feature-selection" class="nav-link">Feature Selection</a>
+                    </div>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">Magnetic Image Generation</div>
+                    <div class="nav-subsection">
+                        <a href="#memory-constraints" class="nav-link">Memory Constraints</a>
+                        <a href="#spatial-chunking" class="nav-link">Spatial Chunking</a>
+                        <a href="#disk-io" class="nav-link">Disk I/O Performance</a>
+                    </div>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">Model Architecture</div>
+                    <div class="nav-subsection">
+                        <a href="#cnn-design" class="nav-link">CNN Design</a>
+                        <a href="#gradient-boosted-trees" class="nav-link">Gradient Boosted Trees</a>
+                        <a href="#model-fusion" class="nav-link">Model Fusion Strategy</a>
+                    </div>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">Training Process</div>
+                    <div class="nav-subsection">
+                        <a href="#class-imbalance" class="nav-link">Class Imbalance Handling</a>
+                        <a href="#hyperparameter-tuning" class="nav-link">Hyperparameter Tuning</a>
+                        <a href="#memory-efficient-training" class="nav-link">Memory-Efficient Training</a>
+                    </div>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">Performance Results</div>
+                    <div class="nav-subsection">
+                        <a href="#model-metrics" class="nav-link">Model Metrics</a>
+                        <a href="#mineral-performance" class="nav-link">Mineral-Specific Performance</a>
+                        <a href="#feature-importance" class="nav-link">Feature Importance</a>
+                    </div>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">Spatial Analysis</div>
+                    <div class="nav-subsection">
+                        <a href="#prediction-patterns" class="nav-link">Prediction Patterns</a>
+                        <a href="#geological-correlation" class="nav-link">Geological Correlation</a>
+                    </div>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">Database Design</div>
+                    <div class="nav-subsection">
+                        <a href="#postgresql-postgis" class="nav-link">PostgreSQL with PostGIS</a>
+                        <a href="#schema-design" class="nav-link">Schema Design</a>
+                        <a href="#spatial-indexing" class="nav-link">Spatial Indexing</a>
+                        <a href="#stored-procedures" class="nav-link">Stored Procedures</a>
+                        <a href="#rpc-functions" class="nav-link">RPC Functions</a>
+                    </div>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">Web Application</div>
+                    <div class="nav-subsection">
+                        <a href="#architecture-overview" class="nav-link">Architecture Overview</a>
+                        <a href="#frontend-implementation" class="nav-link">Frontend Implementation</a>
+                        <a href="#leaflet-integration" class="nav-link">Leaflet.js Map Integration</a>
+                        <a href="#supabase-integration" class="nav-link">Supabase Client Integration</a>
+                        <a href="#api-endpoints" class="nav-link">API Endpoint Design</a>
+                    </div>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">Performance Optimizations</div>
+                    <div class="nav-subsection">
+                        <a href="#query-optimization" class="nav-link">Database Query Optimization</a>
+                        <a href="#spatial-index-utilization" class="nav-link">Spatial Index Utilization</a>
+                        <a href="#client-caching" class="nav-link">Client-Side Caching</a>
+                    </div>
+                </div>
+
+                <div class="nav-section">
+                    <div class="nav-section-title">Future Directions</div>
+                    <div class="nav-subsection">
+                        <a href="#model-improvements" class="nav-link">Model Improvements</a>
+                        <a href="#additional-data" class="nav-link">Additional Data Sources</a>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
