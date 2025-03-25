@@ -1,0 +1,350 @@
+Backstory:
+
+I'm a geologist, and I'm trying to predict the mineral potential of Quebec.
+
+I envision the end product to be a GUI hosted on my website, which allows any user to select regions of 5kmx5km in size (typical for a land claim) and then receive a heatmap prediction of that area, along with the potential of the minerals in that area. broken down by the minerals Au, Ag, Cu, Co, Ni.
+
+How will this be done?
+
+Quebec has a public dataset of geophysical, geochemical, and geological data.
+
+The rocks are broken down into geochemical analysis, and we also can generate features, such as, from each rock sample, the distance to the nearest fault, contact, and the geological details of the rock.
+
+Finally, and most importantly, we have a geophysical regional scale dataset, that is of high resolution. 
+
+For each rock sample, we generate an image 5kmx5km of that geophysical data.
+
+Now, we train a multi modal model. CNN for processing the images, and XGBoost or other boosted model for processing the tabular data.
+
+We simple fuse their results (average each of their predictions).
+
+Now what are they predicting?
+
+For the prediction set, we create a grid in QGIS, rock samples that are 1km x 1km (this considers my memory and storage and computational limits as I am working locally on my M2 Macbook, and not yet using cloud services).
+
+Next, for the grid of points, we get predictions for each of them. I imagine we have the distance to fault, distance to contact, and geological details, and then we have the image of the geophysical data.
+
+The models try to predict based on the trained model the mineralization.
+
+We store these results for all the grids.
+
+When the user selects a region, we already have the predicted results, we simply just produce a heat map, and then average the results of all the rock samples in that region to produce the overall metrics, which is a probability of those minerals, i.e., Au, Ag, Cu, Co, Ni. having anamolus results.
+
+What will be considered anamolous results? This is something we define:
+
+Anamaolous is:
+
+Gold: 100ppb
+Etc...
+
+
+
+
+
+Okay, lets get started.
+
+Terminal Command:
+mkdir Mineral-Prediction-Local
+
+
+
+Firstly, lets start by downloading the data.
+
+It exists in numerous formats, we just want the shape file formats
+
+https://gq.mines.gouv.qc.ca/documents/SIGEOM/TOUTQC/FRA/SHP/
+
+
+From: GEOL_SIGEOM_QC.SHP
+
+we just kept
+1) Faille Regionale
+2) Contact geologiquie
+3) Zone Geologique
+
+From GEOCH_SIGEOM_QC.SHP
+we just kept
+1) Rock
+
+I then went to the geophysical section:
+https://gq.mines.gouv.qc.ca/documents/SIGEOM/TOUTQC/Geophysique_mag/haute_resolution/
+
+Downloaded:
+
+1) Quebec_MAG_Dv1_TIFF
+2) Quebec_MAG_TIFF
+
+For now, we will just use the DV1 as it captures more information and computational limits don't enable me to use both.
+
+Upload the data to QGIS
+
+Notice the data is in WGS84, this uses degrees, which we need easting and northing projections as we will calculate distances.
+
+EPSG:32918 Quebec Lambert Conformal Conic is Dedicated to Quebec, and is in easting and northing.
+
+Reproject all the data to EPSG:32918 by right clicking the layer and Exporting, then choosing the EPSG:32918 projection.
+
+
+Masking the data:
+
+Since the geophysical data is only covering 70% of Quebec.
+
+Create a mask layer to remove that which intersects. 
+
+Do this for the entire dataset:
+1) Rock
+2) Geology
+
+
+Clean up Rocks:
+
+Next, we clean the datasets and make them more manageable to work with:
+
+Right click Properties, Fields 
+
+Remove, every column from the rock samples except, Au, Ag, Cu, Co, Ni
+
+Add a unique ID Column:
+enter $id + 1
+
+CLean up Geology:
+
+Go to the Geology properties and remove everything except CODE_LITH and STRAT
+
+
+1. Preprocessing in QGIS:
+
+
+a) We have a geological basemap that already has been masked. We now want the rock samples to have the geological data that the data intersects.
+
+
+Vector -> Geoprocessing Tools -> Intersect
+
+
+Now each rock sample has the geological data that it intersects! This is what the attribute table looks like now for the rock samples
+
+Now, we have to calculate the distance to fault and contact.
+
+
+Field calculator:
+
+distance(
+    $geometry,
+    array_first(overlay_nearest('Fault', $geometry))
+)
+
+
+Finally, it is important we have the easting and northing of the samples, as our image generation script
+will need this to calculate 5km x 5km images around each rock sample.
+
+Simply, run this in the field calculator:
+(Make sure to choose, decimal number, as integer is the standard and is not accurate enough obviously)
+x($geometry)
+
+and
+
+y($geometry)
+
+All finished.
+
+
+
+Now do the same for the grid points
+
+1) Generate grid points 1kmx1km away
+2) Mask them
+3) calculate distance to fault and contact
+4) Intersect with geology
+5) unique_id attribute
+6) easting and northing
+
+
+Lets create a folder and export these as CSV's to both:
+
+mkdir QGIS-Preprocessed
+
+Right Click export -> CSV
+
+
+That's it for QGIS. Time to crank out the good old Python, and lets move it to Jupyter.
+
+
+
+
+
+Pre-processing using Python:
+
+Next, we need to create the geophysical images.
+
+The good thing is we can work in parallel in Jupyter. We can generate the images, whilst also cleaning the rock samples.
+
+Generate the images:
+
+We must do this twice, once for the rock samples, and once for the grid points.
+
+Let's first note that the raster is in .tiff, in high resolution. We will loss compression, but we will retain the information. using .jpg
+
+ALso, note now the importance of the unqie_id, because now we will simply just call the image the name of the unique_id. i.e., 1.jpg, 2.jpg, 3.jpg, etc...
+
+Lets first create an environment local in our project directory:
+
+terminal command:
+
+python3 -m venv env
+
+source env/bin/activate
+
+pip install numpy pandas tqdm rasterio 
+
+Let's make some folders
+
+mkdir Predicting-Mag-Images
+mkdir Training-Mag-Images
+
+Next, we generate the script to generate the images and name them by the unique_id:
+
+Firstly, we note the raster image is in WGS-84, converting it to EPSG:32918 requires uncompressing it, which reveals
+it will take 36GB of data, which is too much for my local machine.
+
+We need another way.
+
+We will due on the fly conversion.
+
+As we went about this, I noticed that the rock_samples, which there is a clustering bias due to the nature of geological exploration, in which samples are clustered in areas of known prospectivity due to geological understanding, but also due to an availability of outcropping. Now, I tried the script for the grid samples, and noticed that the time to process the images increased to aruond 3 hours.
+
+My hypothesis was that the only difference is the density of the samples.
+
+The real samples are clustered, and the grids are evenly distributed.
+
+Lets do some EDA:
+
+Grid samples are ~2.5x denser
+Yet read times are similar.
+
+Okay so whats the issue? Lets dig deeper
+
+Rock samples:
+
+Clustering coefficient: 6.25
+Max samples per cell: 12,099
+
+Grid samples:
+
+Clustering coefficient: 0.26
+Max samples per cell: 146
+
+The major performance difference is likely due to disk caching and I/O patterns. Here's what's happening:
+
+When processing rock samples:
+
+Many samples are clustered together
+When reading one sample, nearby samples benefit from disk cache
+Fewer unique TIFF regions need to be loaded
+
+
+When processing grid samples:
+
+Samples are evenly spaced
+Each read likely requires a new disk access
+Cache hits are much less frequent
+
+Another way to say it is:
+
+The core issue is that grid samples are forcing much more random I/O access patterns, while rock samples naturally benefit from spatial locality in disk access.
+
+Thus,
+
+We utilize Spatial Chunking:
+Processes data in 50km x 50km chunks to minimize disk seeking
+
+Next, we will move on from this Blogging Script Over to the Notepad, where we 
+train the models.
+
+
+
+We have GB_output:
+using a model trained on each element, and then predicting using that same one we have:
+AU predictions: 1,071 positive samples (0.10%)
+AG predictions: 9,573 positive samples (0.86%)
+CU predictions: 2,293 positive samples (0.21%)
+CO predictions: 5,991 positive samples (0.54%)
+NI predictions: 6,510 positive samples (0.59%)
+
+At least it is predicting something.
+
+Next, we move on to the CNN.
+
+Here is the results after 1 Epoch
+
+Mind you, This is Jan 25th, and I am concurrently running hyperparameter tuning STILL. and I think I can get much better, but I really want to get some results out and I like that this model is not over or underpredicting like some stupid values like all 1s or 0s.
+
+Training Loss: 0.4294
+Validation Loss: 0.3686
+
+Prediction Summary:
+AU:
+  Predicted positive: 6299.0
+  Actually positive: 2324.0
+  AUC Score: 0.8118
+AG:
+  Predicted positive: 6397.0
+  Actually positive: 3041.0
+  AUC Score: 0.7052
+CU:
+  Predicted positive: 2889.0
+  Actually positive: 2163.0
+  AUC Score: 0.6871
+CO:
+  Predicted positive: 3212.0
+  Actually positive: 1663.0
+  AUC Score: 0.7736
+NI:
+  Predicted positive: 4841.0
+  Actually positive: 3426.0
+  AUC Score: 0.8039
+
+
+  SO I took this and now I am predicting on the 1.1 and I will report back
+
+
+Btw, those results are CRAZY when you think 
+about it.
+So there is 450,000 points in space,
+and the model predicted that, for example for
+Cobalt, there of those 450,000 points,
+only 3000 of them are actually anamalous
+which was true! and it erreonsuly predicted
+2000 other samples, but who knows, maybe
+those ones are like close to threshold.
+
+
+
+
+  After now I will Fuse both results into a single CSV. and here is my approach:
+
+  Since we have a sever imbalance in the dataset, and both our models are not predicting a lot of high anamalous samples, which makes sense and is true, So, what we will do is to combine them.
+
+  That is to say, When the GBT predicts a positive class, we say that rock sample is positive, and if the CNN doesnt, whatever, in the fused results we will just say that it is positive.
+
+  if BOTH say that it is a positive, what we will then do is to actually put the number 2 there which is telling us that it is a high confidence positive.
+
+
+After building my initial CNN to predict mineral potential using magnetic images, my model was struggling to handle the severe class imbalance where positive samples were less than 5% for all minerals. Through hyperparameter tuning, I discovered that a simpler 3-layer CNN architecture with batch normalization consistently outperformed deeper networks, while a learning rate of 5e-4 provided stable training. The real breakthrough came when adjusting class weights - moving away from dynamically calculated weights (which gave extreme values like 75 for gold) to more moderate fixed weights (10-15 range) dramatically improved the balance between precision and recall. 
+
+
+
+
+
+
+FINALLY
+
+we have the Fusion of the CSV
+
+Then we will do Post-Fusion processing
+
+basically, we will analyze the distribution of the onces we got with the known ones, and we will make sure that for the rocks in the location with the ones it trained on, i.e., the ground truthed samples, that we properly predict the ones that are positive.
+
+Now, That is the making sure our model did the accurate thing. THen if so
+
+We then do our whole web integration thing a ding.
+

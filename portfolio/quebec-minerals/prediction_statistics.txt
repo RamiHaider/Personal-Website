@@ -1,0 +1,27 @@
+=== MINERAL PREDICTION STATISTICS ===
+
+
+AU Distribution:
+No Prediction (0): 1,094,022 (98.80%)
+Single Model (1): 13,261 (1.20%)
+High Confidence (2): 6 (0.00%)
+
+AG Distribution:
+No Prediction (0): 1,028,062 (92.84%)
+Single Model (1): 78,680 (7.11%)
+High Confidence (2): 547 (0.05%)
+
+CU Distribution:
+No Prediction (0): 1,087,475 (98.21%)
+Single Model (1): 19,783 (1.79%)
+High Confidence (2): 31 (0.00%)
+
+CO Distribution:
+No Prediction (0): 1,070,066 (96.64%)
+Single Model (1): 37,090 (3.35%)
+High Confidence (2): 133 (0.01%)
+
+NI Distribution:
+No Prediction (0): 1,050,020 (94.83%)
+Single Model (1): 55,996 (5.06%)
+High Confidence (2): 1,273 (0.11%)
