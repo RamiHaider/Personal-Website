@@ -336,6 +336,32 @@
             color: #666;
             text-align: center;
         }
+        
+        /* Add these style definitions to the existing <style> section */
+        /* Enhance sidebar active state */
+        .nav-link {
+            transition: all 0.3s ease;
+            position: relative;
+            padding-left: 15px;
+        }
+        
+        .nav-link.active {
+            color: #c5a91c;
+            font-weight: 600;
+            background-color: rgba(197, 169, 28, 0.1);
+            border-radius: 4px;
+        }
+        
+        .nav-link.active::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 4px;
+            background-color: #c5a91c;
+            border-radius: 4px 0 0 4px;
+        }
     </style>
 </head>
 <body>
@@ -1844,14 +1870,11 @@ class SpatialCache {
                 <div class="nav-section">
                     <div class="nav-section-title">Project Overview</div>
                     <a href="#project-overview" class="nav-link">Project Goals</a>
-                    <a href="#hardware-constraints" class="nav-link">Hardware Constraints</a>
                 </div>
 
                 <div class="nav-section">
                     <div class="nav-section-title">Data Collection</div>
                     <a href="#data-collection" class="nav-link">SIGEOM Database</a>
-                    <a href="#data-collection" class="nav-link">Geological Data</a>
-                    <a href="#data-collection" class="nav-link">Geochemical Data</a>
                 </div>
 
                 <div class="nav-section">
@@ -1889,32 +1912,78 @@ class SpatialCache {
     <script src="../js/main.js"></script>
     <script src="../js/dates.js"></script>
     <script>
-        // Add scroll spy functionality
+        // Completely revised scroll spy functionality
         document.addEventListener('DOMContentLoaded', function() {
-            const sections = document.querySelectorAll('h2[id], h3[id], h4[id]');
+            // Get all sidebar links
             const navLinks = document.querySelectorAll('.nav-link');
-
+            
+            // Create an array of section IDs and corresponding links for easier processing
+            const sections = [];
+            navLinks.forEach(link => {
+                const targetId = link.getAttribute('href').substring(1); // Remove # from href
+                const targetElement = document.getElementById(targetId);
+                if (targetElement) {
+                    sections.push({
+                        id: targetId,
+                        element: targetElement,
+                        link: link
+                    });
+                }
+            });
+            
+            // Sort sections by their position in the document (top to bottom)
+            sections.sort((a, b) => {
+                return a.element.getBoundingClientRect().top - b.element.getBoundingClientRect().top;
+            });
+            
             function scrollSpy() {
-                const scrollY = window.pageYOffset;
-
-                sections.forEach(section => {
-                    const sectionHeight = section.offsetHeight;
-                    const sectionTop = section.offsetTop - 100;
-                    const sectionId = section.getAttribute('id');
-
-                    if (scrollY > sectionTop && scrollY <= sectionTop + sectionHeight) {
-                        navLinks.forEach(link => {
-                            link.classList.remove('active');
-                            if (link.getAttribute('href') === `#${sectionId}`) {
-                                link.classList.add('active');
-                            }
-                        });
+                // Get current scroll position with some offset to trigger slightly before reaching the section
+                const scrollY = window.pageYOffset + 150; // 150px offset
+                
+                // Start from the bottom of the page and go up
+                // This ensures we select the section that's currently on screen
+                let currentSection = null;
+                
+                // Check each section from bottom to top
+                for (let i = sections.length - 1; i >= 0; i--) {
+                    const section = sections[i];
+                    // If we've scrolled past the top of this section, it's our current section
+                    if (scrollY >= section.element.offsetTop) {
+                        currentSection = section;
+                        break;
                     }
+                }
+                
+                // Remove active class from all links
+                navLinks.forEach(link => {
+                    link.classList.remove('active');
                 });
+                
+                // Add active class to current section's link
+                if (currentSection) {
+                    currentSection.link.classList.add('active');
+                } else if (sections.length > 0 && scrollY < sections[0].element.offsetTop) {
+                    // If we're above the first section, highlight it
+                    sections[0].link.classList.add('active');
+                }
             }
-
+            
+            // Run on scroll
             window.addEventListener('scroll', scrollSpy);
+            
+            // Run on load and after a delay to ensure everything is rendered
             window.addEventListener('load', scrollSpy);
+            setTimeout(scrollSpy, 300);
+            
+            // Also add click handler to ensure correct highlighting when clicking links
+            navLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    // Remove active class from all links
+                    navLinks.forEach(l => l.classList.remove('active'));
+                    // Add active class to clicked link
+                    link.classList.add('active');
+                });
+            });
         });
     </script>
 </body>
