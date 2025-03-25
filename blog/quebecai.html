@@ -15,27 +15,33 @@
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            padding: 20px;
             position: relative;
+            background-color: transparent;
         }
-        /* New container for content + sidebar */
+        /* Content container */
         .content-container {
             display: flex;
             background-color: white;
             border-radius: 0 0 20px 20px;
-            margin-top: 0;
             position: relative;
-            overflow: hidden;
+            min-height: 100vh;
         }
 
-        /* Replace main-content styles */
+        /* Main content styles */
         .main-content {
             width: 75%;
             padding: 40px;
             box-sizing: border-box;
         }
 
-        /* Replace nav-container with sidebar */
+        /* Separator line after date info */
+        .separator {
+            border-bottom: 1px solid #e0e0e0;
+            margin: 20px 0;
+            width: 100%;
+        }
+
+        /* Sidebar styles */
         .sidebar {
             width: 25%;
             background-color: rgba(197, 169, 28, 0.03);
@@ -43,7 +49,6 @@
             padding: 40px 20px;
             position: sticky;
             top: 0;
-            align-self: flex-start;
             height: 100vh;
             overflow-y: auto;
             overflow-x: hidden;
@@ -52,23 +57,16 @@
 
         /* Update nav-section styles */
         .nav-section {
-            margin-bottom: 25px;
+            margin-bottom: 15px;
             width: 100%;
             box-sizing: border-box;
         }
 
         .nav-section-title {
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 10px;
-            font-size: 14px;
-            white-space: normal;
-            width: 100%;
-            box-sizing: border-box;
-        }
-
-        .nav-subsection {
-            padding-left: 15px;
+            font-weight: 500;
+            color: #555;
+            margin-bottom: 8px;
+            font-size: 13px;
             width: 100%;
             box-sizing: border-box;
         }
@@ -83,20 +81,15 @@
             white-space: normal;
             overflow-wrap: break-word;
             word-wrap: break-word;
-            hyphens: auto;
             width: 100%;
             box-sizing: border-box;
+            padding-left: 15px;
         }
         .nav-link:hover {
             color: #c5a91c;
         }
         .nav-link.active {
             color: #c5a91c;
-        }
-        @media (max-width: 1200px) {
-            .sidebar {
-                right: 20px;
-            }
         }
         h1 {
             font-size: 24px;
@@ -173,13 +166,10 @@
                     <p>Original Upload: 2025-01-27</p>
                     <p>Last Updated: <span class="update-date"></span></p>
                 </div>
-                <div class="spacer"></div>
+                <div class="separator"></div>
 
                 <div class="github-reference">
-                    <h3>Open Source Project</h3>
-                    <p>This project is fully open source and available on GitHub. You can find the complete source code, data, and documentation at:</p>
-                    <p><a href="https://github.com/RamiHaider/Quebec-Mineral-Prediction" target="_blank">https://github.com/RamiHaider/Quebec-Mineral-Prediction</a></p>
-                    <p>The repository includes all necessary code, notebooks, and data preprocessing scripts. Feel free to clone, fork, or contribute to the project!</p>
+                    <p>This project is fully open source and available on <a href="https://github.com/RamiHaider/Quebec-Mineral-Prediction" target="_blank">GitHub</a>.</p>
                 </div>
 
                 <div class="project-overview">
@@ -656,126 +646,44 @@ CREATE INDEX samples_location_idx ON mineral_samples USING GIST (location);</pre
             <div class="sidebar">
                 <div class="nav-section">
                     <div class="nav-section-title">Project Overview</div>
-                    <div class="nav-subsection">
-                        <a href="#project-overview" class="nav-link">Project Goals</a>
-                        <a href="#hardware-constraints" class="nav-link">Hardware Constraints</a>
-                        <a href="#technical-challenges" class="nav-link">Technical Challenges</a>
-                        <a href="#key-results" class="nav-link">Key Results Summary</a>
-                    </div>
+                    <a href="#project-overview" class="nav-link">Project Goals</a>
+                    <a href="#hardware-constraints" class="nav-link">Hardware Constraints</a>
                 </div>
 
                 <div class="nav-section">
                     <div class="nav-section-title">Data Collection</div>
-                    <div class="nav-subsection">
-                        <a href="#sigeom-database" class="nav-link">SIGEOM Database</a>
-                        <a href="#geological-data" class="nav-link">Geological Data</a>
-                        <a href="#geochemical-data" class="nav-link">Geochemical Data</a>
-                        <a href="#geophysical-data" class="nav-link">Geophysical Data</a>
-                    </div>
+                    <a href="#data-collection" class="nav-link">SIGEOM Database</a>
+                    <a href="#geological-data" class="nav-link">Geological Data</a>
+                    <a href="#geochemical-data" class="nav-link">Geochemical Data</a>
                 </div>
 
                 <div class="nav-section">
                     <div class="nav-section-title">QGIS Preprocessing</div>
-                    <div class="nav-subsection">
-                        <a href="#feature-engineering" class="nav-link">Feature Engineering</a>
-                        <a href="#distance-calculations" class="nav-link">Distance Calculations</a>
-                        <a href="#masking-operations" class="nav-link">Masking Operations</a>
-                        <a href="#prediction-grid" class="nav-link">Prediction Grid Generation</a>
-                    </div>
-                </div>
-
-                <div class="nav-section">
-                    <div class="nav-section-title">Data Preprocessing</div>
-                    <div class="nav-subsection">
-                        <a href="#one-hot-encoding" class="nav-link">One-hot Encoding</a>
-                        <a href="#feature-scaling" class="nav-link">Feature Scaling</a>
-                        <a href="#missing-values" class="nav-link">Missing Value Imputation</a>
-                        <a href="#correlation-analysis" class="nav-link">Correlation Analysis</a>
-                        <a href="#feature-selection" class="nav-link">Feature Selection</a>
-                    </div>
+                    <a href="#qgis-preprocessing" class="nav-link">Feature Engineering</a>
+                    <a href="#distance-calculations" class="nav-link">Distance Calculations</a>
                 </div>
 
                 <div class="nav-section">
                     <div class="nav-section-title">Magnetic Image Generation</div>
-                    <div class="nav-subsection">
-                        <a href="#memory-constraints" class="nav-link">Memory Constraints</a>
-                        <a href="#spatial-chunking" class="nav-link">Spatial Chunking</a>
-                        <a href="#disk-io" class="nav-link">Disk I/O Performance</a>
-                    </div>
+                    <a href="#magnetic-image-generation" class="nav-link">Memory Constraints</a>
+                    <a href="#spatial-chunking" class="nav-link">Spatial Chunking</a>
                 </div>
 
                 <div class="nav-section">
                     <div class="nav-section-title">Model Architecture</div>
-                    <div class="nav-subsection">
-                        <a href="#cnn-design" class="nav-link">CNN Design</a>
-                        <a href="#gradient-boosted-trees" class="nav-link">Gradient Boosted Trees</a>
-                        <a href="#model-fusion" class="nav-link">Model Fusion Strategy</a>
-                    </div>
-                </div>
-
-                <div class="nav-section">
-                    <div class="nav-section-title">Training Process</div>
-                    <div class="nav-subsection">
-                        <a href="#class-imbalance" class="nav-link">Class Imbalance Handling</a>
-                        <a href="#hyperparameter-tuning" class="nav-link">Hyperparameter Tuning</a>
-                        <a href="#memory-efficient-training" class="nav-link">Memory-Efficient Training</a>
-                    </div>
+                    <a href="#model-architecture" class="nav-link">CNN Design</a>
+                    <a href="#gradient-boosted-trees" class="nav-link">Gradient Boosted Trees</a>
                 </div>
 
                 <div class="nav-section">
                     <div class="nav-section-title">Performance Results</div>
-                    <div class="nav-subsection">
-                        <a href="#model-metrics" class="nav-link">Model Metrics</a>
-                        <a href="#mineral-performance" class="nav-link">Mineral-Specific Performance</a>
-                        <a href="#feature-importance" class="nav-link">Feature Importance</a>
-                    </div>
-                </div>
-
-                <div class="nav-section">
-                    <div class="nav-section-title">Spatial Analysis</div>
-                    <div class="nav-subsection">
-                        <a href="#prediction-patterns" class="nav-link">Prediction Patterns</a>
-                        <a href="#geological-correlation" class="nav-link">Geological Correlation</a>
-                    </div>
-                </div>
-
-                <div class="nav-section">
-                    <div class="nav-section-title">Database Design</div>
-                    <div class="nav-subsection">
-                        <a href="#postgresql-postgis" class="nav-link">PostgreSQL with PostGIS</a>
-                        <a href="#schema-design" class="nav-link">Schema Design</a>
-                        <a href="#spatial-indexing" class="nav-link">Spatial Indexing</a>
-                        <a href="#stored-procedures" class="nav-link">Stored Procedures</a>
-                        <a href="#rpc-functions" class="nav-link">RPC Functions</a>
-                    </div>
+                    <a href="#performance-results" class="nav-link">Model Metrics</a>
+                    <a href="#visualization-results" class="nav-link">Visualization</a>
                 </div>
 
                 <div class="nav-section">
                     <div class="nav-section-title">Web Application</div>
-                    <div class="nav-subsection">
-                        <a href="#architecture-overview" class="nav-link">Architecture Overview</a>
-                        <a href="#frontend-implementation" class="nav-link">Frontend Implementation</a>
-                        <a href="#leaflet-integration" class="nav-link">Leaflet.js Map Integration</a>
-                        <a href="#supabase-integration" class="nav-link">Supabase Client Integration</a>
-                        <a href="#api-endpoints" class="nav-link">API Endpoint Design</a>
-                    </div>
-                </div>
-
-                <div class="nav-section">
-                    <div class="nav-section-title">Performance Optimizations</div>
-                    <div class="nav-subsection">
-                        <a href="#query-optimization" class="nav-link">Database Query Optimization</a>
-                        <a href="#spatial-index-utilization" class="nav-link">Spatial Index Utilization</a>
-                        <a href="#client-caching" class="nav-link">Client-Side Caching</a>
-                    </div>
-                </div>
-
-                <div class="nav-section">
-                    <div class="nav-section-title">Future Directions</div>
-                    <div class="nav-subsection">
-                        <a href="#model-improvements" class="nav-link">Model Improvements</a>
-                        <a href="#additional-data" class="nav-link">Additional Data Sources</a>
-                    </div>
+                    <a href="#web-application" class="nav-link">Implementation</a>
                 </div>
             </div>
         </div>
@@ -786,7 +694,7 @@ CREATE INDEX samples_location_idx ON mineral_samples USING GIST (location);</pre
     <script>
         // Add scroll spy functionality
         document.addEventListener('DOMContentLoaded', function() {
-            const sections = document.querySelectorAll('section[id]');
+            const sections = document.querySelectorAll('h2[id], h3[id]');
             const navLinks = document.querySelectorAll('.nav-link');
 
             function scrollSpy() {
