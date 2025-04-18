@@ -3,31 +3,44 @@
 
 // Generate a random distinct_id for anonymous users
 const generateDistinctId = () => {
-    return 'anon_' + Math.random().toString(36).substring(2, 15);
+    // Check if we already have a user ID in localStorage
+    const existingId = localStorage.getItem('ph_user_id');
+    if (existingId) {
+        return existingId;
+    }
+    
+    // Generate a new ID if we don't have one
+    const newId = 'anon_' + Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+    localStorage.setItem('ph_user_id', newId);
+    return newId;
 };
+
+// Get user ID before initialization
+const distinctId = generateDistinctId();
+console.log('Using distinct ID:', distinctId);
 
 // Initialize PostHog with minimal configuration
 posthog.init('phc_LtwigGiWJKo91NSjtyY09ghDDwX82VPy7quao5TEMJB', {
     api_host: 'https://us.i.posthog.com',
-    capture_pageview: true,
+    capture_pageview: false, // Disable automatic pageview to manually send it with our distinct_id
     autocapture: true,
     debug: true,
-    bootstrap: {
-        distinctID: generateDistinctId()
-    },
     loaded: function(posthog) {
         console.log('PostHog loaded successfully');
-        console.log('PostHog session ID:', posthog.get_session_id());
-        console.log('PostHog distinct ID:', posthog.get_distinct_id());
+        
+        // Explicitly identify the user
+        posthog.identify(distinctId);
+        console.log('User identified with ID:', distinctId);
+        
+        // Manual pageview capture with the distinct_id
+        console.log('Sending page view event');
+        posthog.capture('$pageview', {
+            distinct_id: distinctId,
+            $current_url: window.location.href,
+            $pathname: window.location.pathname
+        });
     },
     error: function(error) {
         console.error('PostHog error:', error);
     }
-});
-
-// Log page view
-console.log('Sending page view event');
-posthog.capture('$pageview', {
-    $current_url: window.location.href,
-    $pathname: window.location.pathname
 }); 
