@@ -27,6 +27,8 @@ body::before {
 }
 
 .container {
+    position: relative;
+    z-index: 1;
     max-width: 1000px;
     width: 100%;
     margin: 0 auto;
@@ -35,6 +37,8 @@ body::before {
 
 
 .main-content-wrapper {
+    position: relative;
+    z-index: 2;
     display: flex;
     flex-direction: column;
     background-color: white;
@@ -98,15 +102,20 @@ header {
 }
 
 .logo {
-    font-size: 35px;
-    font-weight: 900;
-    color: #c5a91c;
+    display: flex;
+    align-items: center;
     text-decoration: none;
     padding-bottom: 0px;
 }
 
-.logo:hover {
-    color: rgb(255, 255, 255);
+.header-favicon {
+    width: 50px;
+    height: 50px;
+    transition: transform 0.3s ease;
+}
+
+.logo:hover .header-favicon {
+    transform: scale(1.15);
 }
 
 nav {
@@ -746,4 +755,62 @@ nav a:hover {
 .probability-high {
     color: #28a745;
     font-weight: 500;
+}
+
+/* Interactive Star Effect */
+.star {
+    position: fixed;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0;
+    transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+}
+
+.star.visible {
+    opacity: 0.8;
+}
+
+.star::before,
+.star::after {
+    content: '';
+    position: absolute;
+    border-radius: 50%;
+}
+
+/* Different star colors */
+.star.color1::before { background: rgba(255, 255, 255, 0.8); }
+.star.color2::before { background: rgba(255, 200, 200, 0.7); }
+.star.color3::before { background: rgba(200, 200, 255, 0.7); }
+.star.color4::before { background: rgba(200, 255, 200, 0.7); }
+.star.color5::before { background: rgba(255, 255, 200, 0.7); }
+
+/* Different star shapes */
+.star.shape1::before {
+    width: 3px;
+    height: 3px;
+    transform: translate(-50%, -50%);
+}
+
+.star.shape2::before {
+    width: 2px;
+    height: 2px;
+    transform: translate(-50%, -50%) rotate(45deg);
+}
+
+.star.shape3::before {
+    width: 1px;
+    height: 1px;
+    transform: translate(-50%, -50%) rotate(90deg);
+}
+
+.star.shape4::before {
+    width: 2px;
+    height: 4px;
+    transform: translate(-50%, -50%) rotate(30deg);
+}
+
+.star.shape5::before {
+    width: 3px;
+    height: 1px;
+    transform: translate(-50%, -50%) rotate(60deg);
 }
