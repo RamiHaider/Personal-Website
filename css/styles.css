@@ -13,6 +13,8 @@ body {
     background-attachment: fixed;
     background-repeat: repeat;
     color: #404040;
+    font-size: 16px;
+    line-height: 1.6;
 }
 
 body::before {
@@ -60,7 +62,7 @@ main {
 }
 
 h1 {
-    font-size: 30px;
+    font-size: 34px;
     font-weight: 600;
     color: #2c2c2c;
     margin-top: 0;
@@ -68,21 +70,21 @@ h1 {
 
 
 h2 {
-    font-size: 20px;
+    font-size: 24px;
     font-weight: 500;
     color: #404040;
 }
 
 
 h3 {
-    font-size: 17px;
+    font-size: 20px;
     font-weight: 500;
     color: #404040;
 }
 
 p {
-    font-size: 14px;
-    line-height: 1.6;
+    font-size: 16px;
+    line-height: 1.7;
     color: #404040;
     font-weight: 370;
 }
@@ -124,7 +126,7 @@ nav {
 }
 
 nav a {
-    font-size: 18px;
+    font-size: 19px;
     font-weight: 1000;
     color: #c5a91c;
     text-decoration: none;
@@ -184,7 +186,7 @@ nav a:hover {
 
 /* Intro Text Styles */
 .intro-greeting {
-    font-size: 32px;
+    font-size: 36px;
     font-weight: 800;
     color: #222;
     margin-bottom: 5px;
@@ -196,7 +198,7 @@ nav a:hover {
 }
 
 .intro-title {
-    font-size: 26px;
+    font-size: 30px;
     font-weight: 600;
     color: #333;
     margin-top: 0;
@@ -290,138 +292,28 @@ nav a:hover {
 
 .portfolio-content {
     flex: 1;
-    padding: 20px;
-}
-
-
-
-
-
-
-
-
-
-/* Tag Styling */
-.tag-filter {
-    display: flex;
-    align-items: center;
-    margin: 20px 0;
-    margin-top: 50px;
-}
-
-.sort-by-tags {
-    font-size: 15px;
-    color: #000000;
-    margin-right: 10px;
-}
-
-.tags {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 15px;
-
-}
-
-.tag {
-    font-size: 12px;
-    font-weight: 500;
-    color: #464646;
-    background-color: #f0f0f0;
-    border: 0.5px solid #464646;
-    padding: 5px 10px;
-    border-radius: 15px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-
-.tag.selected {
-    background-color: #9e9e9e; /* Use your theme color */
-    color: rgb(0, 0, 0);
-    border-color: #000000;
-    animation: tagSelect 0.3s ease;
-}
-
-@keyframes tagSelect {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.05); }
-    100% { transform: scale(1); }
-}
-
-.tag:not(.selected) {
-    opacity: 0.8;
-}
-
-.tag-filter {
-    display: flex;
-    align-items: center;
-    margin: 20px 0;
-    margin-top: 45px;
-    margin-bottom: 20px;
-}
-
-.tag.data-science { background-color: #FFD6D6; }
-.tag.machine-learning { background-color: #D6E6FF; }
-.tag.programming { background-color: #FFFFD6; }
-.tag.mathematics { background-color: #d9cfc3; }
-.tag.geoscience { background-color: #D6FFE0; }
-.tag.development { background-color: #FFDAB9; } /* Peach Puff - adjust if needed */
-
-
-
-
-
-
-
-
-
-
-/* Card Styling */
-.portfolio {
-    margin-top: 30px;
-}
-
-.portfolio-card-link {
-    text-decoration: none;
-    color: inherit;
-    display: block;
-    width: 80%;
-    margin-bottom: 20px; /* Add space between cards */
-}
-
-.portfolio-content {
-    flex: 1;
-    padding: 20px;
+    padding: 16px 20px; /* Reduced top padding from 20px */
     position: relative; /* For positioning the tag */
 }
 
-.portfolio-card {
-    display: flex;
-    background-color: #ffffff;
-    border-radius: 10px;
-    overflow: hidden;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    border: 3px solid #d9d9d96a; /* Add a slight stroke */
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    width: 100%; /* Changed from 80% to 100% as it's now applied to .portfolio-card-link */
-}
-
 .portfolio-content h3 {
-    font-size: 18px;
-    transition: color 0.3s ease; /* Smooth transition for color change on hover */
+    font-size: 22px;
+    margin-top: 0; /* Ensure no top margin on title */
+    margin-bottom: 8px; /* Reduced from default */
+    transition: color 0.3s ease;
 }
 
 .publish-date {
-    font-size: 13px;
+    font-size: 15px;
     font-weight: 500;
     color: #666;
     display: block;
-    margin-top: 10px;
+    margin-top: 5px; /* Reduced from 10px */
 }
 
 .portfolio-description {
-    margin-top: 20px;
-    font-size: 12px;
+    margin-top: 12px; /* Reduced from 20px */
+    font-size: 16px;
     color: #404040;
 }
 
@@ -450,6 +342,40 @@ nav a:hover {
 .tag.data-science { background-color: #FFD6D6; }
 .tag.mathematics { background-color: #d9cfc3; }
 .tag.geoscience { background-color: #D6FFE0; }
+.tag.development { background-color: #FFDAB9; } /* Peach Puff - adjust if needed */
+
+
+
+
+
+
+
+
+
+
+/* Card Styling */
+.portfolio {
+    margin-top: 30px;
+}
+
+.portfolio-card-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+    width: 80%;
+    margin-bottom: 20px; /* Add space between cards */
+}
+
+.portfolio-card {
+    display: flex;
+    background-color: #ffffff;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border: 3px solid #d9d9d96a; /* Add a slight stroke */
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    width: 100%; /* Changed from 80% to 100% as it's now applied to .portfolio-card-link */
+}
 
 .portfolio-card-link:hover .portfolio-card {
     transform: translateY(-5px);
@@ -724,7 +650,7 @@ nav a:hover {
     padding: 10px;
     border: 1px solid #ddd;
     border-radius: 6px;
-    font-size: 14px;
+    font-size: 16px;
     transition: border-color 0.3s;
 }
 
@@ -885,6 +811,7 @@ nav a:hover {
     color: #0056b3; /* Make link blue */
     text-decoration: none;
     transition: color 0.3s ease;
+    font-size: 16px;
 }
 
 .talk-link:hover {
@@ -910,6 +837,7 @@ nav a:hover {
     color: #0056b3; /* Make link blue */
     text-decoration: none;
     transition: color 0.3s ease;
+    font-size: 16px;
 }
 
 .hobby-link:hover {
@@ -929,7 +857,7 @@ nav a:hover {
 
 .academics-certs li {
     margin-bottom: 15px; /* Space between entries */
-    font-size: 14px;
+    font-size: 15px;
 }
 
 .academics-certs li > span:first-child {
@@ -942,12 +870,14 @@ nav a:hover {
     color: #777; /* Style for provider/unavailable text */
     font-style: italic;
     margin-left: 5px;
+    font-size: 15px;
 }
 
 .cert-link {
     color: #0056b3; /* Make link blue */
     text-decoration: none;
     transition: color 0.3s ease;
+    font-size: 16px;
 }
 
 .cert-link:hover {
@@ -974,6 +904,7 @@ nav a:hover {
     color: #0056b3; /* Make link blue */
     text-decoration: none;
     transition: color 0.3s ease;
+    font-size: 16px;
 }
 
 .web-link:hover {
@@ -1034,6 +965,7 @@ nav a:hover {
     color: #0056b3; /* Make link blue */
     text-decoration: none;
     transition: color 0.3s ease;
+    font-size: 16px;
 }
 
 .venture-link:hover {
@@ -1044,13 +976,13 @@ nav a:hover {
 .venture-role {
     font-style: italic;
     color: #555;
-    font-size: 14px;
+    font-size: 16px;
     margin-top: 0;
     margin-bottom: 8px;
 }
 
 .venture-description {
-    font-size: 14px;
+    font-size: 16px;
     color: #404040;
     margin-top: 0;
 }
@@ -1122,4 +1054,378 @@ nav a:hover {
 .bio-link:hover {
     text-decoration: underline;
     color: #8a883c;
+}
+
+/* Mobile Responsiveness */
+@media screen and (max-width: 768px) {
+    header {
+        padding: 12px 15px;
+        justify-content: space-between;
+    }
+    
+    .logo {
+        margin-right: 10px; /* Push logo more to the right */
+    }
+    
+    .header-favicon {
+        width: 40px;
+        height: 40px;
+    }
+    
+    /* Remove hamburger styles and restore nav */
+    .hamburger {
+        display: none !important;
+    }
+    
+    nav {
+        display: flex !important;
+        position: static;
+        background-color: transparent;
+        padding: 0;
+        box-shadow: none;
+        flex-direction: row;
+        align-items: center;
+    }
+    
+    nav a {
+        font-size: 16px; /* Increased from 14px */
+        font-weight: 700; /* Slightly bolder */
+        margin-left: 10px;
+        padding: 4px 6px;
+        color: #c5a91c;
+        width: auto;
+        text-align: center;
+    }
+    
+    nav a:first-child {
+        margin-left: 8px; /* More space for first item */
+    }
+    
+    /* Introduction text size adjustments for mobile */
+    .intro-greeting {
+        font-size: 28px;
+    }
+    
+    .intro-title {
+        font-size: 24px;
+        min-height: 50px;
+    }
+    
+    /* Adjust heading sizes for mobile */
+    h1 {
+        font-size: 28px;
+    }
+    
+    h2 {
+        font-size: 22px;
+    }
+    
+    h3 {
+        font-size: 18px;
+    }
+    
+    /* Mobile navigation improved */
+    nav a {
+        font-size: 18px;
+        display: block;
+        padding: 10px 15px;
+    }
+    
+    /* Basic mobile adjustments */
+    .container {
+        padding: 0;
+    }
+    
+    .main-content-wrapper {
+        padding: 20px;
+    }
+    
+    .content {
+        padding: 20px;
+    }
+    
+    /* Header adjustments */
+    header {
+        padding: 15px 20px;
+    }
+    
+    /* Intro section for mobile */
+    .intro-section {
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+    }
+    
+    .profile-container {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+    
+    .intro-container {
+        width: 100%;
+        padding-left: 0;
+        text-align: center;
+    }
+    
+    /* Portfolio cards for mobile */
+    .portfolio {
+        margin-top: 20px;
+    }
+    
+    .portfolio-card-link {
+        width: 100%;
+    }
+    
+    .portfolio-card {
+        flex-direction: column;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+    
+    .portfolio-image {
+        width: 100%;
+        height: 180px;
+        object-fit: cover;
+        border-radius: 8px 8px 0 0;
+    }
+    
+    .portfolio-content {
+        padding: 16px;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    
+    .portfolio-content h3 {
+        font-size: 18px;
+        margin-top: 0;
+        margin-bottom: 8px;
+        display: block;
+        width: 100%;
+    }
+    
+    .portfolio-description {
+        font-size: 14px;
+        margin-top: 8px;
+        width: 100%;
+    }
+    
+    .publish-date {
+        font-size: 12px;
+    }
+    
+    /* Fix ribbon for mobile */
+    .portfolio-card-wrapper {
+        position: relative;
+        width: 100%;
+    }
+    
+    .ribbon {
+        font-size: 9px;
+        padding: 3px 10px;
+        top: 10px;
+        right: 10px;
+        transform: none;
+        border-radius: 3px;
+    }
+    
+    .ventures-section {
+        margin-top: 30px;
+    }
+    
+    .venture-item {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        padding: 15px;
+        margin-bottom: 25px;
+        border: 1px solid #f0f0f0;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    }
+    
+    .venture-logo {
+        height: 50px;
+        margin-bottom: 15px;
+    }
+    
+    .venture-info {
+        text-align: center;
+    }
+    
+    .venture-role, .venture-description {
+        margin: 5px 0;
+    }
+    
+    /* Mobile experience for activities page */
+    .academics-certs ul, 
+    .conferences-talks ul, 
+    .hobbies-section ul {
+        padding-left: 0;
+    }
+    
+    .web-links-container {
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+    
+    .web-logo {
+        height: 24px;
+        margin: 0 10px 10px;
+    }
+    
+    /* Adjust GitHub stats graph */
+    .github-stat-img {
+        max-width: 100%;
+        height: auto;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    header {
+        padding: 10px 12px;
+    }
+    
+    .header-favicon {
+        width: 38px;
+        height: 38px;
+    }
+    
+    nav a {
+        font-size: 14px; /* Increased from 12px */
+        margin-left: 8px;
+        padding: 3px 5px;
+    }
+    
+    /* Adjust font sizes for smaller screens */
+    .intro-greeting {
+        font-size: 24px;
+    }
+    
+    .intro-title {
+        font-size: 20px;
+        min-height: 60px; /* Ensure enough space for multi-line titles */
+    }
+    
+    h1 {
+        font-size: 24px;
+    }
+    
+    h2 {
+        font-size: 20px;
+    }
+    
+    h3 {
+        font-size: 17px;
+    }
+    
+    p, .portfolio-description {
+        font-size: 15px;
+    }
+    
+    .venture-role, .venture-description {
+        font-size: 15px;
+    }
+    
+    /* Smaller profile image */
+    .profile-image {
+        width: 140px;
+        height: 140px;
+    }
+    
+    /* Smaller intro text */
+    .intro-greeting {
+        font-size: 20px;
+    }
+    
+    .intro-title {
+        font-size: 18px;
+        min-height: 54px; /* Ensure space for two lines */
+    }
+}
+
+/* Very small devices */
+@media screen and (max-width: 360px) {
+    /* Reduce padding further */
+    .main-content-wrapper, .content {
+        padding: 12px;
+    }
+    
+    /* Smaller profile image */
+    .profile-image {
+        width: 140px;
+        height: 140px;
+    }
+    
+    /* Smaller intro text */
+    .intro-greeting {
+        font-size: 18px;
+    }
+    
+    .intro-title {
+        font-size: 16px;
+    }
+    
+    h2 {
+        font-size: 18px;
+    }
+    
+    /* Ensure no text overflow */
+    p, .portfolio-description {
+        font-size: 13px;
+    }
+    
+    .portfolio-content h3 {
+        font-size: 16px;
+    }
+    
+    /* Make cards more compact */
+    .portfolio-image {
+        height: 150px;
+    }
+    
+    .portfolio-content {
+        padding: 12px;
+    }
+    
+    /* Smaller footer */
+    footer {
+        padding: 15px;
+        font-size: 12px;
+    }
+}
+
+/* Base styles for hamburger menu */
+.hamburger {
+    display: none; /* Hidden by default on desktop */
+    cursor: pointer;
+}
+
+@media screen and (max-width: 768px) {
+    /* Smaller header element to fit content */
+    header {
+        padding: 12px 15px;
+    }
+}
+
+/* Portfolio Card Content Alignment Fix - Desktop Only */
+@media screen and (min-width: 769px) {
+    .portfolio-content {
+        padding: 10px 20px; /* Reduced top padding */
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+    }
+    
+    .portfolio-content h3 {
+        margin-top: 0;
+        margin-bottom: 6px;
+    }
+    
+    .publish-date {
+        margin-top: 0;
+    }
+    
+    .portfolio-description {
+        margin-top: 10px;
+    }
 }
