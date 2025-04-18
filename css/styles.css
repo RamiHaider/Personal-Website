@@ -182,6 +182,47 @@ nav a:hover {
     margin-top: 0px;
 }
 
+/* Intro Text Styles */
+.intro-greeting {
+    font-size: 32px;
+    font-weight: 800;
+    color: #222;
+    margin-bottom: 5px;
+    margin-top: 0;
+}
+
+.name-highlight {
+    color: #A4A155; /* Dark gold color */
+}
+
+.intro-title {
+    font-size: 26px;
+    font-weight: 600;
+    color: #333;
+    margin-top: 0;
+    margin-bottom: 20px;
+    min-height: 40px; /* Keep consistent height during animation */
+}
+
+#dynamic-title {
+    display: inline;
+}
+
+/* Typing cursor animation */
+.cursor {
+    display: inline-block;
+    width: 3px;
+    background-color: #333;
+    animation: blink 1s infinite;
+    margin-left: 2px;
+}
+
+@keyframes blink {
+    0% { opacity: 1; }
+    50% { opacity: 0; }
+    100% { opacity: 1; }
+}
+
 .social-icons {
     display: flex;
     justify-content: center;
