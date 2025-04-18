@@ -17,9 +17,9 @@ document.addEventListener('DOMContentLoaded', function() {
             star.classList.add(shapes[Math.floor(Math.random() * shapes.length)]);
             star.classList.add(colors[Math.floor(Math.random() * colors.length)]);
             
-            // Random offset from mouse position (within 20px radius)
+            // Random offset from mouse position (within 40px radius - increased from 20px)
             const angle = Math.random() * Math.PI * 2;
-            const radius = Math.random() * 20;
+            const radius = Math.random() * 40; // Increased from 20 to 40
             const offsetX = Math.cos(angle) * radius;
             const offsetY = Math.sin(angle) * radius;
             
