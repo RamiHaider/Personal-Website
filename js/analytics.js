@@ -17,30 +17,25 @@ const generateDistinctId = () => {
 
 // Get user ID before initialization
 const distinctId = generateDistinctId();
-console.log('Using distinct ID:', distinctId);
+console.log('PostHog distinct ID:', distinctId);
 
 // Initialize PostHog with minimal configuration
 posthog.init('phc_LtwigGiWJKo91NSjtyY09ghDDwX82VPy7quao5TEMJB', {
     api_host: 'https://us.i.posthog.com',
-    capture_pageview: false, // Disable automatic pageview to manually send it with our distinct_id
-    autocapture: true,
-    debug: true,
+    bootstrap: {
+        distinctID: distinctId  // Set the distinct ID during bootstrap
+    },
     loaded: function(posthog) {
         console.log('PostHog loaded successfully');
-        
-        // Explicitly identify the user
+        console.log('PostHog session ID:', posthog.get_session_id());
+        console.log('PostHog distinct ID:', posthog.get_distinct_id());
+    }
+});
+
+// Make sure user is identified
+document.addEventListener('DOMContentLoaded', function() {
+    // Additional safety to ensure user is identified
+    if (posthog && posthog.get_distinct_id() !== distinctId) {
         posthog.identify(distinctId);
-        console.log('User identified with ID:', distinctId);
-        
-        // Manual pageview capture with the distinct_id
-        console.log('Sending page view event');
-        posthog.capture('$pageview', {
-            distinct_id: distinctId,
-            $current_url: window.location.href,
-            $pathname: window.location.pathname
-        });
-    },
-    error: function(error) {
-        console.error('PostHog error:', error);
     }
 }); 
