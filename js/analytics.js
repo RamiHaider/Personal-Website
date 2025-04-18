@@ -45,7 +45,23 @@ posthog.init('phc_LtwigGiWJKo91NSjtyY09ghDDwX82VPy7quao5TEMJB', {
         distinctID: null
     },
     // Debug mode for development
-    debug: false,
+    debug: true,
     // Cross-domain tracking
-    cross_subdomain_cookie: true
+    cross_subdomain_cookie: true,
+    loaded: function(posthog) {
+        console.log('PostHog loaded successfully');
+        console.log('PostHog session ID:', posthog.get_session_id());
+        console.log('PostHog distinct ID:', posthog.get_distinct_id());
+    },
+    // Error handling
+    error: function(error) {
+        console.error('PostHog error:', error);
+    }
+});
+
+// Log page view
+console.log('Sending page view event');
+posthog.capture('$pageview', {
+    $current_url: window.location.href,
+    $pathname: window.location.pathname
 }); 
