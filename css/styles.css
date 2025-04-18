@@ -814,3 +814,239 @@ nav a:hover {
     height: 1px;
     transform: translate(-50%, -50%) rotate(60deg);
 }
+
+/* Activities Page Specific Styles */
+.conferences-talks {
+    margin-top: 40px; /* Add space above the conferences section */
+}
+
+.conferences-talks ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+.conferences-talks li {
+    margin-bottom: 15px; /* Space between talk entries */
+    font-size: 14px;
+}
+
+.conferences-talks li span {
+    font-weight: 500;
+    margin-right: 5px;
+    color: #555;
+}
+
+.talk-link {
+    color: #0056b3; /* Make link blue */
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.talk-link:hover {
+    color: #003d80; /* Darker blue on hover */
+    text-decoration: underline;
+}
+
+.hobbies-section {
+    margin-top: 40px; /* Space above the hobbies section */
+}
+
+.hobbies-section ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+.hobbies-section li {
+    margin-bottom: 15px; /* Space between hobby entries */
+    font-size: 14px;
+}
+
+.hobby-link {
+    color: #0056b3; /* Make link blue */
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.hobby-link:hover {
+    color: #003d80; /* Darker blue on hover */
+    text-decoration: underline;
+}
+
+/* Academics and Certificates Section Styles */
+.academics-certs {
+    margin-top: 40px; /* Space above the section */
+}
+
+.academics-certs ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+.academics-certs li {
+    margin-bottom: 15px; /* Space between entries */
+    font-size: 14px;
+}
+
+.academics-certs li > span:first-child {
+    font-weight: 500; /* Style for the date */
+    margin-right: 5px;
+    color: #555;
+}
+
+.academics-certs li > span:last-of-type {
+    color: #777; /* Style for provider/unavailable text */
+    font-style: italic;
+    margin-left: 5px;
+}
+
+.cert-link {
+    color: #0056b3; /* Make link blue */
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.cert-link:hover {
+    color: #003d80; /* Darker blue on hover */
+    text-decoration: underline;
+}
+
+/* Rami on the Web Section Styles */
+.on-the-web {
+    margin-top: 40px; /* Space above the section */
+}
+
+.on-the-web ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+.on-the-web li {
+    margin-bottom: 15px; /* Space between entries */
+    font-size: 14px;
+}
+
+.web-link {
+    color: #0056b3; /* Make link blue */
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.web-link:hover {
+    color: #003d80; /* Darker blue on hover */
+    text-decoration: underline;
+}
+
+/* Updated Styles for Rami on the Web Logos */
+.web-links-container {
+    display: flex;
+    gap: 25px; /* Space between logos */
+    align-items: center;
+    margin-top: 15px; /* Space below the heading */
+}
+
+.web-logo-link {
+    display: inline-block; /* Needed for transform */
+}
+
+.web-logo {
+    height: 28px; /* Adjusted size */
+    width: auto;
+    transition: transform 0.2s ease-in-out;
+}
+
+.web-logo-link:hover .web-logo {
+    transform: scale(1.15); /* Slight zoom on hover */
+}
+
+/* Ventures Section Styles */
+.ventures-section {
+    margin-top: 40px; /* Space above the section */
+}
+
+.venture-item {
+    margin-bottom: 30px; /* Increased space between venture entries */
+    display: flex; /* Enable flexbox */
+    align-items: center; /* Align items vertically center */
+    gap: 20px; /* Space between logo and text */
+}
+
+.venture-logo {
+    height: 45px; /* Adjust size as needed */
+    width: auto; /* Maintain aspect ratio */
+    flex-shrink: 0; /* Prevent logo from shrinking */
+}
+
+.venture-info {
+    flex-grow: 1; /* Allow text container to take remaining space */
+}
+
+.venture-item h3 {
+    margin-bottom: 5px; /* Space below company name */
+    font-size: 16px;
+}
+
+.venture-link {
+    color: #0056b3; /* Make link blue */
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.venture-link:hover {
+    color: #003d80; /* Darker blue on hover */
+    text-decoration: underline;
+}
+
+.venture-role {
+    font-style: italic;
+    color: #555;
+    font-size: 14px;
+    margin-top: 0;
+    margin-bottom: 8px;
+}
+
+.venture-description {
+    font-size: 14px;
+    color: #404040;
+    margin-top: 0;
+}
+
+/* Ribbon Styles */
+.portfolio-content {
+    position: relative; /* Needed for absolute positioning of the ribbon */
+}
+
+.ribbon {
+    position: absolute;
+    top: 10px;
+    right: -5px; /* Adjust to position correctly */
+    background-color: #ffa500; /* Orange color for 'in-progress' */
+    color: white;
+    padding: 5px 15px;
+    font-size: 10px;
+    font-weight: bold;
+    text-transform: uppercase;
+    transform: rotate(45deg);
+    transform-origin: top right;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    z-index: 2; /* Ensure it's above other content */
+    overflow: hidden; /* Hide part that goes outside */
+}
+
+/* Ensure ribbon is contained visually within the card */
+.portfolio-card {
+    overflow: hidden; /* This will clip the ribbon to the card bounds */
+}
+
+/* Non-clickable card style */
+.non-clickable {
+    cursor: default;
+}
+
+.non-clickable:hover .portfolio-card {
+    transform: none; /* Disable hover effect */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* Reset box shadow */
+}
+
+.non-clickable:hover .portfolio-content h3 {
+    color: #2c2c2c; /* Reset heading color */
+}
