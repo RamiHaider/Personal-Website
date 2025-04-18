@@ -4,5 +4,5 @@
 // Instead of using the standard snippet, we'll use our custom implementation
 // which is more robust for static sites and handles identification better
 
-// Reference to our custom implementation
-document.write('<script src="js/posthog-custom.js"></script>'); 
+// Reference to our custom implementation with absolute path to work in all directories
+document.write('<script src="/js/posthog-custom.js"></script>'); 
