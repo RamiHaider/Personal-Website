@@ -7,7 +7,7 @@ body {
     font-family: 'Roboto', sans-serif;
     margin: 0;
     padding: 0;
-    background-image: url('../assets/images/Universe-Background.jpg');
+    background-image: url('../assets/images/Universe-Background1.png');
     background-size: cover;
     background-position: center;
     background-attachment: fixed;
@@ -742,11 +742,11 @@ nav a:hover {
     font-weight: 500;
 }
 
-/* Interactive Star Effect */
+/* Star Effect Styles */
 .star {
     position: fixed;
     pointer-events: none;
-    z-index: 0;
+    z-index: 1;
     opacity: 0;
     transition: opacity 0.3s ease-out, transform 0.3s ease-out;
 }
@@ -798,6 +798,24 @@ nav a:hover {
     width: 3px;
     height: 1px;
     transform: translate(-50%, -50%) rotate(60deg);
+}
+
+/* Ensure content areas have proper z-index */
+.main-content-wrapper {
+    position: relative;
+    z-index: 2;
+}
+
+/* Portfolio section specific z-index */
+.portfolio-section {
+    position: relative;
+    z-index: 2;
+}
+
+/* Ensure stars appear below interactive elements */
+.interactive-element {
+    position: relative;
+    z-index: 3;
 }
 
 /* Activities Page Specific Styles */
