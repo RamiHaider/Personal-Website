@@ -12,7 +12,7 @@ body {
     background-position: center;
     background-attachment: fixed;
     background-repeat: repeat;
-    color: #404040;
+    color: rgba(255, 255, 255, 0.9);
     font-size: 16px;
     line-height: 1.6;
 }
@@ -43,7 +43,7 @@ body::before {
     z-index: 2;
     display: flex;
     flex-direction: column;
-    background-color: white;
+    background-color: transparent;
     border-radius: 0 0 20px 20px;
     overflow: hidden;
     margin-top: 0;
@@ -64,7 +64,7 @@ main {
 h1 {
     font-size: 34px;
     font-weight: 600;
-    color: #2c2c2c;
+    color: white;
     margin-top: 0;
 }
 
@@ -72,20 +72,20 @@ h1 {
 h2 {
     font-size: 24px;
     font-weight: 500;
-    color: #404040;
+    color: white;
 }
 
 
 h3 {
     font-size: 20px;
     font-weight: 500;
-    color: #404040;
+    color: white;
 }
 
 p {
     font-size: 16px;
     line-height: 1.7;
-    color: #404040;
+    color: rgba(255, 255, 255, 0.9);
     font-weight: 370;
 }
 
@@ -160,10 +160,9 @@ nav a:hover {
 .intro-section {
     display: flex;
     flex-direction: row;
-    justify-content: flex-start; /* Aligns children to the start (left) of the container */
-    align-items: flex-start; /* Aligns children to the top of the container */
-    gap: 50px; /* Adds space between the profile and text sections */
-    border-bottom: 0.5px solid #e0e0e0;
+    justify-content: flex-start;
+    align-items: flex-start;
+    gap: 50px;
     margin-bottom: 30px;
     padding-bottom: 30px;
 }
@@ -188,7 +187,7 @@ nav a:hover {
 .intro-greeting {
     font-size: 36px;
     font-weight: 800;
-    color: #222;
+    color: white;
     margin-bottom: 5px;
     margin-top: 0;
 }
@@ -200,7 +199,7 @@ nav a:hover {
 .intro-title {
     font-size: 30px;
     font-weight: 600;
-    color: #333;
+    color: white;
     margin-top: 0;
     margin-bottom: 20px;
     min-height: 40px; /* Keep consistent height during animation */
@@ -215,7 +214,7 @@ nav a:hover {
     display: inline-block;
     width: 2px;
     height: 24px;
-    background-color: #333;
+    background-color: white; /* Changed to white */
     animation: blink 1s infinite;
     margin-left: 2px;
     position: relative;
@@ -238,18 +237,12 @@ nav a:hover {
     width: 30px;
     height: 30px;
     margin: 0 10px;
-    filter: brightness(1.5) opacity(0.7); /* Adjust these values as needed */
-    transition: filter 0.3s ease; /* Smooth transition for hover effect */
+    filter: brightness(0) invert(1); /* Make all icons white */
+    transition: filter 0.3s ease;
 }
-
-/* Specific rule for GitHub icon */
-.social-icons img[alt="GitHub"] {
-    filter: brightness(1.5) opacity(0.85); /* Increased opacity for GitHub */
-}
-
 
 .social-icons img:hover {
-    filter: brightness(1) opacity(1);
+    filter: brightness(0) invert(1) opacity(0.8);
 }
 
 .intro-container {
@@ -264,7 +257,7 @@ nav a:hover {
 .ds-portfolio h2 {
     font-size: 20px;
     font-weight: 800;
-    color: #282828;
+    color: white;
     margin-bottom: 20px;
 }
 
@@ -277,10 +270,23 @@ nav a:hover {
 .portfolio-card {
     margin-top: 15px;
     display: flex;
-    background-color: #ffffff;
+    background-color: rgba(0, 0, 0, 0.2);
     border-radius: 10px;
     overflow: hidden;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    width: 100%; /* Changed from 80% to 100% as it's now applied to .portfolio-card-link */
+}
+
+.portfolio-card-link:hover .portfolio-card {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    background-color: rgba(0, 0, 0, 0.3);
+}
+
+.portfolio-card-link:hover .portfolio-content h3 {
+    color: #c5a91c; /* This is the color used for your logo, adjust as needed */
 }
 
 .portfolio-image {
@@ -294,6 +300,7 @@ nav a:hover {
     flex: 1;
     padding: 16px 20px; /* Reduced top padding from 20px */
     position: relative; /* For positioning the tag */
+    background-color: transparent;
 }
 
 .portfolio-content h3 {
@@ -301,12 +308,13 @@ nav a:hover {
     margin-top: 0; /* Ensure no top margin on title */
     margin-bottom: 8px; /* Reduced from default */
     transition: color 0.3s ease;
+    color: white;
 }
 
 .publish-date {
     font-size: 15px;
     font-weight: 500;
-    color: #666;
+    color: rgba(255, 255, 255, 0.7);
     display: block;
     margin-top: 5px; /* Reduced from 10px */
 }
@@ -314,7 +322,7 @@ nav a:hover {
 .portfolio-description {
     margin-top: 12px; /* Reduced from 20px */
     font-size: 16px;
-    color: #404040;
+    color: rgba(255, 255, 255, 0.9);
 }
 
 .portfolio-content .tags {
@@ -330,9 +338,9 @@ nav a:hover {
 .portfolio-content .tag {
     font-size: 10px !important; /* Small font size */
     font-weight: 500 !important;
-    color: #464646 !important;
+    color: rgba(255, 255, 255, 0.8) !important;
     background-color: #f0f0f0 !important;
-    border: 1px solid #464646 !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
     padding: 2px 5px !important; /* Tight padding */
     border-radius: 12px !important; /* Rounded corners */
     cursor: default !important; /* No pointer cursor */
@@ -370,11 +378,11 @@ nav a:hover {
 
 .portfolio-card {
     display: flex;
-    background-color: #ffffff;
+    background-color: rgba(0, 0, 0, 0.2);
     border-radius: 10px;
     overflow: hidden;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    border: 3px solid #d9d9d96a; /* Add a slight stroke */
+    border: 1px solid rgba(255, 255, 255, 0.1);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     width: 100%; /* Changed from 80% to 100% as it's now applied to .portfolio-card-link */
 }
@@ -382,6 +390,7 @@ nav a:hover {
 .portfolio-card-link:hover .portfolio-card {
     transform: translateY(-5px);
     box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    background-color: rgba(0, 0, 0, 0.3);
 }
 
 .portfolio-card-link:hover .portfolio-content h3 {
@@ -411,8 +420,8 @@ nav a:hover {
 
 
 .code-block {
-    background-color: #f4f4f4;
-    border: 1px solid #ddd;
+    background-color: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 4px;
     font-family: 'Courier New', Courier, monospace;
     font-size: 14px;
@@ -429,6 +438,7 @@ nav a:hover {
     margin-right: -20px; /* This should match the right padding of .content */
     padding: 10px 20px; /* Adjust horizontal padding to match .content */
     width: calc(100% + 40px); /* Increase width to account for negative margins */
+    color: rgba(255, 255, 255, 0.9);
 }
 
 .sample-toggle {
@@ -477,7 +487,7 @@ nav a:hover {
 
 .results-table th {
     font-weight: 500;
-    color: #666;
+    color: white;
 }
 
 .loading-overlay {
@@ -555,13 +565,13 @@ nav a:hover {
 .score-value {
     font-size: 2em;
     font-weight: 600;
-    color: #2E7D32;
+    color: white;
     display: block;
 }
 
 .score-label {
     font-size: 0.9em;
-    color: #666;
+    color: rgba(255, 255, 255, 0.7);
 }
 
 .agreement-stats {
@@ -578,12 +588,12 @@ nav a:hover {
 }
 
 .stat-label {
-    color: #666;
+    color: rgba(255, 255, 255, 0.7);
 }
 
 .stat-value {
     font-weight: 500;
-    color: #333;
+    color: white;
 }
 
 /* GitHub Stats Section */
@@ -643,17 +653,19 @@ nav a:hover {
     display: block;
     margin-bottom: 8px;
     font-weight: 500;
-    color: #404040;
+    color: rgba(255, 255, 255, 0.9);
 }
 
 .form-group input,
 .form-group textarea {
     width: 100%;
     padding: 10px;
-    border: 1px solid #ddd;
+    border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 6px;
     font-size: 16px;
     transition: border-color 0.3s;
+    color: white;
+    background-color: rgba(0, 0, 0, 0.2);
 }
 
 .form-group input:focus,
@@ -664,7 +676,7 @@ nav a:hover {
 
 .form-description {
     font-size: 12px;
-    color: #666;
+    color: rgba(255, 255, 255, 0.7);
     margin-top: 4px;
 }
 
@@ -687,7 +699,7 @@ nav a:hover {
 .email-text {
     text-align: center;
     margin-top: 30px;
-    color: #666;
+    color: rgba(255, 255, 255, 0.7);
     font-size: 14px;
 }
 
@@ -698,7 +710,7 @@ nav a:hover {
 .date-info p {
     font-size: 14px;
     line-height: 1.6;
-    color: #404040;
+    color: rgba(255, 255, 255, 0.9);
     font-weight: 370;
     margin: 0;
 }
@@ -865,11 +877,11 @@ nav a:hover {
 .academics-certs li > span:first-child {
     font-weight: 500; /* Style for the date */
     margin-right: 5px;
-    color: #555;
+    color: rgba(255, 255, 255, 0.7);
 }
 
 .academics-certs li > span:last-of-type {
-    color: #777; /* Style for provider/unavailable text */
+    color: rgba(255, 255, 255, 0.8);
     font-style: italic;
     margin-left: 5px;
     font-size: 15px;
@@ -977,7 +989,7 @@ nav a:hover {
 
 .venture-role {
     font-style: italic;
-    color: #555;
+    color: rgba(255, 255, 255, 0.7);
     font-size: 16px;
     margin-top: 0;
     margin-bottom: 8px;
@@ -985,7 +997,7 @@ nav a:hover {
 
 .venture-description {
     font-size: 16px;
-    color: #404040;
+    color: rgba(255, 255, 255, 0.9);
     margin-top: 0;
 }
 
@@ -1055,7 +1067,7 @@ nav a:hover {
 
 .bio-link:hover {
     text-decoration: underline;
-    color: #8a883c;
+    color: #c5a91c;
 }
 
 /* Mobile Responsiveness */
@@ -1430,4 +1442,120 @@ nav a:hover {
     .portfolio-description {
         margin-top: 10px;
     }
+}
+
+/* Portfolio Page Styles */
+.slide-section {
+    margin: 40px 0;
+    padding: 30px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 12px;
+    box-shadow: 0 2px 15px rgba(0,0,0,0.2);
+}
+
+.slide-section.map-section {
+    background: none;
+    box-shadow: none;
+    padding: 0;
+    gap: 10px;
+}
+
+.key-point {
+    background: rgba(0, 0, 0, 0.2);
+    padding: 20px;
+    border-left: 4px solid rgba(255, 255, 255, 0.5);
+    margin: 20px 0;
+    border-radius: 0 8px 8px 0;
+    color: white;
+}
+
+.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin: 20px 0;
+}
+
+.metric-card {
+    background: rgba(0, 0, 0, 0.2);
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    text-align: center;
+    color: white;
+}
+
+.threshold-card, .stats-card {
+    background: rgba(0, 0, 0, 0.2);
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    width: 100%;
+    color: white;
+}
+
+.threshold-card {
+    background: rgba(0, 0, 0, 0.2);
+    border-left: 4px solid rgba(255, 255, 255, 0.5);
+}
+
+.threshold-item .mineral {
+    font-weight: 600;
+    color: white;
+    display: block;
+}
+
+.threshold-item .value {
+    font-size: 0.9em;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.total-samples {
+    margin: 10px 0;
+    font-weight: 500;
+    color: white;
+}
+
+.results-table th, .results-table td {
+    padding: 8px;
+    text-align: left;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+.results-table th {
+    font-weight: 500;
+    color: white;
+}
+
+.mineral-card {
+    background: rgba(0, 0, 0, 0.2);
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    color: white;
+}
+
+.mineral-card h4 {
+    margin: 0 0 10px 0;
+    color: white;
+}
+
+.alert-message {
+    background: rgba(0, 0, 0, 0.2);
+    padding: 10px 15px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    font-size: 14px;
+    text-align: center;
+    max-width: 600px;
+    color: white;
+}
+
+.alert-icon {
+    color: #3b82f6;
+    font-weight: bold;
 }
