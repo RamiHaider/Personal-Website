@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Make container relative for absolute positioning
   container.style.position = 'relative';
-  container.style.height = '500px'; // Increased from 300px to 500px
+  container.style.height = '300px'; // Reverted back to the original 300px height
   container.style.overflow = 'hidden';
   container.style.backgroundColor = '#1f2937'; // gray-800
   container.style.borderRadius = '0.5rem';
@@ -363,10 +363,10 @@ document.addEventListener('DOMContentLoaded', function() {
     let cellIndex = 0;
     let animationId;
     
-    // Vector cells setup - perfect cells stacked on top of each other
-    const vectorCellSize = 30; // Perfect square cells
-    const vectorCellSpacing = 15; // Add spacing between cells
-    const vectorStartY = 40; // Position higher to fit all 9 cells with spacing
+    // Vector cells setup - ensure perfect squares
+    const vectorCellSize = 25; // Smaller perfect square cells
+    const vectorCellSpacing = 8; // Reduced spacing between cells
+    const vectorStartY = 60; // Position to fit all 9 cells with spacing
     const vectorX = vectorCanvas.width / 2 - vectorCellSize/2; // Center in the canvas
     
     // Flatten grid data
@@ -488,20 +488,26 @@ document.addEventListener('DOMContentLoaded', function() {
         cellsInVector.forEach((item) => {
           // Draw cell with original color
           ctx.fillStyle = `rgba(${item.color.r}, ${item.color.g}, ${item.color.b}, 0.8)`;
-          ctx.fillRect(item.x, item.y, item.width, item.height);
+          
+          // Ensure perfect squares
+          const squareSize = Math.min(item.width, item.height);
+          ctx.fillRect(item.x, item.y, squareSize, squareSize);
           
           // Add border
           ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
           ctx.lineWidth = 1;
-          ctx.strokeRect(item.x, item.y, item.width, item.height);
+          ctx.strokeRect(item.x, item.y, squareSize, squareSize);
         });
         
         // Draw the current moving cell
         ctx.fillStyle = `rgba(${cell.color.r}, ${cell.color.g}, ${cell.color.b}, 0.8)`;
-        ctx.fillRect(currentX, currentY, currentWidth, currentHeight);
+        
+        // Ensure the cells are perfectly square
+        const squareSize = Math.min(currentWidth, currentHeight);
+        ctx.fillRect(currentX, currentY, squareSize, squareSize);
         ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
         ctx.lineWidth = 1;
-        ctx.strokeRect(currentX, currentY, currentWidth, currentHeight);
+        ctx.strokeRect(currentX, currentY, squareSize, squareSize);
         
         // Continue animation if not complete
         if (cellAnimationProgress < 1) {
@@ -513,6 +519,7 @@ document.addEventListener('DOMContentLoaded', function() {
             y: endY,
             width: endWidth,
             height: endHeight,
+            squareSize: Math.min(endWidth, endHeight), // Store the square size
             color: cell.color,
             // Calculate grayscale intensity based on RGB values
             intensity: Math.round(0.299 * cell.color.r + 0.587 * cell.color.g + 0.114 * cell.color.b)
@@ -579,13 +586,24 @@ document.addEventListener('DOMContentLoaded', function() {
         ctx.shadowColor = '#3b82f6';
         ctx.shadowBlur = 5;
         
-        // Draw as rounded node instead of square
+        // Draw as perfect circle
+        const circleSize = Math.min(vectorCellSize, vectorCellSize);
+        const circleCenterX = bwX + circleSize/2;
+        const circleCenterY = bwY + circleSize/2;
+        
+        // Draw the circle
         ctx.beginPath();
-        ctx.arc(bwX + vectorCellSize/2, bwY + vectorCellSize/2, vectorCellSize/2, 0, Math.PI * 2);
+        ctx.arc(circleCenterX, circleCenterY, circleSize/2, 0, Math.PI * 2);
         ctx.fill();
         
         // Reset shadow for border
         ctx.shadowBlur = 0;
+        
+        // Add intensity value
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+        ctx.font = '10px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText((intensity/255).toFixed(2), circleCenterX, circleCenterY + 3);
         
         // Update our cells for neural network
         cellsInVector[bwCellIndex].bwX = bwX;
@@ -706,7 +724,10 @@ document.addEventListener('DOMContentLoaded', function() {
               // Draw from the BW cell center
               const cell = cellsInVector[inputActive];
               const sourceX = 0; // Left edge of neural network canvas
-              const sourceY = cell.bwY + (cell.height / 2); // Center of BW cell
+              
+              // Calculate center of BW circle for proper connection point
+              const circleSize = Math.min(cell.width, cell.height);
+              const sourceY = cell.bwY + circleSize/2; // Center of BW circle
               
               const gradient = ctx.createLinearGradient(sourceX, sourceY, targetX, targetY);
               gradient.addColorStop(0, '#3b82f6'); // Input color
