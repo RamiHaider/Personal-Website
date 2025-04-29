@@ -640,10 +640,10 @@ document.addEventListener('DOMContentLoaded', function() {
       // Define neural network layers - now we skip input (it's shown in vectorSection)
       // and only show hidden and output layers
       const layers = [
-        { name: 'hidden1', neurons: 9, x: 160, color: '#06b6d4' },  // Move further left
-        { name: 'hidden2', neurons: 3, x: 400, color: '#14b8a6' },  // Spread out more
-        { name: 'hidden3', neurons: 6, x: 620, color: '#10b981' },  // Spread out more
-        { name: 'output', neurons: 3, x: 760, color: '#ec4899' }    // Move further right
+        { name: 'hidden1', neurons: 6, x: 160, color: '#06b6d4' },  // Reduced to 6 neurons
+        { name: 'hidden2', neurons: 3, x: 400, color: '#14b8a6' },
+        { name: 'hidden3', neurons: 6, x: 620, color: '#10b981' },
+        { name: 'output', neurons: 3, x: 760, color: '#ec4899' }
       ];
       
       // Get currently active nodes and connections
@@ -654,6 +654,27 @@ document.addEventListener('DOMContentLoaded', function() {
         hidden3: activeNeuronIndices.hidden3,
         output: activeNeuronIndices.output
       };
+      
+      // Generate random size variations for neurons
+      // Do this once so they remain consistent across animation frames
+      if (!window.neuronSizeFactors) {
+        window.neuronSizeFactors = {};
+        window.connectionWidthFactors = {};
+        
+        // For each layer, create random size factors for each neuron
+        layers.forEach(layer => {
+          window.neuronSizeFactors[layer.name] = [];
+          window.connectionWidthFactors[layer.name] = [];
+          
+          for (let i = 0; i < layer.neurons; i++) {
+            // Generate random size factor between 0.7 and 1.5
+            window.neuronSizeFactors[layer.name][i] = 0.7 + Math.random() * 0.8;
+            
+            // Generate random connection width factor between 0.6 and 2.0
+            window.connectionWidthFactors[layer.name][i] = 0.6 + Math.random() * 1.4;
+          }
+        });
+      }
       
       // First, check if cellsInVector exists and has BW coordinates
       const hasBWCells = cellsInVector && cellsInVector.length > 0 && 
@@ -692,11 +713,14 @@ document.addEventListener('DOMContentLoaded', function() {
           gradient.addColorStop(0, conn.gradient[0]);
           gradient.addColorStop(1, conn.gradient[1]);
           
+          // Use the line width stored in the connection object
+          const lineWidth = conn.lineWidth || 1.5;
+          
           ctx.beginPath();
           ctx.moveTo(conn.fromX, conn.fromY);
           ctx.lineTo(conn.toX, conn.toY);
           ctx.strokeStyle = gradient;
-          ctx.lineWidth = 1.5;
+          ctx.lineWidth = lineWidth;
           ctx.stroke();
         });
         
@@ -757,7 +781,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 fromY: sourceY,
                 toX: targetX,
                 toY: targetY,
-                gradient: ['#3b82f6', layer.color]
+                gradient: ['#3b82f6', layer.color],
+                lineWidth: 1.5 * (window.connectionWidthFactors[layer.name][j] || 1)
               };
               
               // Check if this connection already exists
@@ -772,11 +797,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 persistentConnections.push(connection);
               }
               
+              // Get randomized line width for this target neuron
+              const lineWidthFactor = window.connectionWidthFactors[layer.name][j] || 1;
+              const randomizedLineWidth = 1.5 * lineWidthFactor;
+              
               ctx.beginPath();
               ctx.moveTo(sourceX, sourceY);
               ctx.lineTo(targetX, targetY);
               ctx.strokeStyle = gradient;
-              ctx.lineWidth = 1.5;
+              ctx.lineWidth = randomizedLineWidth;
               ctx.stroke();
             }
           }
@@ -825,7 +854,8 @@ document.addEventListener('DOMContentLoaded', function() {
                   fromY: sourceY,
                   toX: targetX,
                   toY: targetY,
-                  gradient: [prevLayer.color, layer.color]
+                  gradient: [prevLayer.color, layer.color],
+                  lineWidth: 1.5 * (window.connectionWidthFactors[layer.name][j] || 1)
                 };
                 
                 // Check if this connection already exists
@@ -845,11 +875,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 gradient.addColorStop(0, prevLayer.color);
                 gradient.addColorStop(1, layer.color);
                 
+                // Get randomized line width for this target neuron
+                const lineWidthFactor = window.connectionWidthFactors[layer.name][j] || 1;
+                const randomizedLineWidth = 1.5 * lineWidthFactor;
+                
                 ctx.beginPath();
                 ctx.moveTo(sourceX, sourceY);
                 ctx.lineTo(targetX, targetY);
                 ctx.strokeStyle = gradient;
-                ctx.lineWidth = 1.5;
+                ctx.lineWidth = randomizedLineWidth;
                 ctx.stroke();
               } else {
                 // Draw inactive connection
@@ -887,9 +921,12 @@ document.addEventListener('DOMContentLoaded', function() {
           // Determine if this neuron is active
           const isActive = i <= activeIndex;
           
+          // Get the randomized size factor for this neuron
+          const sizeFactor = window.neuronSizeFactors[layer.name][i] || 1;
+          
           // Calculate neuron size
           const baseSize = layer.name === 'output' ? 10 : 6;
-          const size = isActive ? baseSize * 1.2 : baseSize;
+          const size = isActive ? baseSize * 1.2 * sizeFactor : baseSize * sizeFactor;
           
           // Draw neuron
           ctx.beginPath();
@@ -1084,6 +1121,11 @@ document.addEventListener('DOMContentLoaded', function() {
     cellsInVector = [];
     establishedConnections = [];
     persistentConnections = []; // Reset persistent connections
+
+    // Reset randomization factors
+    window.neuronSizeFactors = null;
+    window.connectionWidthFactors = null;
+
     activeNeuronIndices = {
       input: -1,
       hidden1: -1,
@@ -1174,10 +1216,10 @@ document.addEventListener('DOMContentLoaded', function() {
   function animateNeuralNetworkSequence() {
     // Define layer info
     const layerInfo = [
-      { name: 'input', size: 9 },  // Changed from 12 to 9 (3x3 grid)
-      { name: 'hidden1', size: 9 }, // Changed from 8 to 9
-      { name: 'hidden2', size: 3 }, // Changed from 6 to 3
-      { name: 'hidden3', size: 6 }, // Changed from 4 to 6
+      { name: 'input', size: 9 },  // 3x3 grid
+      { name: 'hidden1', size: 6 }, // Changed from 9 to 6 neurons
+      { name: 'hidden2', size: 3 }, 
+      { name: 'hidden3', size: 6 },
       { name: 'output', size: 3 }
     ];
     
