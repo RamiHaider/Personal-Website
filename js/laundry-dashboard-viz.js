@@ -208,7 +208,7 @@ document.addEventListener('DOMContentLoaded', function() {
           break;
         case 'top-right':
           pos = { 
-            x: width * 0.16, 
+            x: width * 0.22, // Moved further right
             y: height * 0.25 
           };
           break;
@@ -220,7 +220,7 @@ document.addEventListener('DOMContentLoaded', function() {
           break;
         case 'bottom-right':
           pos = { 
-            x: width * 0.16, 
+            x: width * 0.22, // Moved further right
             y: height * 0.75 
           };
           break;
@@ -1367,41 +1367,6 @@ document.addEventListener('DOMContentLoaded', function() {
     ctx.lineWidth = 1.5;
     ctx.stroke();
     ctx.setLineDash([]);
-    
-    // Add data labels
-    ctx.font = '10px Inter, sans-serif';
-    ctx.fillStyle = colors.text.secondary;
-    ctx.textAlign = 'center';
-    
-    // X-axis labels (months)
-    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-    const numLabels = 4;
-    const labelStep = Math.ceil(data.length / numLabels);
-    
-    for (let i = 0; i < data.length; i += labelStep) {
-      const x = chartX + (i / (data.length - 1)) * chartWidth * 0.7;
-      ctx.fillText(months[i % 12], x, chartY + chartHeight + 15);
-    }
-    
-    // Add "Forecast" label
-    ctx.fillStyle = hexToRgba(colors.revenue.main, 0.8);
-    ctx.textAlign = 'left';
-    ctx.fillText("Forecast", chartX + chartWidth * 0.72, chartY + 15);
-    
-    // Add current value
-    const currentValue = data[data.length - 1];
-    ctx.font = 'bold 16px Inter, sans-serif';
-    ctx.fillStyle = colors.text.primary;
-    ctx.textAlign = 'left';
-    ctx.fillText(`$${Math.round(currentValue).toLocaleString()}`, chartX, chartY + 16);
-    
-    // Add growth indicator
-    const growth = ((currentValue / data[0]) - 1) * 100;
-    const growthText = `${growth > 0 ? '+' : ''}${growth.toFixed(1)}%`;
-    
-    ctx.font = '11px Inter, sans-serif';
-    ctx.fillStyle = growth > 0 ? colors.revenue.main : '#FC8181';
-    ctx.fillText(growthText, chartX + 120, chartY + 16);
   }
   
   function drawTrafficChart(ctx, panel) {
@@ -1480,28 +1445,6 @@ document.addEventListener('DOMContentLoaded', function() {
       
       segmentX += segmentWidth;
     });
-    
-    // Add current value and change indicator
-    const currentValue = data[data.length - 1];
-    const previousValue = dashboardData.traffic.previousPeriod;
-    const change = ((currentValue / previousValue) - 1) * 100;
-    
-    // Current value
-    ctx.font = 'bold 16px Inter, sans-serif';
-    ctx.fillStyle = colors.text.primary;
-    ctx.textAlign = 'left';
-    ctx.textBaseline = 'top';
-    ctx.fillText(Math.round(currentValue).toLocaleString(), chartX, chartY);
-    
-    // Change indicator
-    ctx.font = '11px Inter, sans-serif';
-    ctx.fillStyle = change >= 0 ? colors.analytics.main : '#FC8181';
-    ctx.fillText(`${change >= 0 ? '+' : ''}${change.toFixed(1)}%`, chartX + 80, chartY);
-    
-    // "vs prev period" label
-    ctx.font = '9px Inter, sans-serif';
-    ctx.fillStyle = colors.text.muted;
-    ctx.fillText('vs prev period', chartX + 130, chartY + 2);
   }
   
   function drawAppointmentsChart(ctx, panel) {
@@ -1549,20 +1492,6 @@ document.addEventListener('DOMContentLoaded', function() {
         false,
         gradient
       );
-      
-      // Day label
-      ctx.font = '10px Inter, sans-serif';
-      ctx.fillStyle = colors.text.secondary;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'top';
-      ctx.fillText(day.day, barX + barWidth/2, chartY + chartHeight + 5);
-      
-      // Value label (if bar is tall enough)
-      if (barHeight > 25) {
-        ctx.fillStyle = colors.text.primary;
-        ctx.textBaseline = 'bottom';
-        ctx.fillText(day.value.toString(), barX + barWidth/2, barY - 3);
-      }
     });
     
     // Draw baseline
@@ -1600,18 +1529,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     ctx.fillStyle = arcGradient;
     ctx.fill();
-    
-    // Percentage text
-    ctx.font = 'bold 10px Inter, sans-serif';
-    ctx.fillStyle = colors.text.primary;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(`${Math.round(completionRate * 100)}%`, circleX, circleY);
-    
-    // Completion rate label
-    ctx.font = '9px Inter, sans-serif';
-    ctx.fillStyle = colors.text.secondary;
-    ctx.fillText('Completion', circleX, circleY - radius - 10);
     
     // Trend indicators
     const trends = dashboardData.appointments.trends;
@@ -1718,41 +1635,16 @@ document.addEventListener('DOMContentLoaded', function() {
     ctx.fillStyle = colors.dashboard.panel;
     ctx.fill();
     
-    // Total payroll text in center
-    ctx.font = 'bold 11px Inter, sans-serif';
-    ctx.fillStyle = colors.text.primary;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillText(`$${Math.round(total/1000)}K`, centerX, centerY - 6);
-    
-    // "Total" label
-    ctx.font = '9px Inter, sans-serif';
-    ctx.fillStyle = colors.text.secondary;
-    ctx.fillText('Total', centerX, centerY + 8);
-    
-    // Add legend for departments too small to label directly
+    // Add visual legend for small departments (no text)
     const smallDepts = departments.filter(d => d.value <= 0.08);
     if (smallDepts.length > 0) {
       const legendX = panel.x - panel.width/2 + 15;
       let legendY = panel.y + panel.height/2 - 30;
       
-      smallDepts.forEach(dept => {
+      smallDepts.forEach((dept, i) => {
         // Color box
         ctx.fillStyle = dept.color;
         ctx.fillRect(legendX, legendY, 8, 8);
-        
-        // Department name
-        ctx.font = '9px Inter, sans-serif';
-        ctx.fillStyle = colors.text.secondary;
-        ctx.textAlign = 'left';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(dept.name, legendX + 12, legendY + 4);
-        
-        // Percentage
-        ctx.font = '9px Inter, sans-serif';
-        ctx.fillStyle = colors.text.muted;
-        ctx.textAlign = 'left';
-        ctx.fillText(`${Math.round(dept.value * 100)}%`, legendX + 60, legendY + 4);
         
         legendY += 12;
       });
