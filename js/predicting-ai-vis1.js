@@ -126,6 +126,7 @@ document.addEventListener('DOMContentLoaded', function() {
   let cellsInVector = [];
   // Track established connections to make them persistent
   let establishedConnections = [];
+  let persistentConnections = []; // Array to store all connections
   let activeNeuronIndices = {
     input: -1,
     hidden1: -1,
@@ -364,8 +365,8 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Vector cells setup - perfect cells stacked on top of each other
     const vectorCellSize = 30; // Perfect square cells
-    const vectorCellSpacing = 10; // Add spacing between cells
-    const vectorStartY = 50; // Position higher to fit all cells with spacing
+    const vectorCellSpacing = 15; // Add spacing between cells
+    const vectorStartY = 40; // Position higher to fit all 9 cells with spacing
     const vectorX = vectorCanvas.width / 2 - vectorCellSize/2; // Center in the canvas
     
     // Flatten grid data
@@ -620,9 +621,9 @@ document.addEventListener('DOMContentLoaded', function() {
       // Define neural network layers - now we skip input (it's shown in vectorSection)
       // and only show hidden and output layers
       const layers = [
-        { name: 'hidden1', neurons: 8, x: 180, color: '#06b6d4' },  // Increased x position for better spacing
-        { name: 'hidden2', neurons: 6, x: 380, color: '#14b8a6' },
-        { name: 'hidden3', neurons: 4, x: 580, color: '#10b981' },
+        { name: 'hidden1', neurons: 9, x: 180, color: '#06b6d4' },  // Changed from 8 to 9 neurons
+        { name: 'hidden2', neurons: 3, x: 380, color: '#14b8a6' },  // Changed from 6 to 3 neurons
+        { name: 'hidden3', neurons: 6, x: 580, color: '#10b981' },  // Changed from 4 to 6 neurons
         { name: 'output', neurons: 3, x: 750, color: '#ec4899' }
       ];
       
@@ -666,15 +667,35 @@ document.addEventListener('DOMContentLoaded', function() {
       
       // Draw connections between layers following the specific pattern
       layers.forEach((layer, layerIndex) => {
+        // First, draw all persistent connections
+        persistentConnections.forEach(conn => {
+          const gradient = ctx.createLinearGradient(conn.fromX, conn.fromY, conn.toX, conn.toY);
+          gradient.addColorStop(0, conn.gradient[0]);
+          gradient.addColorStop(1, conn.gradient[1]);
+          
+          ctx.beginPath();
+          ctx.moveTo(conn.fromX, conn.fromY);
+          ctx.lineTo(conn.toX, conn.toY);
+          ctx.strokeStyle = gradient;
+          ctx.lineWidth = 1.5;
+          ctx.stroke();
+        });
+        
         if (layerIndex === 0) {
           // For the first hidden layer, connections come from outside (the input vector)
           const inputActive = currentNodeIndices.input;
           const targetActive = currentNodeIndices.hidden1;
           
+          // Calculate consistent vertical padding
+          const verticalPadding = 40;
+          const availableHeight = height - (verticalPadding * 2);
+          
           // For each neuron in the first hidden layer
           for (let j = 0; j < layer.neurons; j++) {
             const targetX = layer.x;
-            const targetY = 50 + ((height - 100) / (layer.neurons - 1)) * j;
+            // Use the same spacing calculation as for neurons
+            const spacing = layer.neurons > 1 ? availableHeight / (layer.neurons - 1) : availableHeight;
+            const targetY = verticalPadding + (spacing * j);
             
             // Only draw connection if:
             // 1. Input neuron is active AND
@@ -695,6 +716,31 @@ document.addEventListener('DOMContentLoaded', function() {
               gradient.addColorStop(0, '#3b82f6'); // Input color
               gradient.addColorStop(1, layer.color);
               
+              // Create connection info
+              const connection = {
+                fromLayer: 'input',
+                fromIndex: inputActive,
+                toLayer: layer.name,
+                toIndex: j,
+                fromX: sourceX,
+                fromY: sourceY,
+                toX: targetX,
+                toY: targetY,
+                gradient: ['#3b82f6', layer.color]
+              };
+              
+              // Check if this connection already exists
+              const existingConnection = persistentConnections.find(c => 
+                c.fromLayer === connection.fromLayer && 
+                c.fromIndex === connection.fromIndex &&
+                c.toLayer === connection.toLayer &&
+                c.toIndex === connection.toIndex
+              );
+              
+              if (!existingConnection) {
+                persistentConnections.push(connection);
+              }
+              
               ctx.beginPath();
               ctx.moveTo(sourceX, sourceY);
               ctx.lineTo(targetX, targetY);
@@ -713,7 +759,12 @@ document.addEventListener('DOMContentLoaded', function() {
           // to appropriate target neurons
           if (sourceActive >= 0) {
             const sourceX = prevLayer.x;
-            const sourceY = 50 + ((height - 100) / (prevLayer.neurons - 1)) * sourceActive;
+            
+            // Use the same spacing calculation as for neurons
+            const verticalPadding = 40;
+            const availableHeight = height - (verticalPadding * 2);
+            const prevSpacing = prevLayer.neurons > 1 ? availableHeight / (prevLayer.neurons - 1) : availableHeight;
+            const sourceY = verticalPadding + (prevSpacing * sourceActive);
             
             for (let j = 0; j < layer.neurons; j++) {
               const targetX = layer.x;
@@ -727,6 +778,31 @@ document.addEventListener('DOMContentLoaded', function() {
               const isTargetRelevant = isTargetCurrentlyActivating || isTargetAlreadyActive;
               
               if (isTargetRelevant) {
+                // Create connection info
+                const connection = {
+                  fromLayer: prevLayer.name,
+                  fromIndex: sourceActive,
+                  toLayer: layer.name,
+                  toIndex: j,
+                  fromX: sourceX,
+                  fromY: sourceY,
+                  toX: targetX,
+                  toY: targetY,
+                  gradient: [prevLayer.color, layer.color]
+                };
+                
+                // Check if this connection already exists
+                const existingConnection = persistentConnections.find(c => 
+                  c.fromLayer === connection.fromLayer && 
+                  c.fromIndex === connection.fromIndex &&
+                  c.toLayer === connection.toLayer &&
+                  c.toIndex === connection.toIndex
+                );
+                
+                if (!existingConnection) {
+                  persistentConnections.push(connection);
+                }
+                
                 // Draw connection with gradient
                 const gradient = ctx.createLinearGradient(sourceX, sourceY, targetX, targetY);
                 gradient.addColorStop(0, prevLayer.color);
@@ -756,9 +832,14 @@ document.addEventListener('DOMContentLoaded', function() {
       layers.forEach((layer, layerIndex) => {
         const activeIndex = currentNodeIndices[layer.name];
         
+        // Adjust spacing based on neuron count
+        const verticalPadding = 40;
+        const availableHeight = height - (verticalPadding * 2);
+        const spacing = layer.neurons > 1 ? availableHeight / (layer.neurons - 1) : availableHeight;
+        
         for (let i = 0; i < layer.neurons; i++) {
           const x = layer.x;
-          const y = 50 + ((height - 100) / (layer.neurons - 1)) * i;
+          const y = verticalPadding + (spacing * i);
           
           // Determine if this neuron is active
           const isActive = i <= activeIndex;
@@ -956,6 +1037,8 @@ document.addEventListener('DOMContentLoaded', function() {
     predictionResults = null;
     gridData = [];
     cellsInVector = [];
+    establishedConnections = [];
+    persistentConnections = []; // Reset persistent connections
     activeNeuronIndices = {
       input: -1,
       hidden1: -1,
@@ -964,11 +1047,11 @@ document.addEventListener('DOMContentLoaded', function() {
       output: -1
     };
     
-    // Generate new random position - snap to pixel grid with exactly 4x3 cells
+    // Generate new random position - snap to pixel grid with exactly 3x3 cells
     // But avoid the left 1/3 of the screen where the feature vector will be
     const pixelSize = 10;
-    const gridCols = 3; // Changed from 4 to 3 cells wide
-    const gridRows = 4; // Still 4 cells tall
+    const gridCols = 3; // 3 cells wide
+    const gridRows = 3; // Changed from 4 to 3 cells tall
     
     // Calculate boundary to avoid left third
     const leftThirdBoundary = Math.floor(mapCanvas.width / 3);
@@ -1042,17 +1125,17 @@ document.addEventListener('DOMContentLoaded', function() {
     // Reset and restart the animation - adjust time to account for all transitions
     setTimeout(() => {
       runVisualization();
-    }, 35000); // Increased time to account for longer animation sequence
+    }, 30000); // Adjusted time for 3x3 grid and new network architecture
   }
   
   // Function to animate neural network with proper activation pattern
   function animateNeuralNetworkSequence() {
     // Define layer info
     const layerInfo = [
-      { name: 'input', size: 12 },  // Changed from 16 to 12 (4x3 grid)
-      { name: 'hidden1', size: 8 },
-      { name: 'hidden2', size: 6 },
-      { name: 'hidden3', size: 4 },
+      { name: 'input', size: 9 },  // Changed from 12 to 9 (3x3 grid)
+      { name: 'hidden1', size: 9 }, // Changed from 8 to 9
+      { name: 'hidden2', size: 3 }, // Changed from 6 to 3
+      { name: 'hidden3', size: 6 }, // Changed from 4 to 6
       { name: 'output', size: 3 }
     ];
     
@@ -1192,7 +1275,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Execute the animation sequence
     let currentStep = 0;
-    const stepDelay = 50; // Increased from 120ms to 150ms for better visibility
+    const stepDelay = 75; // Adjusted step delay for better visibility
     
     const processNextStep = () => {
       if (currentStep >= animationSteps.length) {
