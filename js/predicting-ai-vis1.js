@@ -21,7 +21,7 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Make container relative for absolute positioning
   container.style.position = 'relative';
-  container.style.height = '300px';
+  container.style.height = '500px'; // Increased from 300px to 500px
   container.style.overflow = 'hidden';
   container.style.backgroundColor = '#1f2937'; // gray-800
   container.style.borderRadius = '0.5rem';
@@ -37,7 +37,7 @@ document.addEventListener('DOMContentLoaded', function() {
   visualizationWrapper.style.display = 'flex';
   visualizationWrapper.style.alignItems = 'center';
   visualizationWrapper.style.justifyContent = 'center';
-  visualizationWrapper.style.padding = '1rem';
+  visualizationWrapper.style.padding = '0'; // Removed padding to fill screen
   visualizationWrapper.style.opacity = '0';
   visualizationWrapper.style.transition = 'opacity 0.5s ease-in-out';
   container.appendChild(visualizationWrapper);
@@ -587,10 +587,6 @@ document.addEventListener('DOMContentLoaded', function() {
         // Reset shadow for border
         ctx.shadowBlur = 0;
         
-
-        
-
-        
         // Update our cells for neural network
         cellsInVector[bwCellIndex].bwX = bwX;
         cellsInVector[bwCellIndex].bwY = bwY;
@@ -621,10 +617,10 @@ document.addEventListener('DOMContentLoaded', function() {
       // Define neural network layers - now we skip input (it's shown in vectorSection)
       // and only show hidden and output layers
       const layers = [
-        { name: 'hidden1', neurons: 9, x: 180, color: '#06b6d4' },  // Changed from 8 to 9 neurons
-        { name: 'hidden2', neurons: 3, x: 380, color: '#14b8a6' },  // Changed from 6 to 3 neurons
-        { name: 'hidden3', neurons: 6, x: 580, color: '#10b981' },  // Changed from 4 to 6 neurons
-        { name: 'output', neurons: 3, x: 750, color: '#ec4899' }
+        { name: 'hidden1', neurons: 9, x: 160, color: '#06b6d4' },  // Move further left
+        { name: 'hidden2', neurons: 3, x: 400, color: '#14b8a6' },  // Spread out more
+        { name: 'hidden3', neurons: 6, x: 620, color: '#10b981' },  // Spread out more
+        { name: 'output', neurons: 3, x: 760, color: '#ec4899' }    // Move further right
       ];
       
       // Get currently active nodes and connections
@@ -990,6 +986,8 @@ document.addEventListener('DOMContentLoaded', function() {
       mineralContainer.appendChild(percentLabel);
       resultsContainer.appendChild(mineralContainer);
     });
+    predictionSection.style.transform = 'translateX(0)';
+    updateStageIndicators();
   }
   
   // Update stage indicators
@@ -1122,10 +1120,7 @@ document.addEventListener('DOMContentLoaded', function() {
       setTimeout(animateNeuralNetworkSequence, 2000); // Increased delay to ensure BW nodes are ready
     }, 14000);
     
-    // Reset and restart the animation - adjust time to account for all transitions
-    setTimeout(() => {
-      runVisualization();
-    }, 30000); // Adjusted time for 3x3 grid and new network architecture
+    // We've removed the hardcoded reset timeout - reset is now triggered after predictions
   }
   
   // Function to animate neural network with proper activation pattern
@@ -1275,9 +1270,17 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Execute the animation sequence
     let currentStep = 0;
-    const stepDelay = 75; // Adjusted step delay for better visibility
+    let stepDelay = 75; // Initial delay
     
     const processNextStep = () => {
+      // Adjust the delay based on progress to speed up in later stages
+      if (currentStep > animationSteps.length * 0.3) {
+        stepDelay = 30; // Faster in middle stages
+      }
+      if (currentStep > animationSteps.length * 0.6) {
+        stepDelay = 15; // Much faster in later stages
+      }
+      
       if (currentStep >= animationSteps.length) {
         // Animation sequence complete, show predictions
         setTimeout(() => {
@@ -1290,6 +1293,7 @@ document.addEventListener('DOMContentLoaded', function() {
           predictionSection.style.transform = 'translateX(0)';
           updateStageIndicators();
           showPredictionResults();
+          scheduleReset(); // Call scheduleReset to trigger the reset after predictions
         }, 500);
         return;
       }
@@ -1326,6 +1330,16 @@ document.addEventListener('DOMContentLoaded', function() {
     // Start the animation sequence after making sure neurons are drawn
     animateNeuralNetwork(); // Draw the initial state first
     setTimeout(processNextStep, 1000); // Start sequence after a delay
+  }
+  
+  // New function to handle reset after full visualization completes
+  function scheduleReset() {
+    // Only reset if we've completed the prediction stage
+    if (predictionStage === 4) {
+      setTimeout(() => {
+        runVisualization();
+      }, 7000); // Show prediction results for 7 seconds before resetting
+    }
   }
   
   // Initialize and start visualization
