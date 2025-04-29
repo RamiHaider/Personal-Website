@@ -124,6 +124,8 @@ document.addEventListener('DOMContentLoaded', function() {
   let gridData = [];
   let backgroundPixels = [];
   let cellsInVector = [];
+  // Track established connections to make them persistent
+  let establishedConnections = [];
   let activeNeuronIndices = {
     input: -1,
     hidden1: -1,
@@ -362,8 +364,8 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Vector cells setup - perfect cells stacked on top of each other
     const vectorCellSize = 30; // Perfect square cells
-    const vectorCellSpacing = 0; // No spacing - stacked on top of each other
-    const vectorStartY = 60; // Position higher to fit all cells with no spacing
+    const vectorCellSpacing = 10; // Add spacing between cells
+    const vectorStartY = 50; // Position higher to fit all cells with spacing
     const vectorX = vectorCanvas.width / 2 - vectorCellSize/2; // Center in the canvas
     
     // Flatten grid data
@@ -400,12 +402,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const animateNextCell = () => {
       if (cellIndex >= totalCells) {
         // Once all cells are in vector, add black & white copy after a delay
-        setTimeout(createBWCopy, 1000);
+        setTimeout(createBWCopy, 500); // Reduced delay from 1000ms to 500ms
         return;
       }
       
       const cell = flattenedCells[cellIndex];
-      // Stack cells on top of each other with no spacing
+      // Stack cells on top of each other with spacing
       const vectorY = vectorStartY + (cellIndex * (vectorCellSize + vectorCellSpacing));
       
       // Animation for cell movement
@@ -453,6 +455,7 @@ document.addEventListener('DOMContentLoaded', function() {
               // Already processed cells are dimmed
               gridCtx.fillStyle = `rgba(${gridCell.color.r}, ${gridCell.color.g}, ${gridCell.color.b}, 0.3)`;
             } else {
+              // Unprocessed cells remain
               // Unprocessed cells remain bright
               gridCtx.fillStyle = `rgba(${gridCell.color.r}, ${gridCell.color.g}, ${gridCell.color.b}, 0.9)`;
             }
@@ -522,7 +525,7 @@ document.addEventListener('DOMContentLoaded', function() {
             setTimeout(animateNextCell, 50);
           } else {
             // Last cell complete, now create BW copy after a brief pause
-            setTimeout(createBWCopy, 1000);
+            setTimeout(createBWCopy, 500);
           }
         }
       };
@@ -583,16 +586,9 @@ document.addEventListener('DOMContentLoaded', function() {
         // Reset shadow for border
         ctx.shadowBlur = 0;
         
-        // Add border
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
-        ctx.lineWidth = 1;
-        ctx.stroke();
+
         
-        // Add intensity value
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-        ctx.font = '10px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText((intensity/255).toFixed(2), bwX + vectorCellSize/2, bwY + vectorCellSize/2 + 3);
+
         
         // Update our cells for neural network
         cellsInVector[bwCellIndex].bwX = bwX;
@@ -1196,7 +1192,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Execute the animation sequence
     let currentStep = 0;
-    const stepDelay = 150; // Increased from 120ms to 150ms for better visibility
+    const stepDelay = 50; // Increased from 120ms to 150ms for better visibility
     
     const processNextStep = () => {
       if (currentStep >= animationSteps.length) {
