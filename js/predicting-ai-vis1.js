@@ -714,13 +714,12 @@ document.addEventListener('DOMContentLoaded', function() {
       }
       
       // OPTIMIZATION: Only redraw a portion of persistent connections per frame to improve performance
-      const maxConnectionsPerFrame = 100; // Limit number of connections drawn per frame
+      const maxConnectionsPerFrame = 120; // Increased from 100 to 120
       const connectionsToDraw = persistentConnections.length > maxConnectionsPerFrame ? 
-                              persistentConnections.slice(0, maxConnectionsPerFrame) : 
-                              persistentConnections;
+                            persistentConnections.slice(-maxConnectionsPerFrame) : // Draw the LAST N connections
+                            persistentConnections;
       
       // Draw connections between layers following the specific pattern
-      // First, draw persistent connections (limited for performance)
       connectionsToDraw.forEach(conn => {
         const gradient = ctx.createLinearGradient(conn.fromX, conn.fromY, conn.toX, conn.toY);
         gradient.addColorStop(0, conn.gradient[0]);
