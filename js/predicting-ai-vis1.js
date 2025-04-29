@@ -360,10 +360,10 @@ document.addEventListener('DOMContentLoaded', function() {
     let cellIndex = 0;
     let animationId;
     
-    // Vector cells setup
-    const vectorCellHeight = 8; // Slightly larger for visibility
-    const vectorCellWidth = vectorCanvas.width - 20;
-    const vectorCellSpacing = 2;
+    // Vector cells setup - use more node-like elements instead of bars
+    const vectorCellSize = 20; // Square cells instead of bars
+    const vectorCellSpacing = 12;
+    const vectorStartY = 100; // Position them vertically centered
     
     // Flatten grid data
     const flattenedCells = [];
@@ -389,7 +389,7 @@ document.addEventListener('DOMContentLoaded', function() {
     ctx.fillStyle = 'rgba(34, 211, 238, 0.9)';
     ctx.font = '12px sans-serif';
     ctx.textAlign = 'center';
-    ctx.fillText('Feature Vector', vectorCanvas.width / 2, 20);
+    ctx.fillText('Input Neurons', vectorCanvas.width / 2, 20);
     
     const animateNextCell = () => {
       if (cellIndex >= totalCells) {
@@ -397,7 +397,8 @@ document.addEventListener('DOMContentLoaded', function() {
       }
       
       const cell = flattenedCells[cellIndex];
-      const vectorY = 30 + cellIndex * (vectorCellHeight + vectorCellSpacing);
+      // Calculate staggered vertical positions for a more neural-network look
+      const vectorY = vectorStartY + (cellIndex * vectorCellSpacing);
       
       // Animation for cell movement
       let cellAnimationProgress = 0;
@@ -416,10 +417,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const startHeight = cell.height;
         
         // Ending position (in the vector)
-        const endX = 10;
+        const endX = vectorCanvas.width / 2 - vectorCellSize/2; // Center in the canvas
         const endY = vectorY;
-        const endWidth = vectorCellWidth;
-        const endHeight = vectorCellHeight;
+        const endWidth = vectorCellSize;
+        const endHeight = vectorCellSize;
         
         // Current position based on animation progress
         const currentX = startX + (endX - startX) * cellAnimationProgress;
@@ -464,35 +465,79 @@ document.addEventListener('DOMContentLoaded', function() {
         ctx.fillStyle = 'rgba(34, 211, 238, 0.9)';
         ctx.font = '12px sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText('Feature Vector', vectorCanvas.width / 2, 20);
+        ctx.fillText('Input Neurons', vectorCanvas.width / 2, 20);
         
-        // Draw previously transferred cells
-        cellsInVector.forEach(item => {
+        // Draw previously transferred cells as nodes with slight random variations to look more like neurons
+        cellsInVector.forEach((item, i) => {
+          // Generate a unique random shape coefficient for each cell
+          const randShape = item.shapeCoeff || (0.9 + Math.random() * 0.2);
+          item.shapeCoeff = randShape;
+
+          // Draw the cell as a node/neuron
           ctx.fillStyle = `rgba(${item.color.r}, ${item.color.g}, ${item.color.b}, 0.8)`;
-          ctx.fillRect(item.x, item.y, item.width, item.height);
-          ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+          
+          // Add subtle glow for more neural look
+          ctx.shadowColor = `rgba(${item.color.r}, ${item.color.g}, ${item.color.b}, 0.6)`;
+          ctx.shadowBlur = 8;
+          
+          // Draw a slightly rounded shape
+          const nodeSize = item.width * randShape;
+          ctx.beginPath();
+          ctx.arc(item.x + nodeSize/2, item.y + nodeSize/2, nodeSize/2, 0, Math.PI * 2);
+          ctx.fill();
+          
+          ctx.shadowBlur = 0;
+          
+          // Add a border
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
           ctx.lineWidth = 1;
-          ctx.strokeRect(item.x, item.y, item.width, item.height);
+          ctx.stroke();
         });
         
         // Draw the current moving cell
-        ctx.fillStyle = `rgba(${cell.color.r}, ${cell.color.g}, ${cell.color.b}, 0.8)`;
-        ctx.fillRect(currentX, currentY, currentWidth, currentHeight);
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
-        ctx.lineWidth = 1;
-        ctx.strokeRect(currentX, currentY, currentWidth, currentHeight);
+        if (cellAnimationProgress > 0.5) {
+          // Start adding neuron-like characteristics halfway through the animation
+          const morphProgress = (cellAnimationProgress - 0.5) * 2; // 0 to 1 in second half
+          const randShape = 0.9 + Math.random() * 0.2;
+          
+          ctx.shadowColor = `rgba(${cell.color.r}, ${cell.color.g}, ${cell.color.b}, 0.6)`;
+          ctx.shadowBlur = 8 * morphProgress;
+          
+          ctx.fillStyle = `rgba(${cell.color.r}, ${cell.color.g}, ${cell.color.b}, 0.8)`;
+          
+          // Transition from square to rounded as animation progresses
+          const radius = (morphProgress * currentWidth/2);
+          ctx.beginPath();
+          ctx.arc(currentX + currentWidth/2, currentY + currentHeight/2, currentWidth/2, 0, Math.PI * 2);
+          ctx.fill();
+          
+          ctx.shadowBlur = 0;
+          
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+          ctx.lineWidth = 1;
+          ctx.stroke();
+        } else {
+          // Just draw regular square in first half of animation
+          ctx.fillStyle = `rgba(${cell.color.r}, ${cell.color.g}, ${cell.color.b}, 0.8)`;
+          ctx.fillRect(currentX, currentY, currentWidth, currentHeight);
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+          ctx.lineWidth = 1;
+          ctx.strokeRect(currentX, currentY, currentWidth, currentHeight);
+        }
         
         // Continue animation if not complete
         if (cellAnimationProgress < 1) {
           requestAnimationFrame(animateCellMovement);
         } else {
           // Animation complete, store the cell in final position
+          const randShape = 0.9 + Math.random() * 0.2;
           cellsInVector.push({
             x: endX,
             y: endY,
             width: endWidth,
             height: endHeight,
-            color: cell.color
+            color: cell.color,
+            shapeCoeff: randShape
           });
           
           // Move to next cell
@@ -528,13 +573,17 @@ document.addEventListener('DOMContentLoaded', function() {
       
       // Define neural network layers
       const layers = [
-        { name: 'input', neurons: 10, x: 50, color: '#3b82f6' },
+        { name: 'input', neurons: 16, x: 50, color: '#3b82f6' }, // 16 neurons for the 4x4 grid
         { name: 'conv1', neurons: 6, x: 150, color: '#06b6d4' },
         { name: 'conv2', neurons: 6, x: 250, color: '#14b8a6' },
         { name: 'conv3', neurons: 6, x: 350, color: '#10b981' },
         { name: 'fc', neurons: 8, x: 450, color: '#6366f1' },
         { name: 'output', neurons: 3, x: 550, color: '#ec4899' }
       ];
+      
+      // Coordinate the input layer with vector visualization
+      const inputSpacing = 12; // Match spacing in vector visualization
+      const inputStartY = 100; // Match starting Y in vector visualization
       
       // Draw connections first (behind neurons)
       layers.forEach((layer, layerIndex) => {
@@ -546,14 +595,26 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Draw connections
         for (let i = 0; i < prevLayer.neurons; i++) {
+          // For the input layer, position neurons to match the vector visualization
+          const sourceY = prevLayer.name === 'input' 
+            ? inputStartY + (i * inputSpacing) // Match the vector cell spacing
+            : 50 + ((height - 100) / (prevLayer.neurons - 1)) * i;
+          
+          const sourceX = prevLayer.x;
+          
           for (let j = 0; j < layer.neurons; j++) {
-            const sourceX = prevLayer.x;
-            const sourceY = 50 + ((height - 100) / (prevLayer.neurons - 1)) * i;
             const targetX = layer.x;
             const targetY = 50 + ((height - 100) / (layer.neurons - 1)) * j;
             
-            // Determine if this connection is active
-            const isActive = sourceActive >= i && targetActive >= 0;
+            // Determine if this connection is active - more nuanced logic:
+            // Only draw connection if:
+            // 1. Source neuron is active AND
+            // 2. Target neuron is either active OR we're currently activating this source neuron
+            const isSourceActive = i <= sourceActive;
+            const isTargetActive = j <= targetActive;
+            const isCurrentlyActivating = i === sourceActive; // This is the neuron we're currently highlighting
+            
+            const isActive = isSourceActive && (isTargetActive || isCurrentlyActivating);
             
             // Draw connection with gradient
             const gradient = ctx.createLinearGradient(sourceX, sourceY, targetX, targetY);
@@ -576,35 +637,63 @@ document.addEventListener('DOMContentLoaded', function() {
         
         for (let i = 0; i < layer.neurons; i++) {
           const x = layer.x;
-          const y = 50 + ((height - 100) / (layer.neurons - 1)) * i;
+          
+          // For input layer, position neurons to match vector visualization
+          const y = layer.name === 'input'
+            ? inputStartY + (i * inputSpacing) // Match the vector cell spacing
+            : 50 + ((height - 100) / (layer.neurons - 1)) * i;
           
           // Determine if this neuron is active
           const isActive = i <= activeIndex;
           
           // Calculate neuron size
-          const baseSize = layerIndex === 5 ? 10 : 6; // Output neurons are larger
+          const baseSize = layerIndex === 5 ? 10 : (layerIndex === 0 ? 8 : 6); // Output and input neurons are larger
           const size = isActive ? baseSize * 1.5 : baseSize;
           
-          // Draw neuron
-          ctx.beginPath();
-          ctx.arc(x, y, size, 0, Math.PI * 2);
-          ctx.fillStyle = isActive ? layer.color : 'rgba(255, 255, 255, 0.3)';
-          
-          // Add glow effect to active neurons
-          if (isActive) {
-            ctx.shadowColor = layer.color;
-            ctx.shadowBlur = 10;
-          } else {
+          // For input neurons, use more variation in shape/size to match the vectorized cells
+          if (layer.name === 'input') {
+            const randShape = 0.9 + Math.random() * 0.2;
+            
+            // Draw neuron with glow
+            ctx.beginPath();
+            if (isActive) {
+              ctx.shadowColor = layer.color;
+              ctx.shadowBlur = 10;
+            }
+            
+            ctx.fillStyle = isActive ? layer.color : 'rgba(255, 255, 255, 0.3)';
+            ctx.beginPath();
+            ctx.arc(x, y, size * randShape, 0, Math.PI * 2);
+            ctx.fill();
+            
             ctx.shadowBlur = 0;
+            
+            // Draw border
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+          } else {
+            // Regular neurons for other layers
+            ctx.beginPath();
+            ctx.arc(x, y, size, 0, Math.PI * 2);
+            ctx.fillStyle = isActive ? layer.color : 'rgba(255, 255, 255, 0.3)';
+            
+            // Add glow effect to active neurons
+            if (isActive) {
+              ctx.shadowColor = layer.color;
+              ctx.shadowBlur = 10;
+            } else {
+              ctx.shadowBlur = 0;
+            }
+            
+            ctx.fill();
+            ctx.shadowBlur = 0;
+            
+            // Draw neuron border
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+            ctx.lineWidth = 1;
+            ctx.stroke();
           }
-          
-          ctx.fill();
-          ctx.shadowBlur = 0;
-          
-          // Draw neuron border
-          ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
-          ctx.lineWidth = 1;
-          ctx.stroke();
         }
         
         // Add layer label
@@ -827,14 +916,24 @@ document.addEventListener('DOMContentLoaded', function() {
       
       // Animate data flowing through neural network
       const layerNames = ['input', 'conv1', 'conv2', 'conv3', 'fc', 'output'];
-      const layerSizes = [10, 6, 6, 6, 8, 3];
+      const layerSizes = [16, 6, 6, 6, 8, 3];
+      
+      // Smoother animation timing - each layer fully activates before moving to the next
+      let cumulativeDelay = 0;
+      const layerTransitionDelay = 500; // Delay between layers
       
       layerNames.forEach((layer, layerIdx) => {
+        const neuronDelay = 150; // Delay between neurons in the same layer
+        
         for (let i = 0; i < layerSizes[layerIdx]; i++) {
+          // Calculate proper timing for smoother flow
+          const neuronActivationTime = cumulativeDelay + (i * neuronDelay);
+          
           setTimeout(() => {
             activeNeuronIndices[layer] = i;
             animateNeuralNetwork();
             
+            // Check if this is the last neuron in the last layer (output)
             if (layer === 'output' && i === layerSizes[layerIdx] - 1) {
               setTimeout(() => {
                 predictionStage = 4;
@@ -848,17 +947,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 showPredictionResults();
               }, 500);
             }
-          }, (layerIdx * 1500) + (i * 300));
+          }, neuronActivationTime);
         }
+        
+        // Add delay for next layer transition
+        cumulativeDelay += (layerSizes[layerIdx] * neuronDelay) + layerTransitionDelay;
       });
       
       animateNeuralNetwork();
     }, 9000); // Reduced from 12000 to 9000 to account for faster animation
     
-    // Reset and restart the animation
+    // Reset and restart the animation - adjust time to account for all transitions
     setTimeout(() => {
       runVisualization();
-    }, 22000); // Reduced from 25000 to 22000
+    }, 24000); 
   }
   
   // Initialize and start visualization
