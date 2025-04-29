@@ -84,11 +84,12 @@ document.addEventListener('DOMContentLoaded', function() {
   predictionSection.style.transition = 'all 0.5s ease-in-out';
   vizContainer.appendChild(predictionSection);
   
-  // Create selection box
+  // Create selection box - only one selection box now
   const selectionBox = document.createElement('div');
   selectionBox.style.position = 'absolute';
   selectionBox.style.border = '2px solid #06b6d4'; // cyan-500
   selectionBox.style.transition = 'all 0.5s ease-in-out';
+  selectionBox.style.display = 'none'; // Initially hidden
   container.appendChild(selectionBox);
   
   // Create stage indicators
@@ -227,26 +228,43 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Update selection box and grid data
   function updateSelection() {
-    selectionBox.style.left = selectionBoxState.x + 'px';
-    selectionBox.style.top = selectionBoxState.y + 'px';
-    selectionBox.style.width = selectionBoxState.width + 'px';
-    selectionBox.style.height = selectionBoxState.height + 'px';
-    
+    // Only show and update selection box in stage 1
     if (predictionStage === 1) {
+      selectionBox.style.display = 'block';
+      selectionBox.style.left = selectionBoxState.x + 'px';
+      selectionBox.style.top = selectionBoxState.y + 'px';
+      selectionBox.style.width = selectionBoxState.width + 'px';
+      selectionBox.style.height = selectionBoxState.height + 'px';
+      
       selectionBox.style.borderStyle = 'dashed';
       selectionBox.style.boxShadow = '0 0 10px rgba(34, 211, 238, 0.5)';
       selectionBox.style.animation = 'pulse 1.5s infinite alternate';
       
-      // Extract grid data from pixels in selection
+      // Extract grid data from pixels in selection - ensure exact pixel boundaries
+      // Make sure to snap to the grid boundaries
+      const pixelSize = 10;
+      
+      // Snap selectionBox to pixel grid
+      const snappedX = Math.floor(selectionBoxState.x / pixelSize) * pixelSize;
+      const snappedY = Math.floor(selectionBoxState.y / pixelSize) * pixelSize;
+      const snappedWidth = Math.ceil(selectionBoxState.width / pixelSize) * pixelSize;
+      const snappedHeight = Math.ceil(selectionBoxState.height / pixelSize) * pixelSize;
+      
+      // Update the selection box position to match the grid
+      selectionBox.style.left = snappedX + 'px';
+      selectionBox.style.top = snappedY + 'px';
+      selectionBox.style.width = snappedWidth + 'px';
+      selectionBox.style.height = snappedHeight + 'px';
+      
       gridData = [];
       backgroundPixels.forEach(row => {
         const rowData = [];
         row.forEach(pixel => {
           if (
-            pixel.x >= selectionBoxState.x && 
-            pixel.x < selectionBoxState.x + selectionBoxState.width &&
-            pixel.y >= selectionBoxState.y && 
-            pixel.y < selectionBoxState.y + selectionBoxState.height
+            pixel.x >= snappedX && 
+            pixel.x < snappedX + snappedWidth &&
+            pixel.y >= snappedY && 
+            pixel.y < snappedY + snappedHeight
           ) {
             rowData.push({
               ...pixel,
@@ -266,10 +284,10 @@ document.addEventListener('DOMContentLoaded', function() {
       ctx.strokeStyle = 'rgba(34, 211, 238, 0.8)';
       ctx.lineWidth = 2;
       ctx.strokeRect(
-        selectionBoxState.x - 1, 
-        selectionBoxState.y - 1, 
-        selectionBoxState.width + 2, 
-        selectionBoxState.height + 2
+        snappedX - 1, 
+        snappedY - 1, 
+        snappedWidth + 2, 
+        snappedHeight + 2
       );
       
       if (gridData.length > 0) {
@@ -281,104 +299,218 @@ document.addEventListener('DOMContentLoaded', function() {
           });
         });
       }
+    } else if (predictionStage === 0) {
+      // If we're in stage 0, just set the position but keep hidden
+      selectionBox.style.display = 'none';
+      selectionBox.style.left = selectionBoxState.x + 'px';
+      selectionBox.style.top = selectionBoxState.y + 'px';
+      selectionBox.style.width = selectionBoxState.width + 'px';
+      selectionBox.style.height = selectionBoxState.height + 'px';
     } else {
-      selectionBox.style.borderStyle = 'solid';
-      selectionBox.style.boxShadow = 'none';
-      selectionBox.style.animation = 'none';
+      // For other stages, hide the selection box
+      selectionBox.style.display = 'none';
     }
   }
   
-  // Matrix to vector animation
+  // Transition background to focus on selection
+  function fadeBackgroundForMatrix() {
+    if (predictionStage < 2 || gridData.length === 0) return;
+    
+    // Create overlay to fade background except for selection area
+    mapCanvas.style.transition = 'opacity 1s ease-in-out';
+    
+    // Make the background slightly transparent
+    mapCanvas.style.opacity = '0.3';
+    
+    // Make selection box transition
+    selectionBox.style.opacity = '0';
+    
+    // Highlight matrix cells
+    const ctx = gridCanvas.getContext('2d');
+    ctx.clearRect(0, 0, gridCanvas.width, gridCanvas.height);
+    
+    gridData.forEach(row => {
+      row.forEach(cell => {
+        // Draw highlighted cell borders
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(cell.x, cell.y, cell.width, cell.height);
+        
+        // Draw cell with slightly enhanced color
+        const brightenFactor = 1.2;
+        ctx.fillStyle = `rgba(
+          ${Math.min(255, cell.color.r * brightenFactor)},
+          ${Math.min(255, cell.color.g * brightenFactor)},
+          ${Math.min(255, cell.color.b * brightenFactor)},
+          0.9)`;
+        ctx.fillRect(cell.x + 1, cell.y + 1, cell.width - 2, cell.height - 2);
+      });
+    });
+  }
+  
+  // Matrix to vector animation - improved cell-by-cell animation
   function animateVectorization() {
     if (predictionStage < 2 || gridData.length === 0) return;
     
+    // First fade the background and highlight the matrix
+    fadeBackgroundForMatrix();
+    
     const ctx = vectorCanvas.getContext('2d');
     let startTime = Date.now();
+    let cellIndex = 0;
     let animationId;
     
-    const drawFrame = () => {
-      ctx.clearRect(0, 0, vectorCanvas.width, vectorCanvas.height);
-      
-      // Animation progress over 5 seconds
-      const elapsed = Date.now() - startTime;
-      const transitionProgress = Math.min(1, elapsed / 5000);
-      
-      // Vector cells setup
-      const vectorCellHeight = 6;
-      const vectorCellWidth = vectorCanvas.width - 20;
-      const vectorCellSpacing = 2;
-      
-      // Flatten grid data
-      const flattenedCells = [];
-      gridData.forEach(row => {
-        row.forEach(cell => {
-          flattenedCells.push(cell);
-        });
+    // Vector cells setup
+    const vectorCellHeight = 8; // Slightly larger for visibility
+    const vectorCellWidth = vectorCanvas.width - 20;
+    const vectorCellSpacing = 2;
+    
+    // Flatten grid data
+    const flattenedCells = [];
+    gridData.forEach(row => {
+      row.forEach(cell => {
+        flattenedCells.push(cell);
       });
+    });
+    
+    // Sort by y then x for row-by-row unwrapping
+    flattenedCells.sort((a, b) => {
+      if (a.y === b.y) return a.x - b.x;
+      return a.y - b.y;
+    });
+    
+    const totalCells = flattenedCells.length;
+    const cellsInVector = [];
+    
+    // Clear vector canvas initially
+    ctx.clearRect(0, 0, vectorCanvas.width, vectorCanvas.height);
+    
+    // Draw label for feature vector
+    ctx.fillStyle = 'rgba(34, 211, 238, 0.9)';
+    ctx.font = '12px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Feature Vector', vectorCanvas.width / 2, 20);
+    
+    const animateNextCell = () => {
+      if (cellIndex >= totalCells) {
+        return;
+      }
       
-      // Sort by y then x for row-by-row unwrapping
-      flattenedCells.sort((a, b) => {
-        if (a.y === b.y) return a.x - b.x;
-        return a.y - b.y;
-      });
+      const cell = flattenedCells[cellIndex];
+      const vectorY = 30 + cellIndex * (vectorCellHeight + vectorCellSpacing);
       
-      const totalCells = flattenedCells.length;
+      // Animation for cell movement
+      let cellAnimationProgress = 0;
+      const animationDuration = 200; // ms per cell - twice as fast (was 800)
+      const cellAnimationStart = Date.now();
       
-      // Draw cells with animation
-      flattenedCells.forEach((cell, cellIndex) => {
-        const cellOrderProgress = cellIndex / totalCells;
-        const cellAnimationProgress = Math.max(0, Math.min(1, 
-          (transitionProgress - cellOrderProgress * 0.5) / 0.5
-        ));
+      const animateCellMovement = () => {
+        // Calculate animation progress
+        const elapsed = Date.now() - cellAnimationStart;
+        cellAnimationProgress = Math.min(1, elapsed / animationDuration);
         
-        if (cellAnimationProgress <= 0) return;
-        
-        // Calculate positions
-        const vectorY = 10 + cellIndex * (vectorCellHeight + vectorCellSpacing);
-        
+        // Starting position (in the matrix)
         const startX = cell.x;
         const startY = cell.y;
         const startWidth = cell.width;
         const startHeight = cell.height;
         
+        // Ending position (in the vector)
         const endX = 10;
         const endY = vectorY;
         const endWidth = vectorCellWidth;
         const endHeight = vectorCellHeight;
         
-        // Interpolate position based on animation progress
+        // Current position based on animation progress
         const currentX = startX + (endX - startX) * cellAnimationProgress;
         const currentY = startY + (endY - startY) * cellAnimationProgress;
         const currentWidth = startWidth + (endWidth - startWidth) * cellAnimationProgress;
         const currentHeight = startHeight + (endHeight - startHeight) * cellAnimationProgress;
         
-        // Draw cell
-        ctx.fillStyle = `rgba(${cell.color.r}, ${cell.color.g}, ${cell.color.b}, ${0.5 + cellAnimationProgress * 0.5})`;
-        ctx.fillRect(currentX, currentY, currentWidth, currentHeight);
+        // Highlight the current cell in the grid
+        const gridCtx = gridCanvas.getContext('2d');
         
-        // Add grid lines
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
-        ctx.strokeRect(currentX, currentY, currentWidth, currentHeight);
-      });
-      
-      // Add label when animation is nearly complete
-      if (transitionProgress > 0.95) {
+        // Redraw all cells to ensure they stay visible
+        gridData.forEach(row => {
+          row.forEach(gridCell => {
+            // Skip the current animating cell - it's moving
+            if (gridCell.x === cell.x && gridCell.y === cell.y) return;
+            
+            const isAlreadyProcessed = flattenedCells.findIndex(fc => 
+              fc.x === gridCell.x && fc.y === gridCell.y) < cellIndex;
+              
+            // Redraw with appropriate style
+            if (isAlreadyProcessed) {
+              // Already processed cells are dimmed
+              gridCtx.fillStyle = `rgba(${gridCell.color.r}, ${gridCell.color.g}, ${gridCell.color.b}, 0.3)`;
+            } else {
+              // Unprocessed cells remain bright
+              gridCtx.fillStyle = `rgba(${gridCell.color.r}, ${gridCell.color.g}, ${gridCell.color.b}, 0.9)`;
+            }
+            gridCtx.fillRect(gridCell.x + 1, gridCell.y + 1, gridCell.width - 2, gridCell.height - 2);
+            gridCtx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+            gridCtx.lineWidth = 1;
+            gridCtx.strokeRect(gridCell.x, gridCell.y, gridCell.width, gridCell.height);
+          });
+        });
+        
+        // Draw moving cell
+        gridCtx.clearRect(cell.x, cell.y, cell.width, cell.height);
+        
+        // Redraw vector canvas with all previously moved cells and the current one
+        ctx.clearRect(0, 0, vectorCanvas.width, vectorCanvas.height);
+        
+        // Redraw the label
         ctx.fillStyle = 'rgba(34, 211, 238, 0.9)';
-        ctx.font = '10px sans-serif';
+        ctx.font = '12px sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText(`Feature Vector (${totalCells} elements)`, vectorCanvas.width / 2, vectorCanvas.height - 10);
-      }
+        ctx.fillText('Feature Vector', vectorCanvas.width / 2, 20);
+        
+        // Draw previously transferred cells
+        cellsInVector.forEach(item => {
+          ctx.fillStyle = `rgba(${item.color.r}, ${item.color.g}, ${item.color.b}, 0.8)`;
+          ctx.fillRect(item.x, item.y, item.width, item.height);
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+          ctx.lineWidth = 1;
+          ctx.strokeRect(item.x, item.y, item.width, item.height);
+        });
+        
+        // Draw the current moving cell
+        ctx.fillStyle = `rgba(${cell.color.r}, ${cell.color.g}, ${cell.color.b}, 0.8)`;
+        ctx.fillRect(currentX, currentY, currentWidth, currentHeight);
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(currentX, currentY, currentWidth, currentHeight);
+        
+        // Continue animation if not complete
+        if (cellAnimationProgress < 1) {
+          requestAnimationFrame(animateCellMovement);
+        } else {
+          // Animation complete, store the cell in final position
+          cellsInVector.push({
+            x: endX,
+            y: endY,
+            width: endWidth,
+            height: endHeight,
+            color: cell.color
+          });
+          
+          // Move to next cell
+          cellIndex++;
+          
+          // Continue to next cell with a small delay
+          if (cellIndex < totalCells) {
+            setTimeout(animateNextCell, 50); // Faster cell transition (was 100)
+          }
+        }
+      };
       
-      if (predictionStage === 2 && transitionProgress < 1) {
-        animationId = requestAnimationFrame(drawFrame);
-      }
+      // Start the cell animation
+      animateCellMovement();
     };
     
-    animationId = requestAnimationFrame(drawFrame);
-    
-    return () => {
-      if (animationId) cancelAnimationFrame(animationId);
-    };
+    // Start the animation with the first cell
+    setTimeout(animateNextCell, 500);
   }
   
   // Neural network animation
@@ -630,10 +762,23 @@ document.addEventListener('DOMContentLoaded', function() {
       output: -1
     };
     
-    // Generate new random position
-    const newX = 100 + Math.floor(Math.random() * 500);
-    const newY = 50 + Math.floor(Math.random() * 300);
-    selectionBoxState = { x: newX, y: newY, width: 60, height: 60 };
+    // Generate new random position - snap to pixel grid with exactly 4x4 cells
+    const pixelSize = 10;
+    const gridCols = 4; // Fixed at 4 cells wide
+    const gridRows = 4; // Fixed at 4 cells tall
+    
+    const newX = Math.floor((100 + Math.floor(Math.random() * 500)) / pixelSize) * pixelSize;
+    const newY = Math.floor((50 + Math.floor(Math.random() * 300)) / pixelSize) * pixelSize;
+    selectionBoxState = { 
+      x: newX, 
+      y: newY, 
+      width: gridCols * pixelSize, 
+      height: gridRows * pixelSize 
+    };
+    
+    // Initially hide the selection box
+    selectionBox.style.display = 'none';
+    
     updateSelection();
     updateStageIndicators();
     
@@ -646,7 +791,8 @@ document.addEventListener('DOMContentLoaded', function() {
     ];
     contexts.forEach(ctx => ctx.clearRect(0, 0, 800, 500));
     
-    // Hide visualization sections
+    // Reset visualization display
+    mapCanvas.style.opacity = '1';
     visualizationWrapper.style.opacity = '0';
     vectorSection.style.transform = 'translateX(-100%)';
     nnSection.style.opacity = '0';
@@ -659,13 +805,14 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Schedule stages
     setTimeout(() => {
-      predictionStage = 1;
+      predictionStage = 1; // Now selection box will appear
       updateSelection();
       updateStageIndicators();
     }, 2000);
     
     setTimeout(() => {
       predictionStage = 2;
+      updateSelection(); // This will hide the selection box
       visualizationWrapper.style.opacity = '1';
       vectorSection.style.transform = 'translateX(0)';
       updateStageIndicators();
@@ -706,10 +853,12 @@ document.addEventListener('DOMContentLoaded', function() {
       });
       
       animateNeuralNetwork();
-    }, 7000);
+    }, 9000); // Reduced from 12000 to 9000 to account for faster animation
     
-    // Reset and restart the animation after a delay
-    setTimeout(runVisualization, 18000);
+    // Reset and restart the animation
+    setTimeout(() => {
+      runVisualization();
+    }, 22000); // Reduced from 25000 to 22000
   }
   
   // Initialize and start visualization
