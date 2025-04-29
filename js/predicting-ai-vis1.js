@@ -817,17 +817,16 @@ document.addEventListener('DOMContentLoaded', function() {
           for (let j = 0; j < layer.neurons; j++) {
             const targetX = layer.x;
             
-            // Use the same spacing calculation with special padding
-            let verticalPadding = 40;
-            
-            // Special case for hidden2 layer
-            if (layer.name === 'hidden2') {
-              verticalPadding = 90;
+            // *** FIX: Use consistent Y calculation for TARGET neuron (hidden1), respecting padding ***
+            let targetVerticalPadding = 40; // Default padding
+            if (layer.name === 'hidden2' || layer.name === 'output') { // 3-neuron layers
+                targetVerticalPadding = 90;
+            } else if (layer.name === 'hidden1' || layer.name === 'hidden3') { // 6-neuron layers (this layer is hidden1)
+                targetVerticalPadding = 70;
             }
-            
-            const availableHeight = height - (verticalPadding * 2);
-            const spacing = layer.neurons > 1 ? availableHeight / (layer.neurons - 1) : availableHeight;
-            const targetY = verticalPadding + (spacing * j);
+            const targetAvailableHeight = height - (targetVerticalPadding * 2);
+            const targetSpacing = layer.neurons > 1 ? targetAvailableHeight / (layer.neurons - 1) : targetAvailableHeight;
+            const targetY = targetVerticalPadding + (targetSpacing * j);
             
             // Only draw connection if:
             // 1. Input neuron is active AND
@@ -900,25 +899,26 @@ document.addEventListener('DOMContentLoaded', function() {
           if (sourceActive >= 0) {
             const sourceX = prevLayer.x;
             
-            // Use the same spacing calculation with special padding
-            let verticalPadding = 40;
-            
-            // Special case for hidden2 layer
-            if (prevLayer.name === 'hidden2') {
-              verticalPadding = 90;
+            // *** FIX: Use consistent Y calculation for SOURCE neuron, respecting padding ***
+            let sourceVerticalPadding = 40; // Default padding
+            if (prevLayer.name === 'hidden2' || prevLayer.name === 'output') { // 3-neuron layers
+                sourceVerticalPadding = 90;
+            } else if (prevLayer.name === 'hidden1' || prevLayer.name === 'hidden3') { // 6-neuron layers
+                sourceVerticalPadding = 70;
             }
-            
-            const availableHeight = height - (verticalPadding * 2);
-            const prevSpacing = prevLayer.neurons > 1 ? availableHeight / (prevLayer.neurons - 1) : availableHeight;
-            const sourceY = verticalPadding + (prevSpacing * sourceActive);
+            const sourceAvailableHeight = height - (sourceVerticalPadding * 2);
+            const sourceSpacing = prevLayer.neurons > 1 ? sourceAvailableHeight / (prevLayer.neurons - 1) : sourceAvailableHeight;
+            const sourceY = sourceVerticalPadding + (sourceSpacing * sourceActive);
             
             for (let j = 0; j < layer.neurons; j++) {
               const targetX = layer.x;
               
               // *** FIX: Use consistent Y calculation for target neuron, respecting padding ***
               let targetVerticalPadding = 40; // Default padding
-              if (layer.name === 'hidden2' || layer.name === 'output') { 
+              if (layer.name === 'hidden2' || layer.name === 'output') { // 3-neuron layers
                 targetVerticalPadding = 90;
+              } else if (layer.name === 'hidden1' || layer.name === 'hidden3') { // 6-neuron layers
+                targetVerticalPadding = 70;
               }
               const targetAvailableHeight = height - (targetVerticalPadding * 2);
               const targetSpacing = layer.neurons > 1 ? targetAvailableHeight / (layer.neurons - 1) : targetAvailableHeight;
@@ -997,6 +997,8 @@ document.addEventListener('DOMContentLoaded', function() {
         // For layers with 3 neurons (hidden2, output), use higher padding to center them
         if (layer.name === 'hidden2' || layer.name === 'output') {
           verticalPadding = 90; // Much higher padding to center the 3 neurons
+        } else if (layer.name === 'hidden1' || layer.name === 'hidden3') { // 6-neuron layers
+          verticalPadding = 70; // Bring them closer to the middle
         }
         
         const availableHeight = height - (verticalPadding * 2);
