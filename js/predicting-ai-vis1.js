@@ -849,7 +849,15 @@ document.addEventListener('DOMContentLoaded', function() {
             
             for (let j = 0; j < layer.neurons; j++) {
               const targetX = layer.x;
-              const targetY = 50 + ((height - 100) / (layer.neurons - 1)) * j;
+              
+              // *** FIX: Use consistent Y calculation for target neuron, respecting padding ***
+              let targetVerticalPadding = 40; // Default padding
+              if (layer.name === 'hidden2') { // Special padding for the target layer if it's hidden2
+                targetVerticalPadding = 90;
+              }
+              const targetAvailableHeight = height - (targetVerticalPadding * 2);
+              const targetSpacing = layer.neurons > 1 ? targetAvailableHeight / (layer.neurons - 1) : targetAvailableHeight;
+              const targetY = targetVerticalPadding + (targetSpacing * j);
               
               // Only draw connection to this target if:
               // 1. It's the currently activating target, OR
