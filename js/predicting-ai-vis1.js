@@ -134,88 +134,109 @@ document.addEventListener('DOMContentLoaded', function() {
     hidden3: -1,
     output: -1
   };
+  let backgroundImage = new Image();
+  let imageLoaded = false;
+
+  // --- NEW: Image Loading and Processing Logic ---
+  backgroundImage.onload = () => {
+    console.log("Background image loaded.");
+    imageLoaded = true;
+    drawImageBackground(); // Draw the full image first
+
+    // After showing the image, convert it to pixels and start the animation sequence
+    setTimeout(() => {
+      console.log("Extracting pixels from image...");
+      extractPixelsFromImage(); 
+      if (backgroundPixels.length > 0) {
+        console.log("Drawing pixelated background...");
+        drawBackgroundPixels(); // Draw the pixelated version
+        console.log("Starting animation sequence...");
+        startAnimationSequence(); // Start the main sequence
+      } else {
+        console.error("Pixel extraction failed or resulted in empty data.");
+      }
+    }, 2000); // Delay for 2 seconds
+  };
+
+  backgroundImage.onerror = () => {
+    console.error("Failed to load background image. Check path and permissions.");
+    // Optional: Fallback to generateGeoPixels if image fails?
+    // backgroundPixels = generateGeoPixels();
+    // drawBackgroundPixels();
+    // startAnimationSequence(); 
+  };
   
-  // Generate geographical background pixels
-  function generateGeoPixels() {
-    const pixels = [];
-    const canvasWidth = 800;
-    const canvasHeight = 500;
-    const pixelSize = 10;
-    
-    // Create different geographical regions
-    const regions = [
-      { type: 'water', baseColor: { r: 30, g: 60, b: 120 }, variance: 20 },
-      { type: 'plains', baseColor: { r: 100, g: 160, b: 90 }, variance: 30 },
-      { type: 'desert', baseColor: { r: 210, g: 180, b: 140 }, variance: 25 },
-      { type: 'mountains', baseColor: { r: 120, g: 100, b: 90 }, variance: 40 },
-      { type: 'forest', baseColor: { r: 40, g: 100, b: 50 }, variance: 35 }
-    ];
-    
-    // Create region map
-    const regionMap = Array(Math.ceil(canvasHeight / pixelSize))
-      .fill()
-      .map(() => Array(Math.ceil(canvasWidth / pixelSize)).fill(0));
-    
-    // Generate random region centers
-    const numRegionCenters = 8;
-    const regionCenters = [];
-    
-    for (let i = 0; i < numRegionCenters; i++) {
-      regionCenters.push({
-        x: Math.floor(Math.random() * (canvasWidth / pixelSize)),
-        y: Math.floor(Math.random() * (canvasHeight / pixelSize)),
-        type: Math.floor(Math.random() * regions.length)
-      });
-    }
-    
-    // Assign each cell to the closest region center
-    for (let y = 0; y < regionMap.length; y++) {
-      for (let x = 0; x < regionMap[0].length; x++) {
-        let closestDistance = Infinity;
-        let closestRegion = 0;
-        
-        regionCenters.forEach((center, idx) => {
-          const distance = Math.sqrt(Math.pow(center.x - x, 2) + Math.pow(center.y - y, 2));
-          if (distance < closestDistance) {
-            closestDistance = distance;
-            closestRegion = center.type;
-          }
-        });
-        
-        regionMap[y][x] = closestRegion;
-      }
-    }
-    
-    // Create pixels based on regionMap
-    for (let y = 0; y < canvasHeight; y += pixelSize) {
-      const row = [];
-      for (let x = 0; x < canvasWidth; x += pixelSize) {
-        const regionIdx = regionMap[Math.floor(y / pixelSize)][Math.floor(x / pixelSize)];
-        const region = regions[regionIdx];
-        
-        // Add noise/variance for natural look
-        const color = {
-          r: Math.min(255, Math.max(0, region.baseColor.r + (Math.random() * region.variance * 2 - region.variance))),
-          g: Math.min(255, Math.max(0, region.baseColor.g + (Math.random() * region.variance * 2 - region.variance))),
-          b: Math.min(255, Math.max(0, region.baseColor.b + (Math.random() * region.variance * 2 - region.variance)))
-        };
-        
-        row.push({
-          x,
-          y,
-          width: pixelSize,
-          height: pixelSize,
-          color,
-          region: region.type
-        });
-      }
-      pixels.push(row);
-    }
-    
-    return pixels;
+  // Function to draw the loaded image (full resolution)
+  function drawImageBackground() {
+    if (!imageLoaded) return;
+    const ctx = mapCanvas.getContext('2d');
+    ctx.clearRect(0, 0, mapCanvas.width, mapCanvas.height);
+    ctx.drawImage(backgroundImage, 0, 0, mapCanvas.width, mapCanvas.height);
+    console.log("Full background image drawn.");
   }
+
+  // Function to extract pixel data from the loaded image
+  function extractPixelsFromImage() {
+    if (!imageLoaded) return [];
+
+    const tempCanvas = document.createElement('canvas');
+    const tempCtx = tempCanvas.getContext('2d', { willReadFrequently: true }); // Optimization hint
+    tempCanvas.width = mapCanvas.width;
+    tempCanvas.height = mapCanvas.height;
+
+    tempCtx.drawImage(backgroundImage, 0, 0, tempCanvas.width, tempCanvas.height);
+
+    let imageData;
+    try {
+      imageData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+    } catch (e) {
+      console.error("Error getting image data:", e);
+      // This can happen due to CORS issues if running locally without a server
+      // or if the image is tainted.
+      return; // Stop if we can't get data
+    }
+    
+    const data = imageData.data;
+    const pixels = [];
+    const pixelSize = 10; // Size of our visualization pixels
+
+    for (let y = 0; y < tempCanvas.height; y += pixelSize) {
+      const row = [];
+      for (let x = 0; x < tempCanvas.width; x += pixelSize) {
+        // Sample color from the center of the target pixel block
+        const sampleX = x + Math.floor(pixelSize / 2);
+        const sampleY = y + Math.floor(pixelSize / 2);
+        const index = (sampleY * tempCanvas.width + sampleX) * 4;
+
+        // Ensure index is within bounds
+        if (index + 3 < data.length) {
+            const r = data[index];
+            const g = data[index + 1];
+            const b = data[index + 2];
+            // const a = data[index + 3]; // Alpha - could be used later
+            
+            row.push({
+                x: x, // Store the top-left coords for drawing
+                y: y,
+                width: pixelSize,
+                height: pixelSize,
+                color: { r, g, b },
+                region: 'image' // Placeholder region type
+            });
+        } else {
+             console.warn(`Index out of bounds at x=${x}, y=${y}. Skipping pixel.`);
+        }
+      }
+       if (row.length > 0) { // Only add row if it contains pixels
+         pixels.push(row);
+       }
+    }
+    backgroundPixels = pixels; // Assign to the global variable
+    console.log(`Extracted ${backgroundPixels.flat().length} pixels into ${backgroundPixels.length} rows.`);
+  }
+  // --- END NEW Image Logic ---
   
-  // Draw background pixels on canvas
+  // Draw background pixels on canvas (Now uses image-derived data)
   function drawBackgroundPixels() {
     const ctx = mapCanvas.getContext('2d');
     ctx.clearRect(0, 0, mapCanvas.width, mapCanvas.height);
@@ -227,6 +248,7 @@ document.addEventListener('DOMContentLoaded', function() {
         ctx.fillRect(pixel.x, pixel.y, pixel.width, pixel.height);
       });
     });
+    console.log("Pixelated background drawn from backgroundPixels array.");
   }
   
   // Update selection box and grid data
@@ -1213,18 +1235,21 @@ document.addEventListener('DOMContentLoaded', function() {
   `;
   document.head.appendChild(style);
   
-  // Main animation sequence
-  function runVisualization() {
+  // --- REVISED: Main animation setup and reset function ---
+  function setupAndResetVisualization() {
+    console.log("Setting up and resetting visualization...");
     // Clear any ongoing animations and intervals first
     if (window.animationCleanupHandlers) {
       window.animationCleanupHandlers.forEach(handler => {
         if (typeof handler === 'function') {
-          handler();
+          try {
+            handler();
+          } catch (e) {
+             console.warn("Error during cleanup handler:", e);
+          }
         }
       });
     }
-    
-    // Initialize animation cleanup handlers array
     window.animationCleanupHandlers = [];
     
     // Clear size factors to force regeneration
@@ -1232,32 +1257,24 @@ document.addEventListener('DOMContentLoaded', function() {
     window.connectionWidthFactors = null;
     
     // Reset prediction and visualization state
-    predictionStage = 0; // Start at stage 0
+    predictionStage = 0; 
     predictionResults = null;
     gridData = [];
     cellsInVector = [];
     establishedConnections = [];
-    persistentConnections = []; // Reset persistent connections
-    
-    // Reset active neuron indices
-    activeNeuronIndices = {
-      input: -1,
-      hidden1: -1,
-      hidden2: -1,
-      hidden3: -1,
-      output: -1
-    };
+    persistentConnections = []; 
+    activeNeuronIndices = { input: -1, hidden1: -1, hidden2: -1, hidden3: -1, output: -1 };
     
     // Generate new random position for selection box
     const margin = 50;
-    const minX = Math.ceil(800 / 3); // Minimum X coordinate (approx 267)
-    const availableWidth = 800 - margin*2 - minX; // Width available for random placement
-    const selectionWidth = 30; // Use the actual width for calculation
+    const minX = Math.ceil(800 / 3);
+    const availableWidth = 800 - margin*2 - minX;
+    const selectionWidth = 30; 
     selectionBoxState = {
-      x: minX + Math.floor(Math.random() * (availableWidth - selectionWidth)), // Random X within allowed area
-      y: margin + Math.floor(Math.random() * (500 - margin*2 - 30)), // Ensure Y stays within bounds too
-      width: selectionWidth, // Changed back from 60 to 30 for a 3x3 grid
-      height: 30 // Changed back from 60 to 30 for a 3x3 grid
+      x: minX + Math.floor(Math.random() * (availableWidth - selectionWidth)),
+      y: margin + Math.floor(Math.random() * (500 - margin*2 - 30)),
+      width: selectionWidth,
+      height: 30
     };
     
     // Clear all canvases and sections
@@ -1266,10 +1283,11 @@ document.addEventListener('DOMContentLoaded', function() {
         const ctx = canvas.getContext('2d');
         ctx.clearRect(0, 0, canvas.width, canvas.height);
       } else if (canvas instanceof HTMLElement) {
-          canvas.innerHTML = ''; // Clear HTML content for sections
+          canvas.innerHTML = ''; 
       }
     };
-    [mapCanvas, gridCanvas, vectorCanvas, neuralNetworkCanvas, predictionSection].forEach(clearCanvas);
+    // Clear grid, vector, NN, prediction. Keep mapCanvas as it holds the background.
+    [gridCanvas, vectorCanvas, neuralNetworkCanvas, predictionSection].forEach(clearCanvas);
     
     // Reset section visibility and transforms
     visualizationWrapper.style.opacity = '0';
@@ -1277,44 +1295,46 @@ document.addEventListener('DOMContentLoaded', function() {
     nnSection.style.opacity = '0';
     nnSection.style.transform = 'scale(0.95)';
     predictionSection.style.transform = 'translateX(100%)';
-    mapCanvas.style.opacity = '1'; // Ensure map is visible initially
+    mapCanvas.style.opacity = '1'; // Ensure map is fully visible after reset
     selectionBox.style.display = 'none';
-    
-    // Regenerate background pixels
-    backgroundPixels = generateGeoPixels();
-    drawBackgroundPixels(); // Draw initial map
-    
-    // Schedule animation stages sequentially
-    
-    // Stage 0 -> 1: Show selection box
-    setTimeout(() => {
-      predictionStage = 1; // Set stage to Select Region
-      updateSelection(); // Show and position selection box
-      updateStageIndicators(); // Update indicators
-    }, 1000); // 1 second delay
-    
-    // Stage 1 -> 2: Extract Data & Vectorize
-    setTimeout(() => {
-      predictionStage = 2; // Set stage to Extract Data / Vectorize
-      updateStageIndicators(); // Update indicators
-      
-      // Show visualization sections
-      visualizationWrapper.style.opacity = '1';
-      vectorSection.style.transform = 'translateX(0)';
-      // NN and Prediction sections remain hidden/scaled down for now
-      
-      // Start the vectorization animation (which includes fading bg)
-      animateVectorization(); 
-    }, 3000); // Start vectorization 2 seconds after selection appears
-    
-    // *** REFACTOR: Removed the separate timeout for neural network sequence ***
-    // The neural network sequence is now triggered by animateVectorization -> createBWCopy
-    
-    // Update indicators (now handled within stage transitions)
-    // setTimeout(() => updateIndicators(), 3500); 
-    // setTimeout(() => generateBackgroundPixels(), 4500); // Background is generated at the start now
+    selectionBox.style.opacity = '1'; // Reset selection box opacity
+
+    // Reset stage indicators visually
+    updateStageIndicators();
+    console.log("Visualization setup and reset complete.");
   }
-  
+
+  // --- NEW: Function to schedule the animation stages ---
+  function startAnimationSequence() {
+     // Make sure background pixels are ready
+     if (backgroundPixels.length === 0) {
+        console.error("Attempted to start animation sequence, but backgroundPixels is empty.");
+        return;
+     }
+
+     setupAndResetVisualization(); // Reset state before starting sequence
+
+     // Schedule stages using the now-ready backgroundPixels
+
+     // Stage 0 -> 1: Show selection box
+     setTimeout(() => {
+       predictionStage = 1; 
+       updateSelection(); 
+       updateStageIndicators(); 
+     }, 500); // Short delay after pixel background is drawn
+     
+     // Stage 1 -> 2: Extract Data & Vectorize
+     setTimeout(() => {
+       predictionStage = 2; 
+       updateStageIndicators(); 
+       
+       visualizationWrapper.style.opacity = '1';
+       vectorSection.style.transform = 'translateX(0)';
+       
+       animateVectorization(); 
+     }, 2500); // Start vectorization 2 seconds after selection appears (500 + 2000)
+  }
+
   // Function to animate neural network with proper activation pattern
   function animateNeuralNetworkSequence() {
     // Define layer info
@@ -1533,12 +1553,21 @@ document.addEventListener('DOMContentLoaded', function() {
   function scheduleReset() {
     // Only reset if we've completed the prediction stage
     if (predictionStage === 4) {
+      console.log("Scheduling visualization reset...");
       setTimeout(() => {
-        runVisualization();
+        console.log("Resetting visualization now.");
+        // Instead of runVisualization, trigger the image loading again
+        // which starts the whole process over
+        if (backgroundImage) {
+           backgroundImage.src = 'assets/images/usgs-Qu8lplStSSE-unsplash.jpg'; // Reload image to restart
+        } else {
+           console.error("Cannot restart, backgroundImage object not found.");
+        }
       }, 7000); // Show prediction results for 7 seconds before resetting
     }
   }
   
-  // Initialize and start visualization
-  runVisualization();
+  // Initialize and start visualization by loading the image
+  console.log("Initiating visualization by loading image...");
+  backgroundImage.src = 'assets/images/usgs-Qu8lplStSSE-unsplash.jpg';
 }); 
