@@ -1542,16 +1542,8 @@ document.addEventListener('DOMContentLoaded', function() {
       ctx.fillText('Trend:', panel.x - 40, trendY);
       
       // Trend direction indicator
-      const trendValue = trends[trends.length - 1];
-      const trendColor = trendValue >= 0 ? colors.appointments.main : '#FC8181';
-      
-      ctx.font = '10px Inter, sans-serif';
-      ctx.fillStyle = trendColor;
-      ctx.textAlign = 'left';
-      
-      const trendIcon = trendValue >= 0 ? '↗' : '↘';
-      const trendText = `${trendIcon} ${Math.abs(trendValue).toFixed(1)}%`;
-      ctx.fillText(trendText, panel.x - 30, trendY);
+      // Removed trend text/percentage
+      // Keep the visual trend icon/arrow if needed, but without text
     }
   }
   
@@ -1998,14 +1990,6 @@ document.addEventListener('DOMContentLoaded', function() {
               }
             }, delay);
           }
-          
-          // Create system alert
-          if (Math.random() > 0.7) {
-            systemState.alerts.push(`Data burst detected from ${source.name}`);
-            if (systemState.alerts.length > 3) {
-              systemState.alerts.shift();
-            }
-          }
         }
       }
     });
@@ -2247,24 +2231,27 @@ document.addEventListener('DOMContentLoaded', function() {
       case 'revenue':
         const revData = dashboardData.revenue.data;
         const lastRev = revData[revData.length - 1];
-        const revChange = lastRev * 0.05 * (Math.random() - 0.5);
+        // Increased volatility for more rapid changes
+        const revChange = lastRev * 0.15 * (Math.random() - 0.5);
         revData.push(lastRev + revChange);
         revData.shift();
-        dashboardData.revenue.forecast = forecastData(revData, 4, 0.2);
+        dashboardData.revenue.forecast = forecastData(revData, 4, 0.3); // Slightly more uncertain forecast
         break;
         
       case 'analytics':
         const trafData = dashboardData.traffic.data;
         const lastTraf = trafData[trafData.length - 1];
-        const trafChange = lastTraf * 0.08 * (Math.random() - 0.4);
+        // Increased volatility for more rapid changes
+        const trafChange = lastTraf * 0.20 * (Math.random() - 0.5);
         trafData.push(lastTraf + trafChange);
         trafData.shift();
         
         // Occasionally update segments
-        if (Math.random() > 0.8) {
+        if (Math.random() > 0.5) { 
           dashboardData.traffic.segments.forEach(segment => {
-            segment.value += (Math.random() - 0.5) * 0.02;
-            segment.value = Math.max(0.05, Math.min(0.5, segment.value));
+            // Larger change magnitude
+            segment.value += (Math.random() - 0.5) * 0.08;
+            segment.value = Math.max(0.03, Math.min(0.6, segment.value)); // Adjust bounds slightly
           });
           
           // Normalize to ensure total is 1
@@ -2278,12 +2265,14 @@ document.addEventListener('DOMContentLoaded', function() {
       case 'appointments':
         const apptData = dashboardData.appointments.byDay;
         apptData.forEach(day => {
-          day.value += Math.floor((Math.random() - 0.5) * 6);
-          day.value = Math.max(10, day.value);
+          // Increased change magnitude for bars
+          day.value += Math.floor((Math.random() - 0.5) * 15);
+          day.value = Math.max(5, Math.min(95, day.value)); // Adjust bounds
         });
         
-        dashboardData.appointments.completionRate += (Math.random() - 0.5) * 0.02;
-        dashboardData.appointments.completionRate = Math.max(0.7, Math.min(0.98, dashboardData.appointments.completionRate));
+        // More volatile completion rate for the circle indicator
+        dashboardData.appointments.completionRate += (Math.random() - 0.5) * 0.05;
+        dashboardData.appointments.completionRate = Math.max(0.6, Math.min(0.99, dashboardData.appointments.completionRate));
         
         dashboardData.appointments.trends = calculateTrends(
           apptData.map(d => d.value),
@@ -2294,17 +2283,19 @@ document.addEventListener('DOMContentLoaded', function() {
       case 'payroll':
         // Occasionally update department allocations
         const depts = dashboardData.payroll.departments;
-        
-        depts.forEach(dept => {
-          dept.value += (Math.random() - 0.5) * 0.02;
-          dept.value = Math.max(0.05, Math.min(0.5, dept.value));
-        });
-        
-        // Normalize to ensure total is 1
-        const total = depts.reduce((sum, dept) => sum + dept.value, 0);
-        depts.forEach(dept => {
-          dept.value = dept.value / total;
-        });
+        // Update department allocations more frequently and with more volatility
+        if (Math.random() > 0.4) { 
+          depts.forEach(dept => {
+            dept.value += (Math.random() - 0.5) * 0.06; // Increased change magnitude
+            dept.value = Math.max(0.02, Math.min(0.6, dept.value)); // Adjust bounds slightly
+          });
+          
+          // Normalize to ensure total is 1
+          const total = depts.reduce((sum, dept) => sum + dept.value, 0);
+          depts.forEach(dept => {
+            dept.value = dept.value / total;
+          });
+        }
         
         // Update total payroll occasionally
         if (Math.random() > 0.7) {
