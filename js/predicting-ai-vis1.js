@@ -570,6 +570,14 @@ document.addEventListener('DOMContentLoaded', function() {
       const bwCopyInterval = setInterval(() => {
         if (bwCellIndex >= cellsInVector.length) {
           clearInterval(bwCopyInterval);
+          // *** REFACTOR: Trigger neural network animation immediately after BW nodes are done ***
+          setTimeout(() => {
+            predictionStage = 3; // Set stage to Processing
+            updateStageIndicators(); // Update indicators for the new stage
+            nnSection.style.opacity = '1'; // Ensure NN section is visible
+            nnSection.style.transform = 'scale(1)';
+            animateNeuralNetworkSequence(); // Start the sequence
+          }, 200); // Small delay for visual separation
           return;
         }
         
@@ -617,7 +625,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Move to next cell
         bwCellIndex++;
         
-      }, 100);
+      }, 100); // Speed of BW node appearance
     };
     
     // Start the animation with the first cell
@@ -705,25 +713,32 @@ document.addEventListener('DOMContentLoaded', function() {
         ctx.stroke();
       }
       
+      // OPTIMIZATION: Only redraw a portion of persistent connections per frame to improve performance
+      const maxConnectionsPerFrame = 100; // Limit number of connections drawn per frame
+      const connectionsToDraw = persistentConnections.length > maxConnectionsPerFrame ? 
+                              persistentConnections.slice(0, maxConnectionsPerFrame) : 
+                              persistentConnections;
+      
       // Draw connections between layers following the specific pattern
-      layers.forEach((layer, layerIndex) => {
-        // First, draw all persistent connections
-        persistentConnections.forEach(conn => {
-          const gradient = ctx.createLinearGradient(conn.fromX, conn.fromY, conn.toX, conn.toY);
-          gradient.addColorStop(0, conn.gradient[0]);
-          gradient.addColorStop(1, conn.gradient[1]);
-          
-          // Use the line width stored in the connection object
-          const lineWidth = conn.lineWidth || 1.5;
-          
-          ctx.beginPath();
-          ctx.moveTo(conn.fromX, conn.fromY);
-          ctx.lineTo(conn.toX, conn.toY);
-          ctx.strokeStyle = gradient;
-          ctx.lineWidth = lineWidth;
-          ctx.stroke();
-        });
+      // First, draw persistent connections (limited for performance)
+      connectionsToDraw.forEach(conn => {
+        const gradient = ctx.createLinearGradient(conn.fromX, conn.fromY, conn.toX, conn.toY);
+        gradient.addColorStop(0, conn.gradient[0]);
+        gradient.addColorStop(1, conn.gradient[1]);
         
+        // Use the line width stored in the connection object
+        const lineWidth = conn.lineWidth || 1.5;
+        
+        ctx.beginPath();
+        ctx.moveTo(conn.fromX, conn.fromY);
+        ctx.lineTo(conn.toX, conn.toY);
+        ctx.strokeStyle = gradient;
+        ctx.lineWidth = lineWidth;
+        ctx.stroke();
+      });
+      
+      // Now draw new active connections
+      layers.forEach((layer, layerIndex) => {
         if (layerIndex === 0) {
           // For the first hidden layer, connections come from outside (the input vector)
           const inputActive = currentNodeIndices.input;
@@ -979,9 +994,20 @@ document.addEventListener('DOMContentLoaded', function() {
     
     animationFrame = requestAnimationFrame(animate);
     
-    return () => {
-      if (animationFrame) cancelAnimationFrame(animationFrame);
+    // Create cleanup handler to cancel animation frame
+    const cleanup = () => {
+      if (animationFrame) {
+        cancelAnimationFrame(animationFrame);
+        animationFrame = null;
+      }
     };
+    
+    // Register cleanup handler
+    if (window.animationCleanupHandlers) {
+      window.animationCleanupHandlers.push(cleanup);
+    }
+    
+    return cleanup;
   }
   
   // Show prediction results
@@ -1114,18 +1140,31 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Main animation sequence
   function runVisualization() {
-    // Reset everything
-    predictionStage = 0;
+    // Clear any ongoing animations and intervals first
+    if (window.animationCleanupHandlers) {
+      window.animationCleanupHandlers.forEach(handler => {
+        if (typeof handler === 'function') {
+          handler();
+        }
+      });
+    }
+    
+    // Initialize animation cleanup handlers array
+    window.animationCleanupHandlers = [];
+    
+    // Clear size factors to force regeneration
+    window.neuronSizeFactors = null;
+    window.connectionWidthFactors = null;
+    
+    // Reset prediction and visualization state
+    predictionStage = 0; // Start at stage 0
     predictionResults = null;
     gridData = [];
     cellsInVector = [];
     establishedConnections = [];
     persistentConnections = []; // Reset persistent connections
-
-    // Reset randomization factors
-    window.neuronSizeFactors = null;
-    window.connectionWidthFactors = null;
-
+    
+    // Reset active neuron indices
     activeNeuronIndices = {
       input: -1,
       hidden1: -1,
@@ -1134,82 +1173,68 @@ document.addEventListener('DOMContentLoaded', function() {
       output: -1
     };
     
-    // Generate new random position - snap to pixel grid with exactly 3x3 cells
-    // But avoid the left 1/3 of the screen where the feature vector will be
-    const pixelSize = 10;
-    const gridCols = 3; // 3 cells wide
-    const gridRows = 3; // Changed from 4 to 3 cells tall
-    
-    // Calculate boundary to avoid left third
-    const leftThirdBoundary = Math.floor(mapCanvas.width / 3);
-    
-    // Generate new position in right 2/3 of the screen
-    const newX = Math.floor((leftThirdBoundary + Math.floor(Math.random() * (mapCanvas.width - leftThirdBoundary - gridCols * pixelSize))) / pixelSize) * pixelSize;
-    const newY = Math.floor((50 + Math.floor(Math.random() * 300)) / pixelSize) * pixelSize;
-    
-    selectionBoxState = { 
-      x: newX, 
-      y: newY, 
-      width: gridCols * pixelSize, 
-      height: gridRows * pixelSize 
+    // Generate new random position for selection box
+    const margin = 50;
+    selectionBoxState = {
+      x: margin + Math.floor(Math.random() * (800 - margin*2)),
+      y: margin + Math.floor(Math.random() * (500 - margin*2)),
+      width: 30, // Changed back from 60 to 30 for a 3x3 grid
+      height: 30 // Changed back from 60 to 30 for a 3x3 grid
     };
     
-    // Initially hide the selection box
-    selectionBox.style.display = 'none';
+    // Clear all canvases and sections
+    const clearCanvas = (canvas) => {
+      if (canvas instanceof HTMLCanvasElement) {
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      } else if (canvas instanceof HTMLElement) {
+          canvas.innerHTML = ''; // Clear HTML content for sections
+      }
+    };
+    [mapCanvas, gridCanvas, vectorCanvas, neuralNetworkCanvas, predictionSection].forEach(clearCanvas);
     
-    updateSelection();
-    updateStageIndicators();
-    
-    // Reset canvases
-    const contexts = [
-      mapCanvas.getContext('2d'),
-      gridCanvas.getContext('2d'),
-      vectorCanvas.getContext('2d'),
-      neuralNetworkCanvas.getContext('2d')
-    ];
-    contexts.forEach(ctx => ctx.clearRect(0, 0, 800, 500));
-    
-    // Reset visualization display
-    mapCanvas.style.opacity = '1';
+    // Reset section visibility and transforms
     visualizationWrapper.style.opacity = '0';
     vectorSection.style.transform = 'translateX(-100%)';
     nnSection.style.opacity = '0';
     nnSection.style.transform = 'scale(0.95)';
     predictionSection.style.transform = 'translateX(100%)';
+    mapCanvas.style.opacity = '1'; // Ensure map is visible initially
+    selectionBox.style.display = 'none';
     
-    // Generate background pixels
+    // Regenerate background pixels
     backgroundPixels = generateGeoPixels();
-    drawBackgroundPixels();
+    drawBackgroundPixels(); // Draw initial map
     
-    // Schedule stages
-    setTimeout(() => {
-      predictionStage = 1; // Now selection box will appear
-      updateSelection();
-      updateStageIndicators();
-    }, 2000);
+    // Schedule animation stages sequentially
     
+    // Stage 0 -> 1: Show selection box
     setTimeout(() => {
-      predictionStage = 2;
-      updateSelection(); // This will hide the selection box
+      predictionStage = 1; // Set stage to Select Region
+      updateSelection(); // Show and position selection box
+      updateStageIndicators(); // Update indicators
+    }, 1000); // 1 second delay
+    
+    // Stage 1 -> 2: Extract Data & Vectorize
+    setTimeout(() => {
+      predictionStage = 2; // Set stage to Extract Data / Vectorize
+      updateStageIndicators(); // Update indicators
+      
+      // Show visualization sections
       visualizationWrapper.style.opacity = '1';
       vectorSection.style.transform = 'translateX(0)';
-      updateStageIndicators();
-      animateVectorization();
-    }, 4000);
-    
-    // Allow more time for vectorization and B/W copy creation
-    setTimeout(() => {
-      predictionStage = 3;
-      nnSection.style.opacity = '1';
-      nnSection.style.transform = 'scale(1)';
-      updateStageIndicators();
+      // NN and Prediction sections remain hidden/scaled down for now
       
-      // Animate neural network with proper activation pattern
-      // Delay the start to ensure BW nodes are created
-      setTimeout(animateNeuralNetworkSequence, 2000); // Increased delay to ensure BW nodes are ready
-    }, 14000);
+      // Start the vectorization animation (which includes fading bg)
+      animateVectorization(); 
+    }, 3000); // Start vectorization 2 seconds after selection appears
     
-    // We've removed the hardcoded reset timeout - reset is now triggered after predictions
+    // *** REFACTOR: Removed the separate timeout for neural network sequence ***
+    // The neural network sequence is now triggered by animateVectorization -> createBWCopy
+    
+    // Update indicators (now handled within stage transitions)
+    // setTimeout(() => updateIndicators(), 3500); 
+    // setTimeout(() => generateBackgroundPixels(), 4500); // Background is generated at the start now
   }
   
   // Function to animate neural network with proper activation pattern
@@ -1359,15 +1384,20 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Execute the animation sequence
     let currentStep = 0;
-    let stepDelay = 40; // Initial delay - much faster than before
+    
+    // SPEED CONTROL: Adjust these values to control animation speed
+    let initialStepDelay = 30; // Reduced from 40 to 30 - adjust this for overall speed
+    let midStageDelay = 15;    // Reduced from 20 to 15
+    let lateStageDelay = 5;    // Reduced from 10 to 5
+    let stepDelay = initialStepDelay;
     
     const processNextStep = () => {
       // Adjust the delay based on progress to speed up in later stages
       if (currentStep > animationSteps.length * 0.3) {
-        stepDelay = 20; // Faster in middle stages
+        stepDelay = midStageDelay; // Faster in middle stages
       }
       if (currentStep > animationSteps.length * 0.6) {
-        stepDelay = 10; // Much faster in later stages
+        stepDelay = lateStageDelay; // Much faster in later stages
       }
       
       if (currentStep >= animationSteps.length) {
