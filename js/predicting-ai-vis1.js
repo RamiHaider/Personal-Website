@@ -363,10 +363,10 @@ document.addEventListener('DOMContentLoaded', function() {
     let cellIndex = 0;
     let animationId;
     
-    // Vector cells setup - ensure perfect squares
-    const vectorCellSize = 25; // Smaller perfect square cells
-    const vectorCellSpacing = 8; // Reduced spacing between cells
-    const vectorStartY = 60; // Position to fit all 9 cells with spacing
+    // Vector cells setup - ensure perfect squares with better spacing
+    const vectorCellSize = 28; // Larger perfect square cells
+    const vectorCellSpacing = 5; // Minimal spacing between cells
+    const vectorStartY = 50; // Start higher to use more vertical space
     const vectorX = vectorCanvas.width / 2 - vectorCellSize/2; // Center in the canvas
     
     // Flatten grid data
@@ -391,14 +391,14 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Draw label for feature vector with improved styling like prediction results
     // First draw a semi-transparent background for better readability
-    ctx.fillStyle = 'rgba(17, 24, 39, 0.7)'; // Dark background
-    ctx.fillRect(vectorCanvas.width/2 - 50, 10, 100, 20);
-    
+    ctx.fillStyle = 'rgba(17, 24, 39, 0.8)'; // Darker background for better contrast
+    ctx.fillRect(vectorCanvas.width/2 - 70, 10, 140, 30); // Larger background area
+
     // Then draw the text
     ctx.fillStyle = '#3b82f6'; // Blue for input
-    ctx.font = '0.85rem sans-serif';
+    ctx.font = '1rem sans-serif'; // Larger font size
     ctx.textAlign = 'center';
-    ctx.fillText('Input Vector', vectorCanvas.width / 2, 25);
+    ctx.fillText('Input Vector', vectorCanvas.width / 2, 30);
     
     const animateNextCell = () => {
       if (cellIndex >= totalCells) {
@@ -475,14 +475,14 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Redraw the label with improved styling
         // First draw a semi-transparent background for better readability
-        ctx.fillStyle = 'rgba(17, 24, 39, 0.7)'; // Dark background
-        ctx.fillRect(vectorCanvas.width/2 - 50, 10, 100, 20);
-        
+        ctx.fillStyle = 'rgba(17, 24, 39, 0.8)'; // Darker background for better contrast
+        ctx.fillRect(vectorCanvas.width/2 - 70, 10, 140, 30); // Larger background area
+
         // Then draw the text
         ctx.fillStyle = '#3b82f6'; // Blue for input
-        ctx.font = '0.85rem sans-serif';
+        ctx.font = '1rem sans-serif'; // Larger font size
         ctx.textAlign = 'center';
-        ctx.fillText('Input Vector', vectorCanvas.width / 2, 25);
+        ctx.fillText('Input Vector', vectorCanvas.width / 2, 30);
         
         // Draw previously transferred cells as perfect squares stacked on top of each other
         cellsInVector.forEach((item) => {
@@ -514,12 +514,14 @@ document.addEventListener('DOMContentLoaded', function() {
           requestAnimationFrame(animateCellMovement);
         } else {
           // Animation complete, store the cell in final position
+          // Make sure we're using perfect squares for the vector cells
+          const squareSize = Math.min(endWidth, endHeight);
           cellsInVector.push({
             x: endX,
             y: endY,
-            width: endWidth,
-            height: endHeight,
-            squareSize: Math.min(endWidth, endHeight), // Store the square size
+            width: squareSize,
+            height: squareSize,
+            squareSize: squareSize,
             color: cell.color,
             // Calculate grayscale intensity based on RGB values
             intensity: Math.round(0.299 * cell.color.r + 0.587 * cell.color.g + 0.114 * cell.color.b)
@@ -556,12 +558,12 @@ document.addEventListener('DOMContentLoaded', function() {
       ctx.stroke();
       
       // Add Feature Vector label on right side
-      ctx.fillStyle = 'rgba(17, 24, 39, 0.7)';
-      ctx.fillRect(vectorCanvas.width * 0.8 - 50, 10, 100, 20);
+      ctx.fillStyle = 'rgba(17, 24, 39, 0.8)'; // Darker background
+      ctx.fillRect(vectorCanvas.width * 0.8 - 70, 10, 140, 30); // Larger background
       ctx.fillStyle = '#3b82f6';
-      ctx.font = '0.85rem sans-serif';
+      ctx.font = '1rem sans-serif'; // Larger font
       ctx.textAlign = 'center';
-      ctx.fillText('Feature Vector', vectorCanvas.width * 0.8, 25);
+      ctx.fillText('Feature Vector', vectorCanvas.width * 0.8, 30); // Adjusted position
       
       // Animate the creation of BW copies
       let bwCellIndex = 0;
@@ -573,7 +575,9 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const cell = cellsInVector[bwCellIndex];
         const bwX = vectorCanvas.width * 0.8 - vectorCellSize/2;
-        const bwY = cell.y;
+        
+        // Space BW nodes evenly using the same spacing as colored cells
+        const bwY = vectorStartY + (bwCellIndex * (vectorCellSize + vectorCellSpacing));
         
         // Get grayscale intensity
         const intensity = cell.intensity;
@@ -587,7 +591,8 @@ document.addEventListener('DOMContentLoaded', function() {
         ctx.shadowBlur = 5;
         
         // Draw as perfect circle
-        const circleSize = Math.min(vectorCellSize, vectorCellSize);
+        const exactSize = vectorCellSize;
+        const circleSize = exactSize; // Always use the exact size to ensure perfect circles
         const circleCenterX = bwX + circleSize/2;
         const circleCenterY = bwY + circleSize/2;
         
@@ -707,7 +712,16 @@ document.addEventListener('DOMContentLoaded', function() {
           // For each neuron in the first hidden layer
           for (let j = 0; j < layer.neurons; j++) {
             const targetX = layer.x;
-            // Use the same spacing calculation as for neurons
+            
+            // Use the same spacing calculation with special padding
+            let verticalPadding = 40;
+            
+            // Special case for hidden2 layer
+            if (layer.name === 'hidden2') {
+              verticalPadding = 90;
+            }
+            
+            const availableHeight = height - (verticalPadding * 2);
             const spacing = layer.neurons > 1 ? availableHeight / (layer.neurons - 1) : availableHeight;
             const targetY = verticalPadding + (spacing * j);
             
@@ -777,8 +791,14 @@ document.addEventListener('DOMContentLoaded', function() {
           if (sourceActive >= 0) {
             const sourceX = prevLayer.x;
             
-            // Use the same spacing calculation as for neurons
-            const verticalPadding = 40;
+            // Use the same spacing calculation with special padding
+            let verticalPadding = 40;
+            
+            // Special case for hidden2 layer
+            if (prevLayer.name === 'hidden2') {
+              verticalPadding = 90;
+            }
+            
             const availableHeight = height - (verticalPadding * 2);
             const prevSpacing = prevLayer.neurons > 1 ? availableHeight / (prevLayer.neurons - 1) : availableHeight;
             const sourceY = verticalPadding + (prevSpacing * sourceActive);
@@ -849,8 +869,14 @@ document.addEventListener('DOMContentLoaded', function() {
       layers.forEach((layer, layerIndex) => {
         const activeIndex = currentNodeIndices[layer.name];
         
-        // Adjust spacing based on neuron count
-        const verticalPadding = 40;
+        // Adjust spacing based on neuron count - special case for layer with few neurons
+        let verticalPadding = 40;
+        
+        // For the 2nd hidden layer with only 3 neurons, use higher padding to center them
+        if (layer.name === 'hidden2') {
+          verticalPadding = 90; // Much higher padding to center the 3 neurons
+        }
+        
         const availableHeight = height - (verticalPadding * 2);
         const spacing = layer.neurons > 1 ? availableHeight / (layer.neurons - 1) : availableHeight;
         
@@ -891,12 +917,12 @@ document.addEventListener('DOMContentLoaded', function() {
         const labelY = 25;
         
         // First draw a semi-transparent background for better readability
-        ctx.fillStyle = 'rgba(17, 24, 39, 0.7)'; // Dark background
-        ctx.fillRect(layer.x - 50, labelY - 15, 100, 20);
-        
+        ctx.fillStyle = 'rgba(17, 24, 39, 0.8)'; // Darker background
+        ctx.fillRect(layer.x - 70, labelY - 20, 140, 30); // Larger background area
+
         // Then draw the text
         ctx.fillStyle = layer.name === 'output' ? '#ec4899' : '#22d3ee'; // Pink for output, cyan for hidden
-        ctx.font = '0.85rem sans-serif';
+        ctx.font = '1rem sans-serif'; // Larger font
         ctx.textAlign = 'center';
         
         // Layer names
@@ -930,14 +956,14 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Create header with matching styling
     const headerBg = document.createElement('div');
-    headerBg.style.backgroundColor = 'rgba(17, 24, 39, 0.7)';
-    headerBg.style.padding = '0.25rem 0.5rem';
+    headerBg.style.backgroundColor = 'rgba(17, 24, 39, 0.8)';
+    headerBg.style.padding = '0.5rem 1rem';
     headerBg.style.marginBottom = '1rem';
     
     const header = document.createElement('div');
     header.textContent = 'Prediction Results';
     header.style.color = '#ec4899'; // Match output color
-    header.style.fontSize = '0.85rem';
+    header.style.fontSize = '1rem';
     header.style.textAlign = 'center';
     
     headerBg.appendChild(header);
@@ -1291,15 +1317,15 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Execute the animation sequence
     let currentStep = 0;
-    let stepDelay = 75; // Initial delay
+    let stepDelay = 40; // Initial delay - much faster than before
     
     const processNextStep = () => {
       // Adjust the delay based on progress to speed up in later stages
       if (currentStep > animationSteps.length * 0.3) {
-        stepDelay = 30; // Faster in middle stages
+        stepDelay = 20; // Faster in middle stages
       }
       if (currentStep > animationSteps.length * 0.6) {
-        stepDelay = 15; // Much faster in later stages
+        stepDelay = 10; // Much faster in later stages
       }
       
       if (currentStep >= animationSteps.length) {
