@@ -364,10 +364,10 @@ document.addEventListener('DOMContentLoaded', function() {
     let animationId;
     
     // Vector cells setup - ensure perfect squares with better spacing
-    const vectorCellSize = 28; // Larger perfect square cells
+    const vectorCellSize = 40; // Increased from 28 to 40 for wider cells
     const vectorCellSpacing = 5; // Minimal spacing between cells
     const vectorStartY = 50; // Start higher to use more vertical space
-    const vectorX = vectorCanvas.width / 2 - vectorCellSize/2; // Center in the canvas
+    const vectorX = vectorCanvas.width / 2 - vectorCellSize / 2; // Center colored vector
     
     // Flatten grid data
     const flattenedCells = [];
@@ -549,27 +549,24 @@ document.addEventListener('DOMContentLoaded', function() {
       // Draw a black and white copy on the right side of the original vector
       // We will NOT transform the original colored vector, but add a new BW copy
       
-      // First, draw a dividing line between colored and BW versions
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(vectorCanvas.width * 0.6, 50);
-      ctx.lineTo(vectorCanvas.width * 0.6, vectorCanvas.height - 50);
-      ctx.stroke();
+      // Removed the dividing line between colored and BW vectors
       
       // Add Feature Vector label on right side
       ctx.fillStyle = 'rgba(17, 24, 39, 0.8)'; // Darker background
-      ctx.fillRect(vectorCanvas.width * 0.8 - 70, 10, 140, 30); // Larger background
+      const bwLabelX = vectorCanvas.width * 0.85; // Position relative to canvas width
+      ctx.fillRect(bwLabelX - 70, 10, 140, 30); // Larger background
       ctx.fillStyle = '#3b82f6';
       ctx.font = '1rem sans-serif'; // Larger font
       ctx.textAlign = 'center';
-      ctx.fillText('Feature Vector', vectorCanvas.width * 0.8, 30); // Adjusted position
+      ctx.fillText('Feature Vector', bwLabelX, 30); // Adjusted position
       
-      // Animate the creation of BW copies
+      // Animate the creation of BW copies sequentially, with horizontal slide
       let bwCellIndex = 0;
-      const bwCopyInterval = setInterval(() => {
+      const slideDuration = 150; // ms for horizontal slide
+      const intervalDelay = 50;  // ms between the start of each slide
+
+      const processNextBWNode = () => {
         if (bwCellIndex >= cellsInVector.length) {
-          clearInterval(bwCopyInterval);
           // *** REFACTOR: Trigger neural network animation immediately after BW nodes are done ***
           setTimeout(() => {
             predictionStage = 3; // Set stage to Processing
@@ -577,55 +574,124 @@ document.addEventListener('DOMContentLoaded', function() {
             nnSection.style.opacity = '1'; // Ensure NN section is visible
             nnSection.style.transform = 'scale(1)';
             animateNeuralNetworkSequence(); // Start the sequence
-          }, 200); // Small delay for visual separation
+          }, 200);
           return;
         }
         
         const cell = cellsInVector[bwCellIndex];
-        const bwX = vectorCanvas.width * 0.8 - vectorCellSize/2;
+        const startX = cell.x + vectorCellSize / 2; // Start from center of colored cell
+        const startY = cell.y + vectorCellSize / 2; // Start from center of colored cell
         
-        // Space BW nodes evenly using the same spacing as colored cells
-        const bwY = vectorStartY + (bwCellIndex * (vectorCellSize + vectorCellSpacing));
+        const endX = vectorCanvas.width * 0.85 - vectorCellSize/2; // Final X position for BW node (shifted right)
+        const endY = vectorStartY + (bwCellIndex * (vectorCellSize + vectorCellSpacing)); // Final Y position
         
-        // Get grayscale intensity
-        const intensity = cell.intensity;
-        const grayValue = Math.round(intensity);
+        const finalRadius = vectorCellSize / 2;
+        const startRadius = 5; // Start small
+
+        const animationStartTime = Date.now();
+
+        function animateSlide() {
+          const elapsed = Date.now() - animationStartTime;
+          const progress = Math.min(1, elapsed / slideDuration);
+
+          // Calculate current position and size using easing (ease-out)
+          const easedProgress = 1 - Math.pow(1 - progress, 3); // Cubic ease-out
+          const currentX = startX + (endX - startX) * easedProgress;
+          const currentY = startY + (endY - startY) * easedProgress;
+          const currentRadius = startRadius + (finalRadius - startRadius) * easedProgress;
+
+          // --- Redraw necessary background elements --- 
+          // Clear the entire canvas to prevent trails
+          ctx.clearRect(0, 0, vectorCanvas.width, vectorCanvas.height);
+
+          // Redraw the original colored vector cells (essential to prevent trails)
+          cellsInVector.forEach((item) => {
+            ctx.fillStyle = `rgba(${item.color.r}, ${item.color.g}, ${item.color.b}, 0.8)`;
+            const squareSize = Math.min(item.width, item.height);
+            ctx.fillRect(item.x, item.y, squareSize, squareSize);
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(item.x, item.y, squareSize, squareSize);
+          });
+          
+          // Redraw label
+          ctx.fillStyle = 'rgba(17, 24, 39, 0.8)';
+          ctx.fillRect(bwLabelX - 70, 10, 140, 30);
+          ctx.fillStyle = '#3b82f6';
+          ctx.font = '1rem sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText('Feature Vector', bwLabelX, 30);
+
+          // Redraw all *previously completed* BW nodes in their final state
+          for (let i = 0; i < bwCellIndex; i++) {
+              const prevCell = cellsInVector[i];
+              const prevX = vectorCanvas.width * 0.85 - vectorCellSize/2;
+              const prevY = vectorStartY + (i * (vectorCellSize + vectorCellSpacing));
+              const prevIntensity = prevCell.intensity;
+              const prevGrayValue = Math.round(prevIntensity);
+              const prevRadius = vectorCellSize / 2;
+              const prevCenterX = prevX + prevRadius;
+              const prevCenterY = prevY + prevRadius;
+
+              ctx.fillStyle = `rgb(${prevGrayValue}, ${prevGrayValue}, ${prevGrayValue})`;
+              ctx.shadowColor = '#3b82f6';
+              ctx.shadowBlur = 5;
+              ctx.beginPath();
+              ctx.arc(prevCenterX, prevCenterY, prevRadius, 0, Math.PI * 2);
+              ctx.fill();
+              ctx.shadowBlur = 0;
+
+              ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+              ctx.font = '12px sans-serif';
+              ctx.textAlign = 'center';
+              ctx.fillText((prevIntensity/255).toFixed(2), prevCenterX, prevCenterY + 4);
+          }
+
+          // --- Draw the currently animating BW node --- 
+          const intensity = cell.intensity;
+          const grayValue = Math.round(intensity);
+          
+          ctx.fillStyle = `rgb(${grayValue}, ${grayValue}, ${grayValue})`;
+          ctx.shadowColor = '#3b82f6';
+          ctx.shadowBlur = 5;
+          
+          const circleCenterX = currentX + vectorCellSize / 2; // Adjust center based on currentX
+          const circleCenterY = currentY + vectorCellSize / 2; // Adjust center based on currentY
+
+          ctx.beginPath();
+          ctx.arc(currentX + finalRadius, currentY + finalRadius, currentRadius, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.shadowBlur = 0;
+
+          // Draw text only when node is close to final size/position
+          if (progress > 0.8) {
+              const textAlpha = Math.min(1, (progress - 0.8) / 0.2); // Fade in text
+              ctx.fillStyle = `rgba(255, 255, 255, ${0.9 * textAlpha})`;
+              ctx.font = '12px sans-serif';
+              ctx.textAlign = 'center';
+              ctx.fillText((intensity/255).toFixed(2), currentX + finalRadius, currentY + finalRadius + 4);
+          }
+
+          // Continue animation or proceed to next node
+          if (progress < 1) {
+            requestAnimationFrame(animateSlide);
+          } else {
+            // Animation for this node complete
+            // Update the final position info (redundant but good practice)
+            cellsInVector[bwCellIndex].bwX = endX; 
+            cellsInVector[bwCellIndex].bwY = endY;
+            bwCellIndex++;
+            // Schedule the *next* node animation after a short delay
+            setTimeout(processNextBWNode, intervalDelay); 
+          }
+        }
         
-        // Draw the BW cell with CNN styling (more neural-network like)
-        ctx.fillStyle = `rgb(${grayValue}, ${grayValue}, ${grayValue})`;
-        
-        // Add glow effect for neural-network style
-        ctx.shadowColor = '#3b82f6';
-        ctx.shadowBlur = 5;
-        
-        // Draw as perfect circle
-        const exactSize = vectorCellSize;
-        const circleSize = exactSize; // Always use the exact size to ensure perfect circles
-        const circleCenterX = bwX + circleSize/2;
-        const circleCenterY = bwY + circleSize/2;
-        
-        // Draw the circle
-        ctx.beginPath();
-        ctx.arc(circleCenterX, circleCenterY, circleSize/2, 0, Math.PI * 2);
-        ctx.fill();
-        
-        // Reset shadow for border
-        ctx.shadowBlur = 0;
-        
-        // Add intensity value
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-        ctx.font = '10px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText((intensity/255).toFixed(2), circleCenterX, circleCenterY + 3);
-        
-        // Update our cells for neural network
-        cellsInVector[bwCellIndex].bwX = bwX;
-        cellsInVector[bwCellIndex].bwY = bwY;
-        
-        // Move to next cell
-        bwCellIndex++;
-        
-      }, 100); // Speed of BW node appearance
+        // Start the animation for the current node
+        animateSlide(); 
+      };
+      
+      // Start the process for the first BW node
+      processNextBWNode();
     };
     
     // Start the animation with the first cell
@@ -851,7 +917,7 @@ document.addEventListener('DOMContentLoaded', function() {
               
               // *** FIX: Use consistent Y calculation for target neuron, respecting padding ***
               let targetVerticalPadding = 40; // Default padding
-              if (layer.name === 'hidden2') { // Special padding for the target layer if it's hidden2
+              if (layer.name === 'hidden2' || layer.name === 'output') { 
                 targetVerticalPadding = 90;
               }
               const targetAvailableHeight = height - (targetVerticalPadding * 2);
@@ -928,8 +994,8 @@ document.addEventListener('DOMContentLoaded', function() {
         // Adjust spacing based on neuron count - special case for layer with few neurons
         let verticalPadding = 40;
         
-        // For the 2nd hidden layer with only 3 neurons, use higher padding to center them
-        if (layer.name === 'hidden2') {
+        // For layers with 3 neurons (hidden2, output), use higher padding to center them
+        if (layer.name === 'hidden2' || layer.name === 'output') {
           verticalPadding = 90; // Much higher padding to center the 3 neurons
         }
         
@@ -1182,10 +1248,13 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Generate new random position for selection box
     const margin = 50;
+    const minX = Math.ceil(800 / 3); // Minimum X coordinate (approx 267)
+    const availableWidth = 800 - margin*2 - minX; // Width available for random placement
+    const selectionWidth = 30; // Use the actual width for calculation
     selectionBoxState = {
-      x: margin + Math.floor(Math.random() * (800 - margin*2)),
-      y: margin + Math.floor(Math.random() * (500 - margin*2)),
-      width: 30, // Changed back from 60 to 30 for a 3x3 grid
+      x: minX + Math.floor(Math.random() * (availableWidth - selectionWidth)), // Random X within allowed area
+      y: margin + Math.floor(Math.random() * (500 - margin*2 - 30)), // Ensure Y stays within bounds too
+      width: selectionWidth, // Changed back from 60 to 30 for a 3x3 grid
       height: 30 // Changed back from 60 to 30 for a 3x3 grid
     };
     
