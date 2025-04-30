@@ -98,9 +98,9 @@ header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 20px 50px;
+    padding: 20px 50px 10px 50px; /* Reduced bottom padding */
     background-color: transparent;
-    border-bottom: 6px solid #A4A155;
+    border-bottom: 3px solid #A4A155; /* Made border thinner */
 }
 
 .logo {
@@ -648,7 +648,7 @@ nav a:hover {
 }
 
 .contact-form {
-    background: #f8f9fa;
+    background: rgba(0, 0, 0, 0.2);
     padding: 30px;
     border-radius: 12px;
     box-shadow: 0 2px 15px rgba(0,0,0,0.05);
@@ -1700,4 +1700,74 @@ nav a:hover {
 @keyframes fadeIn {
     from { opacity: 0; }
     to { opacity: 1; }
+}
+
+/* Style for the new job notice button */
+.job-notice-btn {
+    background-color: #FFD700; /* Yellow background */
+    color: #000000; /* Black text */
+    padding: 6px 12px; /* Smaller padding */
+    border: none;
+    border-radius: 5px;
+    font-weight: 500; /* Slightly less bold */
+    font-size: 14px; /* Smaller font size */
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+    margin-top: 10px; /* Space above */
+    display: inline-block; /* Allow margin-top */
+    position: relative; /* Needed for tooltip positioning */
+    z-index: 10; /* Ensure button is above background elements */
+}
+
+.job-notice-btn:hover {
+    background-color: #f0c800; /* Slightly darker yellow on hover */
+    transform: translateY(-1px); /* Slight lift effect */
+}
+
+/* Tooltip Styles */
+.job-notice-btn::after {
+    content: attr(data-tooltip); /* Display tooltip text from attribute */
+    position: absolute;
+    bottom: 125%; /* Position above the button */
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #ffffff; /* White background */
+    color: #000000; /* Black text */
+    padding: 10px 15px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 1.5;
+    white-space: pre-line; /* Respect newlines in the tooltip text */
+    width: 280px; /* Set a fixed width for better layout */
+    opacity: 0; /* Hidden by default */
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    z-index: 100; /* Ensure tooltip is on top */
+    pointer-events: none; /* Tooltip shouldn't block interaction */
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    text-align: left; /* Align text to the left */
+}
+
+/* Arrow for the tooltip */
+.job-notice-btn::before {
+    content: "";
+    position: absolute;
+    bottom: 100%; /* Position at the bottom edge of the tooltip base */
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 6px;
+    border-style: solid;
+    border-color: #ffffff transparent transparent transparent; /* White arrow pointing down */
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+    z-index: 101; /* Above tooltip background */
+    pointer-events: none;
+}
+
+.job-notice-btn:hover::after,
+.job-notice-btn:hover::before {
+    opacity: 1;
+    visibility: visible;
 }
