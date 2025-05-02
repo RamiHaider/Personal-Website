@@ -375,6 +375,16 @@
                     border: 1px solid white !important;
                     color: white !important;
                 }
+                
+                /* Ensure post cards have transparent background */
+                .post-card {
+                    background-color: rgba(0, 0, 0, 0.4) !important;
+                }
+                
+                /* Ensure container has transparent background */
+                .container, .main-content-wrapper, .content, body {
+                    background-color: transparent !important;
+                }
             `;
             
             // Append to head
@@ -384,7 +394,7 @@
         // Updated tag filtering functionality for combined categories
         document.addEventListener('DOMContentLoaded', function() {
             const tags = document.querySelectorAll('.tag-filter .tag');
-            const posts = document.querySelectorAll('.post-card');
+            const postLinks = document.querySelectorAll('.posts-grid > a');
             
             tags.forEach(tag => {
                 tag.addEventListener('click', function() {
@@ -399,9 +409,10 @@
                         .filter(cls => cls !== 'tag' && cls !== 'selected');
                     
                     // Filter posts
-                    posts.forEach(post => {
+                    postLinks.forEach(link => {
+                        const post = link.querySelector('.post-card');
                         if (filterClasses.includes('all')) {
-                            post.style.display = 'flex'; // Show all posts
+                            link.style.display = 'block'; // Show all posts
                         } else {
                             const postTags = post.querySelectorAll('.post-tag');
                             const postTagClasses = Array.from(postTags).map(t => 
@@ -414,7 +425,7 @@
                                 filterClasses.includes(postClass)
                             );
                             
-                            post.style.display = hasMatchingTag ? 'flex' : 'none';
+                            link.style.display = hasMatchingTag ? 'block' : 'none';
                         }
                     });
                 });

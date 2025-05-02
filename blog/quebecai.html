@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Quebec Mineral Potential Prediction: A Multi-Modal Deep Learning Approach | Rami Abou-Shamalah</title>
+    <title>Mineral Deposit Targeting: A Multi-Modal Deep Learning Approach | Rami Abou-Shamalah</title>
     <meta name="description" content="Explore how deep learning and geospatial analysis are revolutionizing mineral exploration in Quebec. Learn about multi-modal approaches combining CNN and GBT models for mineral potential mapping.">
     <meta name="keywords" content="mineral exploration, deep learning, CNN, GBT, Quebec geology, mineral potential mapping, geospatial analysis, machine learning in geology">
     <meta name="author" content="Rami Abou-Shamalah">
@@ -63,10 +63,11 @@
         /* Content container */
         .content-container {
             display: flex;
-            background-color: white;
+            background-color: rgba(0, 0, 0, 0.6);
             border-radius: 0 0 20px 20px;
             position: relative;
             min-height: 100vh;
+            color: white;
         }
 
         /* Main content styles */
@@ -74,11 +75,12 @@
             width: 75%;
             padding: 40px;
             box-sizing: border-box;
+            color: white;
         }
 
         /* Separator line after date info */
         .separator {
-            border-bottom: 1px solid #e0e0e0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
             margin: 20px 0;
             width: 100%;
         }
@@ -86,8 +88,8 @@
         /* Sidebar styles */
         .sidebar {
             width: 25%;
-            background-color: rgba(197, 169, 28, 0.03);
-            border-left: 1px solid rgba(197, 169, 28, 0.1);
+            background-color: rgba(0, 0, 0, 0.4);
+            border-left: 1px solid rgba(255, 255, 255, 0.1);
             padding: 40px 20px;
             position: sticky;
             top: 0;
@@ -106,7 +108,7 @@
 
         .nav-section-title {
             font-weight: 500;
-            color: #555;
+            color: rgba(255, 255, 255, 0.8);
             margin-bottom: 8px;
             font-size: 13px;
             width: 100%;
@@ -115,7 +117,7 @@
 
         .nav-link {
             text-decoration: none;
-            color: #666;
+            color: rgba(255, 255, 255, 0.6);
             font-size: 13px;
             line-height: 1.8;
             display: block;
@@ -136,11 +138,13 @@
         h1 {
             font-size: 24px;
             margin-bottom: 30px;
+            color: white;
         }
         h2 {
             font-size: 20px;
             margin-top: 40px;
             margin-bottom: 20px;
+            color: white;
         }
         .image-grid {
             display: grid;
@@ -161,32 +165,33 @@
         }
         .image-grid figcaption {
             font-size: 12px;
-            color: #666;
+            color: rgba(255, 255, 255, 0.7);
             margin-top: 8px;
             text-align: center;
         }
         .github-reference {
-            background: #f8f9fa;
-            border: 1px solid #e9ecef;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 8px;
             padding: 15px;
             margin: 20px 0;
         }
         .github-reference a {
-            color: #0366d6;
+            color: #64b5f6;
             text-decoration: none;
         }
         .github-reference a:hover {
             text-decoration: underline;
+            color: #90caf9;
         }
         .preprocessing-steps {
-            background: #f8f9fa;
+            background: rgba(0, 0, 0, 0.3);
             border-radius: 8px;
             padding: 20px;
             margin: 20px 0;
         }
         .preprocessing-steps h4 {
-            color: #2c2c2c;
+            color: white;
             margin-top: 20px;
         }
         .preprocessing-steps ul, .preprocessing-steps ol {
@@ -197,7 +202,7 @@
         }
         /* Add callout box styles */
         .callout-box {
-            background-color: rgba(197, 169, 28, 0.1);
+            background-color: rgba(197, 169, 28, 0.2);
             border-left: 4px solid #c5a91c;
             padding: 20px;
             margin: 20px 0;
@@ -412,26 +417,91 @@
 
         <div class="content-container">
             <div class="main-content">
-                <h1>Quebec Mineral Potential Prediction: A Multi-Modal Deep Learning Approach</h1>
+                <h1>Mineral Deposit Targeting: A Multi-Modal Deep Learning Approach</h1>
                 <div class="date-info" data-upload-date="2023-07-15" data-file-path="portfolio/quebec-minerals/quebec-mineral-portfolio.md">
                     <p>Original Upload: 2025-01-27</p>
                     <p>Last Updated: <span class="update-date"></span></p>
+                    <p style="margin-top: 10px;"><a href="https://github.com/RamiHaider/Quebec-Mineral-Prediction" target="_blank" rel="noopener" style="display: inline-flex; align-items: center; text-decoration: none; color: #64b5f6;">
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/9/91/Octicons-mark-github.svg" alt="GitHub" style="width: 20px; height: 20px; margin-right: 5px; filter: brightness(0) invert(1);">
+                        Open Source on GitHub
+                    </a></p>
                 </div>
                 <div class="separator"></div>
 
-                <div class="github-reference">
-                    <p>This project is fully open source and available on <a href="https://github.com/RamiHaider/Quebec-Mineral-Prediction" target="_blank">GitHub</a>.</p>
-                </div>
-
                 <div id="project-overview" class="project-overview">
-                    <h2>Project Overview</h2>
-                    <p>As a geologist who has traversed land claims across Ontario in search of gold, I've combined my field experience with my enthusiasm for machine learning to create a mineral prospectivity mapper. This project aims to build a multi-modal deep learning model to predict mineral potential across Quebec, combining geochemical data, geological features, and magnetic imagery to predict probabilities of anomalous values for Au, Ag, Cu, Co, and Ni.</p>
+                    <h2>Ambitions</h2>
+                    <p><a href="https://www.youtube.com/watch?v=6aWJHDblMlQ" target="_blank" rel="noopener" style="color: #64b5f6; text-decoration: none;">As a previous field geologist</a>, and current Machine Learning Engineer, I combined my passions together to create a mineral prospectivity mapper.</p>
                     
-                    <div class="pull-quote">
-                        "The intersection of geology and machine learning offers unprecedented opportunities to discover hidden mineral resources that traditional methods might overlook."
+                    <h2>Background</h2>
+                    <p>Mineral Exploration relies on Field Geologists to physically sample rocks in the area for chemical analysis. The argument is that surficial mineralization is indicative of deposits within, and perhaps even surficial deposits exist. Anyways, since the last 10 years, with the rise of accessible technology, data has moved digitally, this has made room for machine learning to come into play and identify spatial patterns. We still need field geologists to collect data to ground truth, but now, we are able to, more accurately pick places of higher prospectivity due to our predictive modeling, which looks at available data, and says whether it is worth it or not in the first place to send expensive geologists there.</p>
+                    
+                    <p>Thus, the idea is that this predictive model will help to supplement desktop research, which is done to help pinpoint prospective regions, before we send the geologists on the ground.</p>
+                    
+                    <h2>High Level Overview</h2>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin: 30px 0; flex-wrap: wrap;">
+                        <div style="flex: 1; min-width: 300px; text-align: center; margin: 10px;">
+                            <h4>Airborne Geophysical Magnetic Data</h4>
+                            <img src="../assets/images/Quebec-Minerals/magnetic_image_sample.png" alt="Airborne Geophysical Data" style="width: 90%; max-width: 400px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.3);">
+                            <p style="font-size: 0.9em; margin-top: 10px;">High resolution (20m cell size) magnetic data covering ~70% of Quebec's landmass</p>
+                        </div>
+                        
+                        <div style="text-align: center; margin: 10px 0;">
+                            <span style="font-size: 24px; font-weight: bold; color: #c5a91c;">+</span>
+                        </div>
+                        
+                        <div style="flex: 1; min-width: 300px; text-align: center; margin: 10px;">
+                            <h4>Geological Tabular Data</h4>
+                            <div style="background: rgba(0,0,0,0.4); border-radius: 8px; padding: 15px; width: 90%; max-width: 400px; margin: 0 auto; text-align: left;">
+                                <table style="width: 100%; border-collapse: collapse; color: white;">
+                                    <thead>
+                                        <tr>
+                                            <th style="border-bottom: 1px solid rgba(255,255,255,0.3); padding: 8px; text-align: left;">Feature</th>
+                                            <th style="border-bottom: 1px solid rgba(255,255,255,0.3); padding: 8px; text-align: left;">Value</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td style="padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.1);">Lithology</td>
+                                            <td style="padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.1);">Greenstone</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.1);">Dist to Fault</td>
+                                            <td style="padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.1);">245 meters</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.1);">Dist to Fold</td>
+                                            <td style="padding: 8px; border-bottom: 1px solid rgba(255,255,255,0.1);">780 meters</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="padding: 8px;">Alteration</td>
+                                            <td style="padding: 8px;">Silicification</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        
+                        <div style="text-align: center; width: 100%; margin: 20px 0;">
+                            <span style="font-size: 24px; font-weight: bold; color: #c5a91c;">↓</span>
+                        </div>
+                        
+                        <div style="flex: 1; min-width: 300px; text-align: center; margin: 10px; width: 100%;">
+                            <h4>Predictive Model Output: Mineral Potential Heatmap</h4>
+                            <img src="../assets/images/Quebec-Minerals/gold_potential_heatmap.png" alt="Mineral Potential Heatmap" style="width: 90%; max-width: 600px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.3);">
+                            <p style="font-size: 0.9em; margin-top: 10px;">Heatmap showing the predicted abundance of mineralization</p>
+                        </div>
                     </div>
                     
-                    <p>My goal was to develop an interactive GUI that allows users to select a region of reasonable size (approximately 5km × 5km) and receive prediction results broken down by these five key minerals.</p>
+                    <div class="callout-box insight-callout" style="margin-top: 20px;">
+                        <h4>Project Goal</h4>
+                        <p>Develop a predictive model to associate airborne geophysical magnetic data and geological tabular data with geochemical assay results.</p>
+                    </div>
+                </div>
+                
+                <hr class="section-divider">
+
+                <div id="data-collection" class="data-collection">
+                    <h2>Data Collection & Preprocessing</h2>
                     
                     <div class="callout-box insight-callout">
                         <h4>Why Quebec?</h4>
@@ -440,83 +510,8 @@
                             <li><strong>Rich geological diversity</strong> - The province hosts a variety of mineral deposit types</li>
                             <li><strong>Excellent public data</strong> - SIGEOM database offers high-quality, accessible geological data</li>
                             <li><strong>Underexplored areas</strong> - Despite its mineral wealth, large areas remain underexplored</li>
-                            <li><strong>Economic significance</strong> - Mining contributes over $8.5 billion annually to Quebec's GDP</li>
                         </ul>
                     </div>
-                    
-                    <div class="data-stats">
-                        <div class="stat-box">
-                            <div class="stat-number">459,550</div>
-                            <div class="stat-label">Rock Samples</div>
-                        </div>
-                        <div class="stat-box">
-                            <div class="stat-number">434,864</div>
-                            <div class="stat-label">Magnetic Images</div>
-                        </div>
-                        <div class="stat-box">
-                            <div class="stat-number">1.2+ TB</div>
-                            <div class="stat-label">Raw Data Processed</div>
-                        </div>
-                    </div>
-                    
-                    <h3>Project Objectives</h3>
-                    <div class="process-flow">
-                        <div class="process-step">
-                            <span class="process-step-number">1</span>
-                            <h4>Data Integration</h4>
-                            <p>Combine geological features with geophysical (magnetic) data to create a comprehensive dataset.</p>
-                        </div>
-                        <div class="process-step">
-                            <span class="process-step-number">2</span>
-                            <h4>Multi-modal Learning</h4>
-                            <p>Develop models that can process both tabular geological data and image-based magnetic data.</p>
-                        </div>
-                        <div class="process-step">
-                            <span class="process-step-number">3</span>
-                            <h4>Multi-mineral Prediction</h4>
-                            <p>Create a multi-target model that can predict potential for multiple minerals simultaneously.</p>
-                        </div>
-                        <div class="process-step">
-                            <span class="process-step-number">4</span>
-                            <h4>Low Resource Computing</h4>
-                            <p>Optimize the pipeline to run on consumer hardware with limited RAM and storage.</p>
-                        </div>
-                        <div class="process-step">
-                            <span class="process-step-number">5</span>
-                            <h4>Interactive Visualization</h4>
-                            <p>Build a web application that allows users to explore predictions interactively.</p>
-                        </div>
-                        <div class="process-step">
-                            <span class="process-step-number">6</span>
-                            <h4>Open Source Release</h4>
-                            <p>Share all code, models, and methodologies with the scientific community.</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <hr class="section-divider">
-
-                <div id="project-structure" class="project-structure">
-                    <h2>Project Structure</h2>
-                    <pre class="code-block">PROJECT_ROOT/
-├── mag_images/         # 434,864 magnetic images (170x170 pixels, ~12KB each)
-│   └── [1-434864].jpg
-└── Training/
-    ├── data/
-    │   └── raw/
-    │       └── rock_samples.csv    # 459,550 rows, 99.8MB
-    ├── models/
-    └── notebooks/
-        └── 01_data_exploration.ipynb</pre>
-                </div>
-
-                <div id="hardware-constraints" class="hardware-constraints">
-                    <h2>Hardware Constraints</h2>
-                    <p>The entire project was developed on a MacBook M2 with 8GB RAM and approximately 10GB of free storage. MPS support was available for GPU acceleration, which proved crucial for training the CNN models within memory limitations.</p>
-                </div>
-
-                <div id="data-collection" class="data-collection">
-                    <h2>Data Collection & Preprocessing</h2>
                     
                     <div class="method-comparison">
                         <div class="method-column">
