@@ -1,9 +1,50 @@
 // posthog-custom.js - A more robust implementation designed for static sites
 document.addEventListener('DOMContentLoaded', function() {
+  // Add the funny console message
+  console.clear();
+  console.log("Nothing at all suspicious happening behind the hood. Nope. Nothing, Close this and keep exploring (Yes, I am using posthog to record your session :( ))");
+  
+  // Override console.log to suppress ALL debugging logs
+  const originalConsoleLog = console.log;
+  const originalConsoleWarn = console.warn;
+  const originalConsoleError = console.error;
+  const originalConsoleInfo = console.info;
+  const originalConsoleDebug = console.debug;
+  
+  // Only allow our custom message to show
+  console.log = function() {
+    if (arguments[0] === "Nothing at all suspicious happening behind the hood. Nope. Nothing, Close this and keep exploring (Yes, I am using posthog to record your session :( ))") {
+      originalConsoleLog.apply(console, arguments);
+    }
+    // Suppress all other logs
+  };
+  
+  console.warn = function() {
+    // Suppress all warnings
+  };
+  
+  console.error = function() {
+    // Allow errors to show through if they're not related to PostHog
+    if (arguments[0] && typeof arguments[0] === 'string' && 
+        !(arguments[0].includes('PostHog') || arguments[0].includes('posthog'))) {
+      originalConsoleError.apply(console, arguments);
+    }
+  };
+  
+  console.info = function() {
+    // Suppress all info logs
+  };
+  
+  console.debug = function() {
+    // Suppress all debug logs
+  };
+
   // Define error handler first
   window.addEventListener('error', function(e) {
     if (e.filename && e.filename.includes('posthog')) {
-      console.warn('PostHog error detected:', e.message);
+      // Suppress PostHog errors in console
+      e.preventDefault();
+      return true;
     }
   });
 
@@ -48,7 +89,6 @@ document.addEventListener('DOMContentLoaded', function() {
       loaded: function(ph) {
         // Force identification with our manually created ID
         ph.identify(userId);
-        console.log('PostHog initialized with ID:', ph.get_distinct_id());
         
         // Capture page properties
         ph.register({
@@ -77,8 +117,8 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
     
-    // Enable debug mode
-    window.posthog.debug(true);
+    // Disable debug mode
+    window.posthog.debug(false);
   };
   
   // Helper to determine page type
