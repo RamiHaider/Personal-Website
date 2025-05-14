@@ -1,62 +1,95 @@
 document.addEventListener('DOMContentLoaded', function() {
     const titles = [
-        "Machine Learning Engineer",
-        "Fullstack Developer",
-        "Data Scientist"
+        { text: "Data Engineer", deleteToPrefix: "Data " },
+        { text: "Data Analyst", deleteToPrefix: "Data " },
+        { text: "Data Scientist", deleteToPrefix: "" }, // Delete completely
+        { text: "Machine Learning Engineer", deleteToPrefix: "" }, // Delete completely
+        { text: "Fullstack Developer", deleteToPrefix: "" } // Delete completely
     ];
     
     const dynamicTitleElement = document.getElementById('dynamic-title');
-    const cursorElement = document.querySelector('.cursor');
-    
-    let currentIndex = 0;
+    // const cursorElement = document.querySelector('.cursor'); // Cursor element not explicitly used in this logic for now
+
+    let titleIndex = 0;
+    let charIndex = 0; // Represents the length of the string currently displayed from the full text
     let isDeleting = false;
-    let text = '';
-    let charIndex = 0;
-    
+    let isPaused = false; // To handle pause after typing/deleting before switching
+
     function typeEffect() {
-        const currentTitle = titles[currentIndex];
-        const titleToUse = currentTitle;
-        
-        // Determine if we're adding or removing characters
+        if (isPaused) return;
+
+        const currentTitleObject = titles[titleIndex];
+        const fullText = currentTitleObject.text;
+        const deleteToPrefixText = currentTitleObject.deleteToPrefix;
+
+        let currentVisibleText = dynamicTitleElement.textContent;
+
         if (isDeleting) {
-            text = titleToUse.substring(0, text.length - 1);
+            // Deleting characters
+            currentVisibleText = fullText.substring(0, charIndex - 1);
             charIndex--;
+            dynamicTitleElement.textContent = currentVisibleText;
+
+            if (currentVisibleText === deleteToPrefixText) {
+                // Finished deleting to the target prefix (or empty)
+                isDeleting = false;
+                isPaused = true;
+                setTimeout(() => {
+                    titleIndex = (titleIndex + 1) % titles.length;
+                    const nextTitleObject = titles[titleIndex];
+                    // Setup for the next title
+                    // If next title starts with the prefix we just deleted to, charIndex should be its length
+                    if (nextTitleObject.text.startsWith(deleteToPrefixText) && deleteToPrefixText !== "") {
+                        charIndex = deleteToPrefixText.length;
+                        dynamicTitleElement.textContent = deleteToPrefixText;
+                    } else {
+                        charIndex = 0; // Start typing from scratch
+                        dynamicTitleElement.textContent = ""; // Clear display if no common prefix
+                    }
+                    isPaused = false;
+                    typeEffect(); // Continue with the next title
+                }, 700); // Pause after deleting before starting next
+                return;
+            }
         } else {
-            text = titleToUse.substring(0, charIndex + 1);
+            // Typing characters
+            // If charIndex is 0 and deleteToPrefixText is not empty, and we're at a "Data X" stage, start with "Data "
+            if (charIndex === 0 && dynamicTitleElement.textContent === "" && fullText.startsWith(deleteToPrefixText) && deleteToPrefixText !== "") {
+                 dynamicTitleElement.textContent = deleteToPrefixText;
+                 charIndex = deleteToPrefixText.length;
+            }
+
+
+            currentVisibleText = fullText.substring(0, charIndex + 1);
             charIndex++;
+            dynamicTitleElement.textContent = currentVisibleText;
+
+            if (currentVisibleText === fullText) {
+                // Finished typing the full text
+                isDeleting = true;
+                isPaused = true;
+                setTimeout(() => {
+                    isPaused = false;
+                    typeEffect(); // Start deleting after pause
+                }, 1500); // Pause after typing full title
+                return;
+            }
         }
-        
-        // Update the display text
-        dynamicTitleElement.textContent = text;
-        
-        // Calculate typing speed with randomization for realism
-        let typeSpeed = isDeleting ? 30 : 80; // Faster overall
-        
-        // Add randomization to typing speed (±30%)
-        const randomFactor = Math.random() * 0.6 + 0.7; // 0.7 to 1.3
+
+        let typeSpeed = isDeleting ? 60 : 110;
+        const randomFactor = Math.random() * 0.5 + 0.75;
         typeSpeed = Math.floor(typeSpeed * randomFactor);
-        
-        // Check if word is complete or empty
-        if (!isDeleting && charIndex === titleToUse.length) {
-            // Word is complete, wait before starting to delete
-            typeSpeed = 1200; // Wait 1.2 seconds
-            isDeleting = true;
-        } else if (isDeleting && text.length === 0) {
-            // Word is deleted, move to next word
-            isDeleting = false;
-            currentIndex = (currentIndex + 1) % titles.length;
-            charIndex = 0;
-            // Shorter pause between words
-            typeSpeed = 300;
-        }
-        
-        // Continue the animation
+
         setTimeout(typeEffect, typeSpeed);
     }
-    
-    // Start the typing effect
+
     if (dynamicTitleElement) {
-        setTimeout(typeEffect, 500); // Start after 0.5 seconds
+        // Initial setup: If first title is "Data Engineer", start with "Data " displayed
+        if (titles.length > 0 && titles[0].text === "Data Engineer") {
+            dynamicTitleElement.textContent = "Data ";
+            charIndex = "Data ".length;
+        }
+        setTimeout(typeEffect, 500); // Initial delay
     } else {
         console.error("Element with ID 'dynamic-title' not found.");
     }
