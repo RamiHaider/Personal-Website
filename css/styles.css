@@ -1062,11 +1062,6 @@ nav a:hover {
     display: block; /* Ensure it behaves like a block */
 }
 
-/* Remove overflow from the inner card */
-.portfolio-card {
-    /* overflow: hidden; */ /* Removed this line */
-}
-
 /* Non-clickable card style */
 .non-clickable {
     cursor: default;
