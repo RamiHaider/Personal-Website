@@ -1767,3 +1767,21 @@ nav a:hover {
     opacity: 1;
     visibility: visible;
 }
+
+.model-test-section {
+    background: transparent !important;
+    box-shadow: none !important;
+}
+.upload-container {
+    background: transparent !important;
+    box-shadow: none !important;
+}
+.canvas-container {
+    background: transparent !important;
+    box-shadow: none !important;
+}
+.result-info {
+    background: transparent !important;
+    color: #fff !important;
+    box-shadow: none !important;
+}
