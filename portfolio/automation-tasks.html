@@ -749,7 +749,7 @@
                 const formData = new FormData();
                 formData.append('image', file);
                 
-                fetch('http://3.145.7.224:8000/predict', {
+                fetch('https://cors-anywhere.herokuapp.com/http://3.145.7.224:8000/predict', {
                     method: 'POST',
                     body: formData
                 })
