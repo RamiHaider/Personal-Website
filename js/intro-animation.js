@@ -1,7 +1,6 @@
 document.addEventListener('DOMContentLoaded', function() {
     const titles = [
         { text: "Data Engineer", deleteToPrefix: "Data " },
-        { text: "Data Analyst", deleteToPrefix: "Data " },
         { text: "Data Scientist", deleteToPrefix: "" }, // Delete completely
         { text: "Machine Learning Engineer", deleteToPrefix: "" }, // Delete completely
         { text: "Fullstack Developer", deleteToPrefix: "" } // Delete completely
