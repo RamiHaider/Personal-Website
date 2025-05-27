@@ -87,6 +87,124 @@
             margin-top: 30px;
             font-weight: 500;
         }
+
+        /* Model testing interface styles */
+        .model-test-section {
+            margin: 40px 0;
+            padding: 30px;
+            background: transparent;
+            border-radius: 12px;
+            box-shadow: none;
+        }
+
+        .model-test-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .upload-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            padding: 30px;
+            border: 2px dashed #adb5bd;
+            border-radius: 8px;
+            background-color: transparent;
+            transition: all 0.3s ease;
+        }
+
+        .upload-container:hover {
+            border-color: #6c757d;
+            background-color: rgba(255,255,255,0.05);
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            color: #6c757d;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .upload-button {
+            padding: 10px 20px;
+            background-color: #495057;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: background-color 0.3s ease;
+        }
+
+        .upload-button:hover {
+            background-color: #343a40;
+        }
+
+        .canvas-container {
+            position: relative;
+            max-width: 100%;
+            margin: 0 auto;
+            background-color: transparent;
+            border-radius: 8px;
+            box-shadow: none;
+            overflow: hidden;
+        }
+
+        #result-canvas {
+            display: block;
+            max-width: 100%;
+            height: auto;
+        }
+
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            visibility: hidden;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid rgba(73, 80, 87, 0.2);
+            border-top: 5px solid #495057;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .result-info {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: transparent;
+            border-radius: 8px;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .visible {
+            visibility: visible;
+        }
+
+        .hidden {
+            display: none;
+        }
     </style>
 </head>
 <body>
@@ -100,7 +218,35 @@
                         <p>Original Upload: 2023-07-15</p>
                         <p>Last Updated: <span class="update-date"></span></p>
                     </div>
-                    <!-- After the date-info div (around line 99), add: -->
+
+                    <!-- Model Testing Interface -->
+                    <div class="model-test-section">
+                        <h2>Test the Model</h2>
+                        <p>Upload an image of a time series (ideally 640x640px) to see if our model can detect anomalies.</p>
+                        <p>View all inferences uploaded and results <a href="https://api.ramihaider.me/dashboard" target="_blank">here</a> in the API's dashboard  </p>
+                        
+                        <div class="model-test-container">
+                            <div class="upload-container" id="upload-area">
+                                <div class="upload-icon">📊</div>
+                                <p>Drag & drop your time series image here or click to browse</p>
+                                <input type="file" id="file-input" class="file-input" accept="image/*">
+                                <button class="upload-button" id="browse-button">Browse Files</button>
+                            </div>
+                            
+                            <div class="canvas-container hidden" id="canvas-container">
+                                <canvas id="result-canvas"></canvas>
+                                <div class="loading-overlay" id="loading-overlay">
+                                    <div class="spinner"></div>
+                                    <p>Analyzing image...</p>
+                                </div>
+                            </div>
+                            
+                            <div class="result-info hidden" id="result-info">
+                                <!-- Results will be displayed here -->
+                            </div>
+                        </div>
+                    </div>
+                    
                     <!-- KEGS Presentation Information -->
                     <div class="slide-section">
                         <h2>About This Presentation</h2>
@@ -519,5 +665,155 @@
     <script src="../js/main.js"></script>
     <script src="../js/scroll-to-top.js"></script>
     <script src="../js/dates.js"></script>
+    
+    <!-- Model Testing Interface JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const uploadArea = document.getElementById('upload-area');
+            const fileInput = document.getElementById('file-input');
+            const browseButton = document.getElementById('browse-button');
+            const canvasContainer = document.getElementById('canvas-container');
+            const resultCanvas = document.getElementById('result-canvas');
+            const loadingOverlay = document.getElementById('loading-overlay');
+            const resultInfo = document.getElementById('result-info');
+            const ctx = resultCanvas.getContext('2d');
+            
+            // Handle browse button click
+            browseButton.addEventListener('click', function() {
+                fileInput.click();
+            });
+            
+            // Handle drag and drop events
+            uploadArea.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                uploadArea.style.borderColor = '#495057';
+                uploadArea.style.backgroundColor = '#e9ecef';
+            });
+            
+            uploadArea.addEventListener('dragleave', function() {
+                uploadArea.style.borderColor = '#adb5bd';
+                uploadArea.style.backgroundColor = '#f1f3f5';
+            });
+            
+            uploadArea.addEventListener('drop', function(e) {
+                e.preventDefault();
+                uploadArea.style.borderColor = '#adb5bd';
+                uploadArea.style.backgroundColor = '#f1f3f5';
+                
+                if (e.dataTransfer.files.length > 0) {
+                    fileInput.files = e.dataTransfer.files;
+                    handleFileUpload(e.dataTransfer.files[0]);
+                }
+            });
+            
+            // Handle file input change
+            fileInput.addEventListener('change', function() {
+                if (fileInput.files.length > 0) {
+                    handleFileUpload(fileInput.files[0]);
+                }
+            });
+            
+            // Process the uploaded file
+            function handleFileUpload(file) {
+                // Check if file is an image
+                if (!file.type.match('image.*')) {
+                    alert('Please upload an image file');
+                    return;
+                }
+                
+                // Show canvas container
+                canvasContainer.classList.remove('hidden');
+                
+                // Create image object to get dimensions
+                const img = new Image();
+                img.onload = function() {
+                    // Set canvas dimensions to match image
+                    resultCanvas.width = img.width;
+                    resultCanvas.height = img.height;
+                    
+                    // Draw image on canvas
+                    ctx.drawImage(img, 0, 0);
+                    
+                    // Show loading overlay
+                    loadingOverlay.classList.add('visible');
+                    
+                    // Send to API
+                    sendToAPI(file);
+                };
+                
+                // Load image from file
+                img.src = URL.createObjectURL(file);
+            }
+            
+            // Send file to API for prediction
+            function sendToAPI(file) {
+                const formData = new FormData();
+                formData.append('image', file);
+                
+                fetch('https://api.ramihaider.me/predict', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Hide loading overlay
+                    loadingOverlay.classList.remove('visible');
+                    
+                    // Display results
+                    displayResults(data);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    loadingOverlay.classList.remove('visible');
+                    resultInfo.classList.remove('hidden');
+                    resultInfo.textContent = 'Error processing image. Please try again.';
+                });
+            }
+            
+            // Display detection results on canvas
+            function displayResults(data) {
+                // Get the image from canvas
+                const img = new Image();
+                img.onload = function() {
+                    // Clear canvas and redraw image
+                    ctx.clearRect(0, 0, resultCanvas.width, resultCanvas.height);
+                    ctx.drawImage(img, 0, 0);
+                    
+                    // Show result info
+                    resultInfo.classList.remove('hidden');
+                    
+                    // Check if detections were found
+                    if (data.detections && data.detections.length > 0) {
+                        // Draw bounding boxes
+                        data.detections.forEach(detection => {
+                            const { x1, y1, x2, y2, confidence } = detection;
+                            
+                            // Draw red rectangle
+                            ctx.strokeStyle = 'red';
+                            ctx.lineWidth = 3;
+                            ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
+                            
+                            // Draw confidence text
+                            ctx.font = '16px Arial';
+                            ctx.fillStyle = 'red';
+                            ctx.fillText(`${Math.round(confidence * 100)}%`, x1, y1 - 5);
+                        });
+                        
+                        // Update result info
+                        resultInfo.textContent = `${data.detections.length} ${data.detections.length === 1 ? 'anomaly' : 'anomalies'} detected with ${Math.round(data.detections[0].confidence * 100)}% confidence`;
+                    } else {
+                        resultInfo.textContent = 'No anomalies detected';
+                    }
+                };
+                
+                img.src = resultCanvas.toDataURL();
+            }
+        });
+    </script>
 </body>
 </html> 
