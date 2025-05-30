@@ -1734,12 +1734,11 @@ document.addEventListener('DOMContentLoaded', function() {
     
     const animateNextPosition = () => {
       if (currentPosition >= convolutionPositions.length) {
-        // All convolutions complete, move to next stage
-        console.log("Convolution complete, moving to ReLU stage");
+        // All convolutions complete, move to ReLU visualization scene
+        console.log("Convolution complete, showing ReLU visualization");
         setTimeout(() => {
-          currentCNNStage = 'relu';
-          animateReLU();
-        }, 2000);
+          showReLUVisualization(featureMaps);
+        }, 1000);
         return;
       }
       
@@ -1918,6 +1917,284 @@ document.addEventListener('DOMContentLoaded', function() {
     // Start the animation
     console.log("Starting convolution animation loop");
     animateNextPosition();
+  }
+  
+  // NEW: ReLU Visualization Scene
+  function showReLUVisualization(featureMaps) {
+    const ctx = cnnCanvas.getContext('2d');
+    const width = cnnCanvas.width;
+    const height = cnnCanvas.height;
+    
+    console.log("Starting ReLU visualization scene");
+    
+    // Generate some realistic feature map data with negative values for demonstration
+    const matrixHeight = inputMatrix.length;
+    const featureMapDim = matrixHeight - 2;
+    const demonstrationFeatureMaps = cnnKernels.slice(0, 3).map((kernel, kernelIndex) => {
+      const featureMap = [];
+      for (let i = 0; i < featureMapDim; i++) {
+        const row = [];
+        for (let j = 0; j < featureMapDim; j++) {
+          // Generate values with some negatives for ReLU demonstration
+          let value = (Math.random() - 0.4) * 2; // Range from -0.8 to 1.2
+          row.push(value);
+        }
+        featureMap.push(row);
+      }
+      return featureMap;
+    });
+    
+    let animationStage = 0; // 0: show originals, 1: show graph, 2: show rectified
+    
+    const animateReLUVisualization = () => {
+      ctx.clearRect(0, 0, width, height);
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(0, 0, width, height);
+      
+      // Draw stage headers with ReLU highlighted
+      ctx.font = 'bold 18px sans-serif';
+      ctx.textAlign = 'center';
+      
+      const headerY = 25;
+      const stageSpacing = width / 3;
+      
+      // Convolution stage (completed - dimmed)
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+      ctx.fillText('Convolution', stageSpacing * 0.5, headerY);
+      
+      // ReLU stage (active - fully white)
+      ctx.fillStyle = '#ffffff';
+      ctx.fillText('ReLU', stageSpacing * 1.5, headerY);
+      
+      // MaxPooling stage (inactive - dimmed)
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+      ctx.fillText('MaxPooling', stageSpacing * 2.5, headerY);
+      
+      // Feature map parameters (same size as before)
+      const featureMapSize = featureMapDim * 3.2;
+      const featureCellSize = 3.2;
+      
+      // Layout positions
+      const leftX = 40; // Original feature maps on left
+      const middleX = leftX + featureMapSize + 60; // ReLU graph in middle
+      const rightX = middleX + 200; // Rectified maps on right
+      const startY = height/2 - (featureMapSize * 1.5);
+      
+      if (animationStage >= 0) {
+        // Stage 1: Show original feature maps on the left
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 16px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('Feature Maps', leftX + featureMapSize/2, startY - 30);
+        ctx.font = '12px sans-serif';
+        ctx.fillText('(with negative values)', leftX + featureMapSize/2, startY - 15);
+        
+        cnnKernels.slice(0, 3).forEach((kernel, kernelIndex) => {
+          const mapY = startY + kernelIndex * (featureMapSize + 35);
+          
+          // Feature map label
+          ctx.fillStyle = kernel.color;
+          ctx.font = 'bold 12px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText(`Map ${kernelIndex + 1}`, leftX + featureMapSize/2, mapY - 10);
+          
+          // Draw feature map with negatives in red
+          demonstrationFeatureMaps[kernelIndex].forEach((row, i) => {
+            row.forEach((value, j) => {
+              const x = leftX + j * featureCellSize;
+              const y = mapY + i * featureCellSize;
+              
+              // Color based on value (red for negative, grayscale for positive)
+              let fillColor;
+              if (value < 0) {
+                const intensity = Math.min(255, Math.abs(value) * 200);
+                fillColor = `rgba(239, 68, 68, 0.8)`; // Red for negative values
+              } else {
+                const intensity = Math.min(255, value * 200);
+                fillColor = `rgba(${intensity}, ${intensity}, ${intensity}, 0.8)`;
+              }
+              
+              ctx.fillStyle = fillColor;
+              ctx.fillRect(x, y, featureCellSize - 1, featureCellSize - 1);
+              
+              // Border
+              ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+              ctx.lineWidth = 0.5;
+              ctx.strokeRect(x, y, featureCellSize - 1, featureCellSize - 1);
+            });
+          });
+          
+          // Outline
+          ctx.strokeStyle = kernel.color;
+          ctx.lineWidth = 2;
+          ctx.strokeRect(leftX, mapY, featureMapSize, featureMapSize);
+        });
+      }
+      
+      if (animationStage >= 1) {
+        // Stage 2: Show ReLU graph in the middle
+        const graphWidth = 160;
+        const graphHeight = 120;
+        const graphX = middleX;
+        const graphY = height/2 - graphHeight/2;
+        
+        // Graph title
+        ctx.fillStyle = '#10b981';
+        ctx.font = 'bold 16px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('ReLU Function', graphX + graphWidth/2, graphY - 40);
+        
+        // Explanation text
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '12px sans-serif';
+        ctx.fillText('(Literally just means convert', graphX + graphWidth/2, graphY + graphHeight + 20);
+        ctx.fillText('any negative value to 0)', graphX + graphWidth/2, graphY + graphHeight + 35);
+        
+        // Draw graph background
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+        ctx.fillRect(graphX, graphY, graphWidth, graphHeight);
+        
+        // Draw axes
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 2;
+        
+        // X-axis
+        ctx.beginPath();
+        ctx.moveTo(graphX + 20, graphY + graphHeight - 20);
+        ctx.lineTo(graphX + graphWidth - 20, graphY + graphHeight - 20);
+        ctx.stroke();
+        
+        // Y-axis
+        ctx.beginPath();
+        ctx.moveTo(graphX + 80, graphY + 20);
+        ctx.lineTo(graphX + 80, graphY + graphHeight - 20);
+        ctx.stroke();
+        
+        // Draw ReLU function line
+        ctx.strokeStyle = '#10b981';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        
+        // Negative part (flat at 0)
+        ctx.moveTo(graphX + 20, graphY + graphHeight - 20);
+        ctx.lineTo(graphX + 80, graphY + graphHeight - 20);
+        
+        // Positive part (diagonal up)
+        ctx.lineTo(graphX + graphWidth - 20, graphY + 20);
+        ctx.stroke();
+        
+        // Add labels
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '10px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('input', graphX + graphWidth/2, graphY + graphHeight - 5);
+        
+        ctx.save();
+        ctx.translate(graphX + 10, graphY + graphHeight/2);
+        ctx.rotate(-Math.PI/2);
+        ctx.fillText('output', 0, 0);
+        ctx.restore();
+        
+        // Add key points
+        ctx.fillStyle = '#10b981';
+        ctx.beginPath();
+        ctx.arc(graphX + 80, graphY + graphHeight - 20, 4, 0, Math.PI * 2);
+        ctx.fill();
+        
+        // Add equation
+        ctx.fillStyle = '#10b981';
+        ctx.font = 'bold 14px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('f(x) = max(0, x)', graphX + graphWidth/2, graphY - 15);
+      }
+      
+      if (animationStage >= 2) {
+        // Stage 3: Show rectified versions on the right
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 16px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('After ReLU', rightX + featureMapSize/2, startY - 30);
+        ctx.font = '12px sans-serif';
+        ctx.fillText('(negatives → 0)', rightX + featureMapSize/2, startY - 15);
+        
+        cnnKernels.slice(0, 3).forEach((kernel, kernelIndex) => {
+          const mapY = startY + kernelIndex * (featureMapSize + 35);
+          
+          // Feature map label
+          ctx.fillStyle = kernel.color;
+          ctx.font = 'bold 12px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText(`Map ${kernelIndex + 1}`, rightX + featureMapSize/2, mapY - 10);
+          
+          // Draw rectified feature map
+          demonstrationFeatureMaps[kernelIndex].forEach((row, i) => {
+            row.forEach((value, j) => {
+              const x = rightX + j * featureCellSize;
+              const y = mapY + i * featureCellSize;
+              
+              // Apply ReLU: negative values become 0 (black)
+              const reluValue = Math.max(0, value);
+              const intensity = Math.min(255, reluValue * 200);
+              
+              ctx.fillStyle = `rgba(${intensity}, ${intensity}, ${intensity}, 0.8)`;
+              ctx.fillRect(x, y, featureCellSize - 1, featureCellSize - 1);
+              
+              // Border
+              ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+              ctx.lineWidth = 0.5;
+              ctx.strokeRect(x, y, featureCellSize - 1, featureCellSize - 1);
+              
+              // Show "0" for values that were negative
+              if (value < 0) {
+                ctx.fillStyle = '#ffffff';
+                ctx.font = '8px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('0', x + featureCellSize/2, y + featureCellSize/2 + 2);
+              }
+            });
+          });
+          
+          // Outline
+          ctx.strokeStyle = kernel.color;
+          ctx.lineWidth = 2;
+          ctx.strokeRect(rightX, mapY, featureMapSize, featureMapSize);
+        });
+        
+        // Add arrows between original and rectified
+        const arrowY = height/2;
+        
+        // Arrow from original to graph
+        ctx.strokeStyle = '#10b981';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(leftX + featureMapSize + 15, arrowY);
+        ctx.lineTo(middleX - 15, arrowY);
+        ctx.stroke();
+        drawArrowHead(ctx, middleX - 15, arrowY, 0);
+        
+        // Arrow from graph to rectified
+        ctx.beginPath();
+        ctx.moveTo(middleX + 160 + 15, arrowY);
+        ctx.lineTo(rightX - 15, arrowY);
+        ctx.stroke();
+        drawArrowHead(ctx, rightX - 15, arrowY, 0);
+      }
+      
+      // Progress through animation stages
+      if (animationStage < 2) {
+        animationStage++;
+        setTimeout(animateReLUVisualization, 2500); // 2.5 seconds between stages
+      } else {
+        // Animation complete, move to original ReLU stage
+        setTimeout(() => {
+          currentCNNStage = 'relu';
+          animateReLU();
+        }, 3000);
+      }
+    };
+    
+    // Start the ReLU visualization animation
+    animateReLUVisualization();
   }
   
   function animateReLU() {
