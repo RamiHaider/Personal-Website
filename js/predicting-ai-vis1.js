@@ -2282,121 +2282,436 @@ document.addEventListener('DOMContentLoaded', function() {
     const width = cnnCanvas.width;
     const height = cnnCanvas.height;
     
-    // Clear and redraw with MaxPool focus
-    ctx.clearRect(0, 0, width, height);
-    ctx.fillStyle = '#111827';
-    ctx.fillRect(0, 0, width, height);
+    // Animation stages for Max Pooling
+    let poolStage = 0; // 0: setup, 1: animate sliding windows, 2: show final result
     
-    // Draw "MaxPool" stage header
-    ctx.fillStyle = '#f59e0b'; // amber
-    ctx.font = 'bold 18px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('Max Pooling', width / 2, 30);
+    const matrixHeight = inputMatrix.length;
+    const featureMapDim = matrixHeight - 2; // Feature map dimensions after convolution
     
-    // Show max pooling visualization
-    ctx.fillStyle = '#ffffff';
-    ctx.font = '14px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('2x2 Max Pooling (Downsampling)', width / 2, 60);
-    
-    // After MaxPool, show multiple rounds
-    setTimeout(() => {
-      showMultipleRounds();
-    }, 2000);
-  }
-  
-  function showMultipleRounds() {
-    const ctx = cnnCanvas.getContext('2d');
-    const width = cnnCanvas.width;
-    const height = cnnCanvas.height;
-    
-    // Clear and show simplified multiple rounds
-    ctx.clearRect(0, 0, width, height);
-    ctx.fillStyle = '#111827';
-    ctx.fillRect(0, 0, width, height);
-    
-    // Draw header
-    ctx.fillStyle = '#8b5cf6'; // purple
-    ctx.font = 'bold 18px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('Deep Convolution Layers', width / 2, 30);
-    
-    // Show simplified flow
-    ctx.fillStyle = '#ffffff';
-    ctx.font = '14px sans-serif';
-    ctx.fillText('Round 1: 4 Feature Maps → Round 2: 8 Feature Maps → Round 3: 20 Feature Maps', width / 2, 70);
-    
-    // Generate final feature vector (simulate 128 features)
-    finalFeatureVector = [];
-    for (let i = 0; i < 128; i++) {
-      finalFeatureVector.push(Math.random() * 0.8 + 0.1); // Random values between 0.1-0.9
-    }
-    
-    // Show final flattening
-    setTimeout(() => {
-      showFeatureFlattening();
-    }, 3000);
-  }
-  
-  function showFeatureFlattening() {
-    const ctx = cnnCanvas.getContext('2d');
-    const width = cnnCanvas.width;
-    const height = cnnCanvas.height;
-    
-    // Clear and show flattening
-    ctx.clearRect(0, 0, width, height);
-    ctx.fillStyle = '#111827';
-    ctx.fillRect(0, 0, width, height);
-    
-    // Draw header
-    ctx.fillStyle = '#ec4899'; // pink
-    ctx.font = 'bold 18px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('Feature Vector Flattening', width / 2, 30);
-    
-    // Show final vector
-    ctx.fillStyle = '#ffffff';
-    ctx.font = '14px sans-serif';
-    ctx.fillText(`20 Feature Maps → Flattened to ${finalFeatureVector.length} Features`, width / 2, 70);
-    
-    // Draw a representation of the flattened vector
-    const vectorStartX = 100;
-    const vectorStartY = 100;
-    const cellWidth = 4;
-    const cellHeight = 15;
-    
-    finalFeatureVector.slice(0, 100).forEach((value, i) => { // Show first 100 features
-      const x = vectorStartX + (i % 20) * cellWidth;
-      const y = vectorStartY + Math.floor(i / 20) * cellHeight;
-      
-      const intensity = Math.round(value * 255);
-      ctx.fillStyle = `rgb(${intensity}, ${intensity}, ${intensity})`;
-      ctx.fillRect(x, y, cellWidth - 1, cellHeight - 1);
+    // Generate ReLU output feature maps (simulate realistic data)
+    const reluFeatureMaps = cnnKernels.slice(0, 3).map((kernel, kernelIndex) => {
+      const featureMap = [];
+      for (let i = 0; i < featureMapDim; i++) {
+        const row = [];
+        for (let j = 0; j < featureMapDim; j++) {
+          // Generate positive values only (post-ReLU)
+          let value = Math.random() * 1.2; // Range from 0 to 1.2
+          row.push(value);
+        }
+        featureMap.push(row);
+      }
+      return featureMap;
     });
     
-    // Continue to neural network
-    setTimeout(() => {
-      predictionStage = 4; // Skip to neural network stage
-      cnnWrapper.style.opacity = '0';
-      
-      // Show neural network visualization
-      setTimeout(() => {
-        visualizationWrapper.style.opacity = '1';
-        vectorSection.style.transform = 'translateX(0)';
-        nnSection.style.opacity = '1';
-        nnSection.style.transform = 'scale(1)';
+    // Calculate pooled dimensions (2x2 pooling)
+    const pooledDim = Math.floor(featureMapDim / 2);
+    const pooledFeatureMaps = cnnKernels.slice(0, 3).map(() => 
+      Array(pooledDim).fill().map(() => Array(pooledDim).fill(null))
+    );
+    
+    const animatePoolStage = () => {
+      if (poolStage === 0) {
+        // Stage 1: Setup - show ReLU outputs and explain max pooling
+        ctx.clearRect(0, 0, width, height);
+        ctx.fillStyle = '#111827';
+        ctx.fillRect(0, 0, width, height);
         
-        // Update neural network to use 128 inputs instead of 9
-        updateNeuralNetworkForCNN();
-      }, 500);
-    }, 3000);
+        // Header
+        ctx.fillStyle = '#f59e0b'; // Amber for max pooling
+        ctx.font = 'bold 20px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('Max Pooling - 2×2 Downsampling', width / 2, 40);
+        
+        // Subtitle
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '14px sans-serif';
+        ctx.fillText('Sliding 2×2 window, taking maximum value from each region', width / 2, 65);
+        
+        const cellSize = 20;
+        const mapSpacing = 60;
+        const leftX = 50;
+        const startY = height/2 - (featureMapDim * cellSize * 3 + mapSpacing * 2) / 2;
+        
+        // Draw the 3 ReLU feature maps
+        cnnKernels.slice(0, 3).forEach((kernel, kernelIndex) => {
+          const mapY = startY + kernelIndex * (featureMapDim * cellSize + mapSpacing);
+          
+          // Feature map label
+          ctx.fillStyle = kernel.color;
+          ctx.font = 'bold 14px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText(`ReLU Output ${kernelIndex + 1}`, leftX + (featureMapDim * cellSize)/2, mapY - 15);
+          ctx.fillStyle = '#ffffff';
+          ctx.font = '12px sans-serif';
+          ctx.fillText(`${featureMapDim}×${featureMapDim}`, leftX + (featureMapDim * cellSize)/2, mapY - 2);
+          
+          // Draw feature map
+          reluFeatureMaps[kernelIndex].forEach((row, i) => {
+            row.forEach((value, j) => {
+              const x = leftX + j * cellSize;
+              const y = mapY + i * cellSize;
+              
+              // Grayscale intensity based on value
+              const intensity = Math.min(255, value * 200);
+              ctx.fillStyle = `rgba(${intensity}, ${intensity}, ${intensity}, 0.8)`;
+              ctx.fillRect(x, y, cellSize - 1, cellSize - 1);
+              
+              // Border
+              ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+              ctx.lineWidth = 0.5;
+              ctx.strokeRect(x, y, cellSize - 1, cellSize - 1);
+            });
+          });
+          
+          // Outline
+          ctx.strokeStyle = kernel.color;
+          ctx.lineWidth = 2;
+          ctx.strokeRect(leftX, mapY, featureMapDim * cellSize, featureMapDim * cellSize);
+        });
+        
+        // Arrow to pooling operation
+        const arrowX = leftX + featureMapDim * cellSize + 30;
+        const arrowY = height/2;
+        
+        ctx.strokeStyle = '#f59e0b';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(arrowX, arrowY);
+        ctx.lineTo(arrowX + 100, arrowY);
+        ctx.stroke();
+        drawArrowHead(ctx, arrowX + 100, arrowY, 0);
+        
+        // Max pooling explanation
+        ctx.fillStyle = '#f59e0b';
+        ctx.font = 'bold 16px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('2×2 Max Pool', arrowX + 50, arrowY - 15);
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '12px sans-serif';
+        ctx.fillText('Stride = 2', arrowX + 50, arrowY + 5);
+        ctx.fillText('Output: ' + pooledDim + '×' + pooledDim, arrowX + 50, arrowY + 20);
+        
+        poolStage++;
+        setTimeout(animatePoolStage, 3000);
+        
+      } else if (poolStage === 1) {
+        // Stage 2: Animate sliding 2x2 windows across each feature map
+        animateMaxPoolSliding();
+        
+      } else if (poolStage === 2) {
+        // Stage 3: Show final pooled results
+        showFinalPooledResults();
+      }
+    };
+    
+    const animateMaxPoolSliding = () => {
+      // Calculate all 2x2 pool positions
+      const poolPositions = [];
+      for (let i = 0; i <= featureMapDim - 2; i += 2) { // Stride 2
+        for (let j = 0; j <= featureMapDim - 2; j += 2) { // Stride 2
+          poolPositions.push({ row: i, col: j });
+        }
+      }
+      
+      let currentPos = 0;
+      
+      const slidePool = () => {
+        if (currentPos >= poolPositions.length) {
+          // All pooling complete
+          poolStage++;
+          setTimeout(animatePoolStage, 1000);
+          return;
+        }
+        
+        const pos = poolPositions[currentPos];
+        
+        // Redraw scene
+        ctx.clearRect(0, 0, width, height);
+        ctx.fillStyle = '#111827';
+        ctx.fillRect(0, 0, width, height);
+        
+        // Header
+        ctx.fillStyle = '#f59e0b';
+        ctx.font = 'bold 18px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('Max Pooling - Sliding 2×2 Window', width / 2, 30);
+        
+        const cellSize = 18;
+        const mapSpacing = 50;
+        const leftX = 50;
+        const rightX = 450;
+        const startY = height/2 - (featureMapDim * cellSize * 3 + mapSpacing * 2) / 2;
+        
+        // Draw input feature maps with sliding window
+        cnnKernels.slice(0, 3).forEach((kernel, kernelIndex) => {
+          const mapY = startY + kernelIndex * (featureMapDim * cellSize + mapSpacing);
+          
+          // Input map label
+          ctx.fillStyle = kernel.color;
+          ctx.font = 'bold 12px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText(`Input ${kernelIndex + 1}`, leftX + (featureMapDim * cellSize)/2, mapY - 15);
+          ctx.fillStyle = '#ffffff';
+          ctx.font = '10px sans-serif';
+          ctx.fillText(`${featureMapDim}×${featureMapDim}`, leftX + (featureMapDim * cellSize)/2, mapY - 3);
+          
+          // Draw input feature map
+          reluFeatureMaps[kernelIndex].forEach((row, i) => {
+            row.forEach((value, j) => {
+              const x = leftX + j * cellSize;
+              const y = mapY + i * cellSize;
+              
+              // Highlight current 2x2 window
+              const inWindow = i >= pos.row && i < pos.row + 2 && 
+                             j >= pos.col && j < pos.col + 2;
+              
+              const intensity = Math.min(255, value * 200);
+              ctx.fillStyle = `rgba(${intensity}, ${intensity}, ${intensity}, 0.8)`;
+              ctx.fillRect(x, y, cellSize - 1, cellSize - 1);
+              
+              // Different border for pooling window
+              if (inWindow) {
+                ctx.strokeStyle = '#f59e0b';
+                ctx.lineWidth = 2;
+              } else {
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+                ctx.lineWidth = 0.5;
+              }
+              ctx.strokeRect(x, y, cellSize - 1, cellSize - 1);
+              
+              // Show values in the current window
+              if (inWindow && cellSize > 15) {
+                ctx.fillStyle = '#ffffff';
+                ctx.font = '8px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(value.toFixed(2), x + cellSize/2, y + cellSize/2 + 2);
+              }
+            });
+          });
+          
+          // Calculate max value from 2x2 window
+          let maxValue = 0;
+          for (let wi = 0; wi < 2; wi++) {
+            for (let wj = 0; wj < 2; wj++) {
+              const val = reluFeatureMaps[kernelIndex][pos.row + wi][pos.col + wj];
+              maxValue = Math.max(maxValue, val);
+            }
+          }
+          
+          // Store pooled value
+          const poolRow = Math.floor(pos.row / 2);
+          const poolCol = Math.floor(pos.col / 2);
+          pooledFeatureMaps[kernelIndex][poolRow][poolCol] = maxValue;
+          
+          // Draw output feature map (pooled) with progress
+          const pooledCellSize = 25;
+          const outputMapY = mapY;
+          
+          ctx.fillStyle = kernel.color;
+          ctx.font = 'bold 12px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText(`Pooled ${kernelIndex + 1}`, rightX + (pooledDim * pooledCellSize)/2, outputMapY - 15);
+          ctx.fillStyle = '#ffffff';
+          ctx.font = '10px sans-serif';
+          ctx.fillText(`${pooledDim}×${pooledDim}`, rightX + (pooledDim * pooledCellSize)/2, outputMapY - 3);
+          
+          // Draw pooled feature map with computed values so far
+          pooledFeatureMaps[kernelIndex].forEach((row, i) => {
+            row.forEach((value, j) => {
+              const x = rightX + j * pooledCellSize;
+              const y = outputMapY + i * pooledCellSize;
+              
+              if (value !== null) {
+                const intensity = Math.min(255, value * 200);
+                ctx.fillStyle = `rgba(${intensity}, ${intensity}, ${intensity}, 0.8)`;
+                ctx.fillRect(x, y, pooledCellSize - 1, pooledCellSize - 1);
+                
+                // Highlight current cell being computed
+                if (i === poolRow && j === poolCol) {
+                  ctx.strokeStyle = '#f59e0b';
+                  ctx.lineWidth = 3;
+                  ctx.strokeRect(x - 1, y - 1, pooledCellSize + 1, pooledCellSize + 1);
+                  
+                  // Show max value
+                  ctx.fillStyle = '#ffffff';
+                  ctx.font = 'bold 10px sans-serif';
+                  ctx.textAlign = 'center';
+                  ctx.fillText(maxValue.toFixed(2), x + pooledCellSize/2, y + pooledCellSize/2 + 3);
+                }
+              } else {
+                // Empty cell
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+                ctx.fillRect(x, y, pooledCellSize - 1, pooledCellSize - 1);
+              }
+              
+              ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+              ctx.lineWidth = 0.5;
+              ctx.strokeRect(x, y, pooledCellSize - 1, pooledCellSize - 1);
+            });
+          });
+          
+          // Draw arrow from input window to output cell
+          const inputCenterX = leftX + pos.col * cellSize + cellSize;
+          const inputCenterY = mapY + pos.row * cellSize + cellSize;
+          const outputCenterX = rightX + poolCol * pooledCellSize + pooledCellSize/2;
+          const outputCenterY = outputMapY + poolRow * pooledCellSize + pooledCellSize/2;
+          
+          ctx.strokeStyle = '#f59e0b';
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(inputCenterX, inputCenterY);
+          ctx.lineTo(outputCenterX, outputCenterY);
+          ctx.stroke();
+          drawArrowHead(ctx, outputCenterX, outputCenterY, 0);
+        });
+        
+        // Show current operation details
+        ctx.fillStyle = '#f59e0b';
+        ctx.font = '12px sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText(`Position: (${pos.row}, ${pos.col})`, width - 180, 80);
+        ctx.fillText(`Step: ${currentPos + 1}/${poolPositions.length}`, width - 180, 95);
+        ctx.fillText(`Window: 2×2`, width - 180, 110);
+        ctx.fillText(`Operation: max()`, width - 180, 125);
+        
+        currentPos++;
+        setTimeout(slidePool, 400); // Animation speed
+      };
+      
+      slidePool();
+    };
+    
+    const showFinalPooledResults = () => {
+      ctx.clearRect(0, 0, width, height);
+      ctx.fillStyle = '#111827';
+      ctx.fillRect(0, 0, width, height);
+      
+      // Header
+      ctx.fillStyle = '#f59e0b';
+      ctx.font = 'bold 20px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('Max Pooling Complete', width / 2, 40);
+      
+      // Subtitle
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '14px sans-serif';
+      ctx.fillText(`Downsampled from ${featureMapDim}×${featureMapDim} to ${pooledDim}×${pooledDim}`, width / 2, 65);
+      
+      const cellSize = 25;
+      const mapSpacing = 60;
+      const centerX = width/2 - (pooledDim * cellSize * 3 + mapSpacing * 2) / 2;
+      const centerY = height/2 - (pooledDim * cellSize) / 2;
+      
+      // Draw final pooled feature maps
+      cnnKernels.slice(0, 3).forEach((kernel, kernelIndex) => {
+        const mapX = centerX + kernelIndex * (pooledDim * cellSize + mapSpacing);
+        
+        // Feature map label
+        ctx.fillStyle = kernel.color;
+        ctx.font = 'bold 16px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(`Pooled Map ${kernelIndex + 1}`, mapX + (pooledDim * cellSize)/2, centerY - 25);
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '12px sans-serif';
+        ctx.fillText(`${pooledDim}×${pooledDim}`, mapX + (pooledDim * cellSize)/2, centerY - 8);
+        
+        // Draw pooled feature map
+        pooledFeatureMaps[kernelIndex].forEach((row, i) => {
+          row.forEach((value, j) => {
+            const x = mapX + j * cellSize;
+            const y = centerY + i * cellSize;
+            
+            const intensity = Math.min(255, value * 200);
+            ctx.fillStyle = `rgba(${intensity}, ${intensity}, ${intensity}, 0.8)`;
+            ctx.fillRect(x, y, cellSize - 2, cellSize - 2);
+            
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(x, y, cellSize - 2, cellSize - 2);
+          });
+        });
+        
+        // Outline
+        ctx.strokeStyle = kernel.color;
+        ctx.lineWidth = 3;
+        ctx.strokeRect(mapX, centerY, pooledDim * cellSize, pooledDim * cellSize);
+      });
+      
+      // Show completion message
+      ctx.fillStyle = '#10b981';
+      ctx.font = 'bold 16px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('Ready for Neural Network Processing', width / 2, height - 40);
+      
+      // After showing final results, transition to neural network (commented out for now)
+      setTimeout(() => {
+        console.log("Max pooling complete - Neural network stage would start here");
+        // TODO: Uncomment when ready to continue to neural network
+        // predictionStage = 4; 
+        // updateStageIndicators();
+        // animateNeuralNetworkSequence();
+      }, 4000);
+    };
+    
+    animatePoolStage();
+  }
+
+  // Update the extractInputMatrix function to use the R channel data
+  function extractInputMatrix() {
+    // No need to extract since we already have inputMatrix from RGB decomposition
+    if (inputMatrix.length === 0 && gridData.length > 0) {
+      // Fallback: extract R channel if somehow missed
+      inputMatrix = [];
+      gridData.forEach(row => {
+        const matrixRow = [];
+        row.forEach(cell => {
+          matrixRow.push({
+            ...cell,
+            intensity: cell.color.r / 255, // Use Red channel
+            displayIntensity: cell.color.r
+          });
+        });
+        inputMatrix.push(matrixRow);
+      });
+    }
+    console.log(`Using Red channel input matrix: ${inputMatrix.length}x${inputMatrix[0]?.length || 0}`);
   }
   
+  /* COMMENTED OUT - Neural Network functions for later implementation
+  
   function updateNeuralNetworkForCNN() {
-    // Modify the neural network to handle 128 inputs
-    // This will be a simplified version showing the dense vector input
+    // Modify the neural network to handle pooled feature maps
+    // This will be implemented when ready to continue to neural network
     predictionStage = 4;
     updateStageIndicators();
-    animateNeuralNetworkSequence();
+    console.log("Neural network stage would start here");
+    // animateNeuralNetworkSequence();
   }
+  
+  // Neural network animation functions will go here when ready
+  function animateNeuralNetwork() {
+    if (predictionStage < 4) return;
+    // Implementation goes here...
+  }
+  
+  function animateNeuralNetworkSequence() {
+    console.log("Neural network sequence animation would start here");
+  }
+  
+  function showPredictionResults() {
+    console.log("Prediction results would be shown here");
+  }
+  
+  function scheduleReset() {
+    if (predictionStage === 5) {
+      setTimeout(() => {
+        if (backgroundImage) {
+           backgroundImage.src = 'assets/images/geophysics-image.png';
+        }
+      }, 7000);
+    }
+  }
+  
+  */
+
 }); 
