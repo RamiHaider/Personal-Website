@@ -7,10 +7,11 @@ document.addEventListener('DOMContentLoaded', function() {
   const mapCanvas = document.createElement('canvas');
   const gridCanvas = document.createElement('canvas');
   const vectorCanvas = document.createElement('canvas');
+  const cnnCanvas = document.createElement('canvas'); // NEW: CNN visualization canvas
   const neuralNetworkCanvas = document.createElement('canvas');
   
   // Set canvas properties
-  [mapCanvas, gridCanvas, vectorCanvas, neuralNetworkCanvas].forEach(canvas => {
+  [mapCanvas, gridCanvas, vectorCanvas, cnnCanvas, neuralNetworkCanvas].forEach(canvas => {
     canvas.width = 800;
     canvas.height = 500;
     canvas.style.position = 'absolute';
@@ -41,6 +42,20 @@ document.addEventListener('DOMContentLoaded', function() {
   visualizationWrapper.style.opacity = '0';
   visualizationWrapper.style.transition = 'opacity 0.5s ease-in-out';
   container.appendChild(visualizationWrapper);
+  
+  // Create CNN visualization wrapper (NEW)
+  const cnnWrapper = document.createElement('div');
+  cnnWrapper.style.position = 'absolute';
+  cnnWrapper.style.inset = '0';
+  cnnWrapper.style.backgroundColor = '#111827'; // gray-900
+  cnnWrapper.style.display = 'flex';
+  cnnWrapper.style.alignItems = 'center';
+  cnnWrapper.style.justifyContent = 'center';
+  cnnWrapper.style.padding = '1rem';
+  cnnWrapper.style.opacity = '0';
+  cnnWrapper.style.transition = 'opacity 0.5s ease-in-out';
+  cnnWrapper.appendChild(cnnCanvas);
+  container.appendChild(cnnWrapper);
   
   // Create visualization container
   const vizContainer = document.createElement('div');
@@ -103,7 +118,7 @@ document.addEventListener('DOMContentLoaded', function() {
   stageIndicatorContainer.style.gap = '0.5rem';
   container.appendChild(stageIndicatorContainer);
   
-  const stageLabels = ['Select Region', 'Extract Data', 'Vectorize', 'Process', 'Predict'];
+  const stageLabels = ['Select Region', 'Extract Matrix', 'CNN Processing', 'Feature Extraction', 'Neural Network', 'Predict'];
   const stageIndicators = stageLabels.map((label, i) => {
     const indicator = document.createElement('div');
     indicator.textContent = label;
@@ -137,6 +152,38 @@ document.addEventListener('DOMContentLoaded', function() {
   let backgroundImage = new Image();
   let imageLoaded = false;
 
+  // CNN-related state variables (NEW)
+  let inputMatrix = [];
+  let currentKernelIndex = 0;
+  let currentCNNStage = 'convolution'; // 'convolution', 'relu', 'maxpool'
+  let featureMaps = [];
+  let currentConvStep = 0;
+  let finalFeatureVector = [];
+  
+  // Define CNN kernels (3x3)
+  const cnnKernels = [
+    {
+      name: 'Horizontal Sobel',
+      values: [[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]],
+      color: '#ef4444' // red
+    },
+    {
+      name: 'Vertical Sobel', 
+      values: [[-1, -2, -1], [0, 0, 0], [1, 2, 1]],
+      color: '#22c55e' // green
+    },
+    {
+      name: 'Edge Detection',
+      values: [[0, -1, 0], [-1, 4, -1], [0, -1, 0]],
+      color: '#3b82f6' // blue
+    },
+    {
+      name: 'Blur',
+      values: [[1/9, 1/9, 1/9], [1/9, 1/9, 1/9], [1/9, 1/9, 1/9]],
+      color: '#a855f7' // purple
+    }
+  ];
+  
   // --- NEW: Image Loading and Processing Logic ---
   backgroundImage.onload = () => {
     console.log("Background image loaded.");
@@ -198,7 +245,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     const data = imageData.data;
     const pixels = [];
-    const pixelSize = 10; // Size of our visualization pixels
+    const pixelSize = 5; // Size of our visualization pixels
 
     for (let y = 0; y < tempCanvas.height; y += pixelSize) {
       const row = [];
@@ -262,12 +309,12 @@ document.addEventListener('DOMContentLoaded', function() {
       selectionBox.style.height = selectionBoxState.height + 'px';
       
       selectionBox.style.borderStyle = 'dashed';
-      selectionBox.style.boxShadow = '0 0 10px rgba(34, 211, 238, 0.5)';
+      selectionBox.style.boxShadow = '0 0 10px rgba(255, 255, 255, 0.5)';
       selectionBox.style.animation = 'pulse 1.5s infinite alternate';
       
       // Extract grid data from pixels in selection - ensure exact pixel boundaries
       // Make sure to snap to the grid boundaries
-      const pixelSize = 10;
+      const pixelSize = 5;
       
       // Snap selectionBox to pixel grid
       const snappedX = Math.floor(selectionBoxState.x / pixelSize) * pixelSize;
@@ -373,356 +420,462 @@ document.addEventListener('DOMContentLoaded', function() {
     });
   }
   
-  // Matrix to vector animation - improved cell-by-cell animation
+  // Replace the animateVectorization function with RGB decomposition
   function animateVectorization() {
     if (predictionStage < 2 || gridData.length === 0) return;
     
-    // First fade the background and highlight the matrix
+    // Go to RGB decomposition scene instead of vectorization
     fadeBackgroundForMatrix();
     
-    const ctx = vectorCanvas.getContext('2d');
-    let startTime = Date.now();
-    let cellIndex = 0;
-    let animationId;
-    
-    // Vector cells setup - ensure perfect squares with better spacing
-    const vectorCellSize = 40; // Increased from 28 to 40 for wider cells
-    const vectorCellSpacing = 5; // Minimal spacing between cells
-    const vectorStartY = 50; // Start higher to use more vertical space
-    const vectorX = vectorCanvas.width / 2 - vectorCellSize / 2; // Center colored vector
-    
-    // Flatten grid data
-    const flattenedCells = [];
-    gridData.forEach(row => {
-      row.forEach(cell => {
-        flattenedCells.push(cell);
-      });
-    });
-    
-    // Sort by y then x for row-by-row unwrapping
-    flattenedCells.sort((a, b) => {
-      if (a.y === b.y) return a.x - b.x;
-      return a.y - b.y;
-    });
-    
-    const totalCells = flattenedCells.length;
-    cellsInVector = []; // Use the global variable instead of creating a local one
-    
-    // Clear vector canvas initially
-    ctx.clearRect(0, 0, vectorCanvas.width, vectorCanvas.height);
-    
-    // Draw label for feature vector with improved styling like prediction results
-    // First draw a semi-transparent background for better readability
-    ctx.fillStyle = 'rgba(17, 24, 39, 0.8)'; // Darker background for better contrast
-    ctx.fillRect(vectorCanvas.width/2 - 70, 10, 140, 30); // Larger background area
+    // After highlighting the selected region, transition to RGB scene
+    setTimeout(() => {
+      predictionStage = 2; // RGB Decomposition stage
+      updateStageIndicators();
+      
+      // Hide current visualization and show RGB decomposition
+      mapCanvas.style.opacity = '0';
+      gridCanvas.style.opacity = '0';
+      visualizationWrapper.style.opacity = '0';
+      
+      showRGBDecomposition();
+    }, 1500);
+  }
 
-    // Then draw the text
-    ctx.fillStyle = '#3b82f6'; // Blue for input
-    ctx.font = '1rem sans-serif'; // Larger font size
-    ctx.textAlign = 'center';
-    ctx.fillText('Input Vector', vectorCanvas.width / 2, 30);
+  // NEW: RGB Decomposition Visualization
+  function showRGBDecomposition() {
+    if (predictionStage < 2) return;
     
-    const animateNextCell = () => {
-      if (cellIndex >= totalCells) {
-        // Once all cells are in vector, add black & white copy after a delay
-        setTimeout(createBWCopy, 500); // Reduced delay from 1000ms to 500ms
-        return;
-      }
-      
-      const cell = flattenedCells[cellIndex];
-      // Stack cells on top of each other with spacing
-      const vectorY = vectorStartY + (cellIndex * (vectorCellSize + vectorCellSpacing));
-      
-      // Animation for cell movement
-      let cellAnimationProgress = 0;
-      const animationDuration = 200; // ms per cell
-      const cellAnimationStart = Date.now();
-      
-      const animateCellMovement = () => {
-        // Calculate animation progress
-        const elapsed = Date.now() - cellAnimationStart;
-        cellAnimationProgress = Math.min(1, elapsed / animationDuration);
-        
-        // Starting position (in the matrix)
-        const startX = cell.x;
-        const startY = cell.y;
-        const startWidth = cell.width;
-        const startHeight = cell.height;
-        
-        // Ending position (in the vector)
-        const endX = vectorX;
-        const endY = vectorY;
-        const endWidth = vectorCellSize;
-        const endHeight = vectorCellSize;
-        
-        // Current position based on animation progress
-        const currentX = startX + (endX - startX) * cellAnimationProgress;
-        const currentY = startY + (endY - startY) * cellAnimationProgress;
-        const currentWidth = startWidth + (endWidth - startWidth) * cellAnimationProgress;
-        const currentHeight = startHeight + (endHeight - startHeight) * cellAnimationProgress;
-        
-        // Highlight the current cell in the grid
-        const gridCtx = gridCanvas.getContext('2d');
-        
-        // Redraw all cells to ensure they stay visible
-        gridData.forEach(row => {
-          row.forEach(gridCell => {
-            // Skip the current animating cell - it's moving
-            if (gridCell.x === cell.x && gridCell.y === cell.y) return;
-            
-            const isAlreadyProcessed = flattenedCells.findIndex(fc => 
-              fc.x === gridCell.x && fc.y === gridCell.y) < cellIndex;
-              
-            // Redraw with appropriate style
-            if (isAlreadyProcessed) {
-              // Already processed cells are dimmed
-              gridCtx.fillStyle = `rgba(${gridCell.color.r}, ${gridCell.color.g}, ${gridCell.color.b}, 0.3)`;
-            } else {
-              // Unprocessed cells remain
-              // Unprocessed cells remain bright
-              gridCtx.fillStyle = `rgba(${gridCell.color.r}, ${gridCell.color.g}, ${gridCell.color.b}, 0.9)`;
-            }
-            gridCtx.fillRect(gridCell.x + 1, gridCell.y + 1, gridCell.width - 2, gridCell.height - 2);
-            gridCtx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
-            gridCtx.lineWidth = 1;
-            gridCtx.strokeRect(gridCell.x, gridCell.y, gridCell.width, gridCell.height);
-          });
-        });
-        
-        // Draw moving cell
-        gridCtx.clearRect(cell.x, cell.y, cell.width, cell.height);
-        
-        // Redraw vector canvas with all previously moved cells and the current one
-        ctx.clearRect(0, 0, vectorCanvas.width, vectorCanvas.height);
-        
-        // Redraw the label with improved styling
-        // First draw a semi-transparent background for better readability
-        ctx.fillStyle = 'rgba(17, 24, 39, 0.8)'; // Darker background for better contrast
-        ctx.fillRect(vectorCanvas.width/2 - 70, 10, 140, 30); // Larger background area
+    // Show CNN wrapper for RGB decomposition
+    cnnWrapper.style.opacity = '1';
+    
+    // Start RGB decomposition animation
+    setTimeout(() => {
+      animateRGBDecomposition();
+    }, 500);
+  }
 
-        // Then draw the text
-        ctx.fillStyle = '#3b82f6'; // Blue for input
-        ctx.font = '1rem sans-serif'; // Larger font size
+  function animateRGBDecomposition() {
+    const ctx = cnnCanvas.getContext('2d');
+    const width = cnnCanvas.width;
+    const height = cnnCanvas.height;
+    
+    // Ensure we have gridData
+    if (!gridData || gridData.length === 0) {
+      console.error("No gridData available for RGB decomposition");
+      return;
+    }
+    
+    // Animation stages
+    let animationStage = 0; // 0: show 4 matrices, 1: fade out others, 2: move red to left, 3: convert to intensity values
+    
+    const matrixRows = gridData.length;
+    const matrixCols = gridData[0]?.length || 0;
+    
+    console.log(`RGB Decomposition starting with ${matrixRows}x${matrixCols} matrix`);
+    
+    const animateStage = () => {
+      if (animationStage === 0) {
+        // Stage 1: Show complete decomposition with all 4 matrices
+        ctx.clearRect(0, 0, width, height);
+        
+        // Dark blue background
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(0, 0, width, height);
+        
+        const cellSize = 25; // Same perfect size for all
+        const matrixSpacing = 40;
+        
+        // Calculate positions for all 4 matrices side by side
+        const totalMatricesWidth = (matrixCols * cellSize * 4) + (matrixSpacing * 3);
+        const startX = (width - totalMatricesWidth) / 2;
+        const centerY = height / 2 - (matrixRows * cellSize) / 2;
+        
+        // Position calculations for each matrix
+        const originalX = startX;
+        const redX = originalX + (matrixCols * cellSize) + matrixSpacing;
+        const greenX = redX + (matrixCols * cellSize) + matrixSpacing;
+        const blueX = greenX + (matrixCols * cellSize) + matrixSpacing;
+        
+        // Draw column headers
+        ctx.font = 'bold 14px sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText('Input Vector', vectorCanvas.width / 2, 30);
         
-        // Draw previously transferred cells as perfect squares stacked on top of each other
-        cellsInVector.forEach((item) => {
-          // Draw cell with original color
-          ctx.fillStyle = `rgba(${item.color.r}, ${item.color.g}, ${item.color.b}, 0.8)`;
-          
-          // Ensure perfect squares
-          const squareSize = Math.min(item.width, item.height);
-          ctx.fillRect(item.x, item.y, squareSize, squareSize);
-          
-          // Add border
-          ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
-          ctx.lineWidth = 1;
-          ctx.strokeRect(item.x, item.y, squareSize, squareSize);
+        // Original RGB header
+        ctx.fillStyle = '#ffffff';
+        ctx.fillText('Original RGB', originalX + (matrixCols * cellSize)/2, centerY - 25);
+        
+        // Red header
+        ctx.fillStyle = '#ff4444';
+        ctx.fillText('Red Channel', redX + (matrixCols * cellSize)/2, centerY - 25);
+        
+        // Green header  
+        ctx.fillStyle = '#44ff44';
+        ctx.fillText('Green Channel', greenX + (matrixCols * cellSize)/2, centerY - 25);
+        
+        // Blue header
+        ctx.fillStyle = '#4444ff';
+        ctx.fillText('Blue Channel', blueX + (matrixCols * cellSize)/2, centerY - 25);
+        
+        // Draw all 4 matrices
+        gridData.forEach((row, i) => {
+          row.forEach((cell, j) => {
+            const y = centerY + i * cellSize;
+            
+            // Original RGB Matrix
+            let x = originalX + j * cellSize;
+            ctx.fillStyle = `rgb(${cell.color.r}, ${cell.color.g}, ${cell.color.b})`;
+            ctx.fillRect(x, y, cellSize - 2, cellSize - 2);
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(x, y, cellSize - 2, cellSize - 2);
+            
+            // Red Channel Matrix
+            x = redX + j * cellSize;
+            ctx.fillStyle = `rgb(${cell.color.r}, 0, 0)`;
+            ctx.fillRect(x, y, cellSize - 2, cellSize - 2);
+            ctx.strokeStyle = 'rgba(255, 68, 68, 0.4)';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(x, y, cellSize - 2, cellSize - 2);
+            
+            // Green Channel Matrix
+            x = greenX + j * cellSize;
+            ctx.fillStyle = `rgb(0, ${cell.color.g}, 0)`;
+            ctx.fillRect(x, y, cellSize - 2, cellSize - 2);
+            ctx.strokeStyle = 'rgba(68, 255, 68, 0.4)';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(x, y, cellSize - 2, cellSize - 2);
+            
+            // Blue Channel Matrix
+            x = blueX + j * cellSize;
+            ctx.fillStyle = `rgb(0, 0, ${cell.color.b})`;
+            ctx.fillRect(x, y, cellSize - 2, cellSize - 2);
+            ctx.strokeStyle = 'rgba(68, 68, 255, 0.4)';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(x, y, cellSize - 2, cellSize - 2);
+          });
         });
         
-        // Draw the current moving cell
-        ctx.fillStyle = `rgba(${cell.color.r}, ${cell.color.g}, ${cell.color.b}, 0.8)`;
+        // Draw outlines around each matrix
+        const matrices = [
+          {x: originalX, color: '#ffffff'},
+          {x: redX, color: '#ff4444'},
+          {x: greenX, color: '#44ff44'},
+          {x: blueX, color: '#4444ff'}
+        ];
         
-        // Ensure the cells are perfectly square
-        const squareSize = Math.min(currentWidth, currentHeight);
-        ctx.fillRect(currentX, currentY, squareSize, squareSize);
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
-        ctx.lineWidth = 1;
-        ctx.strokeRect(currentX, currentY, squareSize, squareSize);
+        matrices.forEach(matrix => {
+          ctx.strokeStyle = matrix.color;
+          ctx.lineWidth = 2;
+          ctx.strokeRect(matrix.x - 2, centerY - 2, 
+                        matrixCols * cellSize + 4, matrixRows * cellSize + 4);
+        });
         
-        // Continue animation if not complete
-        if (cellAnimationProgress < 1) {
-          requestAnimationFrame(animateCellMovement);
-        } else {
-          // Animation complete, store the cell in final position
-          // Make sure we're using perfect squares for the vector cells
-          const squareSize = Math.min(endWidth, endHeight);
-          cellsInVector.push({
-            x: endX,
-            y: endY,
-            width: squareSize,
-            height: squareSize,
-            squareSize: squareSize,
-            color: cell.color,
-            // Calculate grayscale intensity based on RGB values
-            intensity: Math.round(0.299 * cell.color.r + 0.587 * cell.color.g + 0.114 * cell.color.b)
+        // Add arrows showing decomposition flow
+        const arrowY = centerY + (matrixRows * cellSize) / 2;
+        ctx.strokeStyle = '#94a3b8';
+        ctx.lineWidth = 2;
+        
+        // Arrow from Original to Red
+        ctx.beginPath();
+        ctx.moveTo(originalX + matrixCols * cellSize + 5, arrowY);
+        ctx.lineTo(redX - 5, arrowY);
+        ctx.stroke();
+        drawArrowHead(ctx, redX - 5, arrowY, 0);
+        
+        // Arrow from Red to Green  
+        ctx.beginPath();
+        ctx.moveTo(redX + matrixCols * cellSize + 5, arrowY);
+        ctx.lineTo(greenX - 5, arrowY);
+        ctx.stroke();
+        drawArrowHead(ctx, greenX - 5, arrowY, 0);
+        
+        // Arrow from Green to Blue
+        ctx.beginPath();
+        ctx.moveTo(greenX + matrixCols * cellSize + 5, arrowY);
+        ctx.lineTo(blueX - 5, arrowY);
+        ctx.stroke();
+        drawArrowHead(ctx, blueX - 5, arrowY, 0);
+        
+        animationStage++;
+        setTimeout(animateStage, 3000);
+        
+      } else if (animationStage === 1) {
+        // Stage 2: Fade out Original, Green, and Blue - highlight Red
+        ctx.clearRect(0, 0, width, height);
+        
+        // Dark blue background
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(0, 0, width, height);
+        
+        const cellSize = 25;
+        const matrixSpacing = 40;
+        
+        // Calculate original positions
+        const totalMatricesWidth = (matrixCols * cellSize * 4) + (matrixSpacing * 3);
+        const startX = (width - totalMatricesWidth) / 2;
+        const centerY = height / 2 - (matrixRows * cellSize) / 2;
+        
+        const originalX = startX;
+        const redX = originalX + (matrixCols * cellSize) + matrixSpacing;
+        const greenX = redX + (matrixCols * cellSize) + matrixSpacing;
+        const blueX = greenX + (matrixCols * cellSize) + matrixSpacing;
+        
+        // Draw faded headers for Original, Green, Blue
+        ctx.font = 'bold 14px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.globalAlpha = 0.3;
+        
+        ctx.fillStyle = '#ffffff';
+        ctx.fillText('Original RGB', originalX + (matrixCols * cellSize)/2, centerY - 25);
+        ctx.fillStyle = '#44ff44';
+        ctx.fillText('Green Channel', greenX + (matrixCols * cellSize)/2, centerY - 25);
+        ctx.fillStyle = '#4444ff';
+        ctx.fillText('Blue Channel', blueX + (matrixCols * cellSize)/2, centerY - 25);
+        
+        // Draw highlighted Red header
+        ctx.globalAlpha = 1.0;
+        ctx.fillStyle = '#ff4444';
+        ctx.fillText('Red Channel (Selected)', redX + (matrixCols * cellSize)/2, centerY - 25);
+        
+        // Draw faded matrices
+        ctx.globalAlpha = 0.2;
+        gridData.forEach((row, i) => {
+          row.forEach((cell, j) => {
+            const y = centerY + i * cellSize;
+            
+            // Faded Original RGB Matrix
+            let x = originalX + j * cellSize;
+            ctx.fillStyle = `rgb(${cell.color.r}, ${cell.color.g}, ${cell.color.b})`;
+            ctx.fillRect(x, y, cellSize - 2, cellSize - 2);
+            
+            // Faded Green Channel Matrix
+            x = greenX + j * cellSize;
+            ctx.fillStyle = `rgb(0, ${cell.color.g}, 0)`;
+            ctx.fillRect(x, y, cellSize - 2, cellSize - 2);
+            
+            // Faded Blue Channel Matrix
+            x = blueX + j * cellSize;
+            ctx.fillStyle = `rgb(0, 0, ${cell.color.b})`;
+            ctx.fillRect(x, y, cellSize - 2, cellSize - 2);
           });
-          
-          // Move to next cell
-          cellIndex++;
-          
-          // Continue to next cell with a small delay
-          if (cellIndex < totalCells) {
-            setTimeout(animateNextCell, 50);
-          } else {
-            // Last cell complete, now create BW copy after a brief pause
-            setTimeout(createBWCopy, 500);
-          }
-        }
-      };
-      
-      // Start the cell animation
-      animateCellMovement();
-    };
-    
-    // Create a black and white copy of the vector
-    const createBWCopy = () => {
-      // Draw a black and white copy on the right side of the original vector
-      // We will NOT transform the original colored vector, but add a new BW copy
-      
-      // Removed the dividing line between colored and BW vectors
-      
-      // Add Feature Vector label on right side
-      ctx.fillStyle = 'rgba(17, 24, 39, 0.8)'; // Darker background
-      const bwLabelX = vectorCanvas.width * 0.85; // Position relative to canvas width
-      ctx.fillRect(bwLabelX - 70, 10, 140, 30); // Larger background
-      ctx.fillStyle = '#3b82f6';
-      ctx.font = '1rem sans-serif'; // Larger font
-      ctx.textAlign = 'center';
-      ctx.fillText('Feature Vector', bwLabelX, 30); // Adjusted position
-      
-      // Animate the creation of BW copies sequentially, with horizontal slide
-      let bwCellIndex = 0;
-      const slideDuration = 150; // ms for horizontal slide
-      const intervalDelay = 50;  // ms between the start of each slide
-
-      const processNextBWNode = () => {
-        if (bwCellIndex >= cellsInVector.length) {
-          // *** REFACTOR: Trigger neural network animation immediately after BW nodes are done ***
-          setTimeout(() => {
-            predictionStage = 3; // Set stage to Processing
-            updateStageIndicators(); // Update indicators for the new stage
-            nnSection.style.opacity = '1'; // Ensure NN section is visible
-            nnSection.style.transform = 'scale(1)';
-            animateNeuralNetworkSequence(); // Start the sequence
-          }, 200);
-          return;
-        }
+        });
         
-        const cell = cellsInVector[bwCellIndex];
-        const startX = cell.x + vectorCellSize / 2; // Start from center of colored cell
-        const startY = cell.y + vectorCellSize / 2; // Start from center of colored cell
-        
-        const endX = vectorCanvas.width * 0.85 - vectorCellSize/2; // Final X position for BW node (shifted right)
-        const endY = vectorStartY + (bwCellIndex * (vectorCellSize + vectorCellSpacing)); // Final Y position
-        
-        const finalRadius = vectorCellSize / 2;
-        const startRadius = 5; // Start small
-
-        const animationStartTime = Date.now();
-
-        function animateSlide() {
-          const elapsed = Date.now() - animationStartTime;
-          const progress = Math.min(1, elapsed / slideDuration);
-
-          // Calculate current position and size using easing (ease-out)
-          const easedProgress = 1 - Math.pow(1 - progress, 3); // Cubic ease-out
-          const currentX = startX + (endX - startX) * easedProgress;
-          const currentY = startY + (endY - startY) * easedProgress;
-          const currentRadius = startRadius + (finalRadius - startRadius) * easedProgress;
-
-          // --- Redraw necessary background elements --- 
-          // Clear the entire canvas to prevent trails
-          ctx.clearRect(0, 0, vectorCanvas.width, vectorCanvas.height);
-
-          // Redraw the original colored vector cells (essential to prevent trails)
-          cellsInVector.forEach((item) => {
-            ctx.fillStyle = `rgba(${item.color.r}, ${item.color.g}, ${item.color.b}, 0.8)`;
-            const squareSize = Math.min(item.width, item.height);
-            ctx.fillRect(item.x, item.y, squareSize, squareSize);
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.7)';
+        // Draw highlighted Red Channel Matrix
+        ctx.globalAlpha = 1.0;
+        gridData.forEach((row, i) => {
+          row.forEach((cell, j) => {
+            const x = redX + j * cellSize;
+            const y = centerY + i * cellSize;
+            
+            ctx.fillStyle = `rgb(${cell.color.r}, 0, 0)`;
+            ctx.fillRect(x, y, cellSize - 2, cellSize - 2);
+            ctx.strokeStyle = 'rgba(255, 68, 68, 0.8)';
             ctx.lineWidth = 1;
-            ctx.strokeRect(item.x, item.y, squareSize, squareSize);
+            ctx.strokeRect(x, y, cellSize - 2, cellSize - 2);
           });
-          
-          // Redraw label
-          ctx.fillStyle = 'rgba(17, 24, 39, 0.8)';
-          ctx.fillRect(bwLabelX - 70, 10, 140, 30);
-          ctx.fillStyle = '#3b82f6';
-          ctx.font = '1rem sans-serif';
-          ctx.textAlign = 'center';
-          ctx.fillText('Feature Vector', bwLabelX, 30);
-
-          // Redraw all *previously completed* BW nodes in their final state
-          for (let i = 0; i < bwCellIndex; i++) {
-              const prevCell = cellsInVector[i];
-              const prevX = vectorCanvas.width * 0.85 - vectorCellSize/2;
-              const prevY = vectorStartY + (i * (vectorCellSize + vectorCellSpacing));
-              const prevIntensity = prevCell.intensity;
-              const prevGrayValue = Math.round(prevIntensity);
-              const prevRadius = vectorCellSize / 2;
-              const prevCenterX = prevX + prevRadius;
-              const prevCenterY = prevY + prevRadius;
-
-              ctx.fillStyle = `rgb(${prevGrayValue}, ${prevGrayValue}, ${prevGrayValue})`;
-              ctx.shadowColor = '#3b82f6';
-              ctx.shadowBlur = 5;
-              ctx.beginPath();
-              ctx.arc(prevCenterX, prevCenterY, prevRadius, 0, Math.PI * 2);
-              ctx.fill();
-              ctx.shadowBlur = 0;
-
-              ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
-              ctx.font = '12px sans-serif';
-              ctx.textAlign = 'center';
-              ctx.fillText((prevIntensity/255).toFixed(2), prevCenterX, prevCenterY + 4);
-          }
-
-          // --- Draw the currently animating BW node --- 
-          const intensity = cell.intensity;
-          const grayValue = Math.round(intensity);
-          
-          ctx.fillStyle = `rgb(${grayValue}, ${grayValue}, ${grayValue})`;
-          ctx.shadowColor = '#3b82f6';
-          ctx.shadowBlur = 5;
-          
-          const circleCenterX = currentX + vectorCellSize / 2; // Adjust center based on currentX
-          const circleCenterY = currentY + vectorCellSize / 2; // Adjust center based on currentY
-
-          ctx.beginPath();
-          ctx.arc(currentX + finalRadius, currentY + finalRadius, currentRadius, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.shadowBlur = 0;
-
-          // Draw text only when node is close to final size/position
-          if (progress > 0.8) {
-              const textAlpha = Math.min(1, (progress - 0.8) / 0.2); // Fade in text
-              ctx.fillStyle = `rgba(255, 255, 255, ${0.9 * textAlpha})`;
-              ctx.font = '12px sans-serif';
-              ctx.textAlign = 'center';
-              ctx.fillText((intensity/255).toFixed(2), currentX + finalRadius, currentY + finalRadius + 4);
-          }
-
-          // Continue animation or proceed to next node
-          if (progress < 1) {
-            requestAnimationFrame(animateSlide);
-          } else {
-            // Animation for this node complete
-            // Update the final position info (redundant but good practice)
-            cellsInVector[bwCellIndex].bwX = endX; 
-            cellsInVector[bwCellIndex].bwY = endY;
-            bwCellIndex++;
-            // Schedule the *next* node animation after a short delay
-            setTimeout(processNextBWNode, intervalDelay); 
-          }
-        }
+        });
         
-        // Start the animation for the current node
-        animateSlide(); 
-      };
-      
-      // Start the process for the first BW node
-      processNextBWNode();
+        // Glowing outline for Red matrix
+        ctx.strokeStyle = '#ff4444';
+        ctx.lineWidth = 3;
+        ctx.shadowColor = '#ff4444';
+        ctx.shadowBlur = 15;
+        ctx.strokeRect(redX - 3, centerY - 3, 
+                      matrixCols * cellSize + 6, matrixRows * cellSize + 6);
+        ctx.shadowBlur = 0;
+        
+        animationStage++;
+        setTimeout(animateStage, 2000);
+        
+      } else if (animationStage === 2) {
+        // Stage 3: Move Red Channel to left position
+        ctx.clearRect(0, 0, width, height);
+        
+        // Dark blue background
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(0, 0, width, height);
+        
+        // Header
+        ctx.fillStyle = '#06b6d4';
+        ctx.font = 'bold 20px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('Red Channel → Intensity Values', width / 2, 40);
+        
+        const cellSize = 25;
+        
+        // Position Red matrix on the left side
+        const leftX = 80;
+        const leftY = height / 2 - (matrixRows * cellSize) / 2;
+        
+        // Draw Red Channel matrix on the left
+        ctx.fillStyle = '#ff4444';
+        ctx.font = 'bold 16px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('Red Channel', leftX + (matrixCols * cellSize)/2, leftY - 25);
+        
+        gridData.forEach((row, i) => {
+          row.forEach((cell, j) => {
+            const x = leftX + j * cellSize;
+            const y = leftY + i * cellSize;
+            
+            ctx.fillStyle = `rgb(${cell.color.r}, 0, 0)`;
+            ctx.fillRect(x, y, cellSize - 2, cellSize - 2);
+            ctx.strokeStyle = 'rgba(255, 68, 68, 0.6)';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(x, y, cellSize - 2, cellSize - 2);
+          });
+        });
+        
+        // Draw arrow pointing to intensity conversion
+        const arrowStartX = leftX + matrixCols * cellSize + 20;
+        const arrowEndX = arrowStartX + 80;
+        const arrowY = leftY + (matrixRows * cellSize) / 2;
+        
+        ctx.strokeStyle = '#06b6d4';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(arrowStartX, arrowY);
+        ctx.lineTo(arrowEndX, arrowY);
+        ctx.stroke();
+        drawArrowHead(ctx, arrowEndX, arrowY, 0);
+        
+        // Label for conversion
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '14px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('Convert to', arrowStartX + 40, arrowY - 10);
+        ctx.fillText('Intensity Values', arrowStartX + 40, arrowY + 10);
+        
+        animationStage++;
+        setTimeout(animateStage, 2000);
+        
+      } else if (animationStage === 3) {
+        // Stage 4: Show intensity values matrix (grayscale with numbers)
+        ctx.clearRect(0, 0, width, height);
+        
+        // Dark blue background
+        ctx.fillStyle = '#0f172a';
+        ctx.fillRect(0, 0, width, height);
+        
+        // Header
+        ctx.fillStyle = '#06b6d4';
+        ctx.font = 'bold 20px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('Intensity Matrix (Grayscale Values)', width / 2, 40);
+        
+        const cellSize = 30; // Slightly larger to show numbers
+        
+        // Position intensity matrix in center-left
+        const intensityX = 120;
+        const intensityY = height / 2 - (matrixRows * cellSize) / 2;
+        
+        // Draw intensity matrix label
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 16px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('Input Matrix (0-255)', intensityX + (matrixCols * cellSize)/2, intensityY - 25);
+        
+        // Prepare input matrix for CNN
+        inputMatrix = [];
+        gridData.forEach((row, i) => {
+          const matrixRow = [];
+          row.forEach((cell, j) => {
+            const x = intensityX + j * cellSize;
+            const y = intensityY + i * cellSize;
+            
+            // Draw grayscale cell based on red intensity
+            const intensity = cell.color.r;
+            ctx.fillStyle = `rgb(${intensity}, ${intensity}, ${intensity})`;
+            ctx.fillRect(x, y, cellSize - 2, cellSize - 2);
+            
+            // Draw border
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(x, y, cellSize - 2, cellSize - 2);
+            
+            // Draw intensity value as text
+            ctx.fillStyle = intensity > 128 ? '#000000' : '#ffffff';
+            ctx.font = 'bold 11px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(intensity.toString(), x + cellSize/2, y + cellSize/2 + 4);
+            
+            // Store for CNN input
+            matrixRow.push({
+              ...cell,
+              intensity: intensity / 255, // Normalize to 0-1
+              displayIntensity: intensity
+            });
+          });
+          inputMatrix.push(matrixRow);
+        });
+        
+        // Draw outline around intensity matrix
+        ctx.strokeStyle = '#06b6d4';
+        ctx.lineWidth = 3;
+        ctx.strokeRect(intensityX - 3, intensityY - 3, 
+                      matrixCols * cellSize + 6, matrixRows * cellSize + 6);
+        
+        // Add note about values
+        ctx.fillStyle = '#94a3b8';
+        ctx.font = '12px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(`${matrixRows}×${matrixCols} matrix with values 0-255`, 
+                    intensityX + (matrixCols * cellSize)/2, intensityY + matrixRows * cellSize + 20);
+        
+        console.log(`Intensity matrix prepared: ${inputMatrix.length}x${inputMatrix[0]?.length || 0}`);
+        
+        // Transition to CNN processing
+        setTimeout(() => {
+          predictionStage = 3; // CNN Processing stage
+          updateStageIndicators();
+          animateCNNConvolution();
+        }, 3000);
+      }
     };
     
-    // Start the animation with the first cell
-    setTimeout(animateNextCell, 500);
+    animateStage();
+  }
+  
+  // Helper function to draw arrow heads
+  function drawArrowHead(ctx, x, y, angle) {
+    const headLength = 8;
+    ctx.save();
+    ctx.translate(x, y);
+    ctx.rotate(angle);
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(-headLength, -headLength/2);
+    ctx.lineTo(-headLength, headLength/2);
+    ctx.closePath();
+    ctx.fillStyle = '#94a3b8';
+    ctx.fill();
+    ctx.restore();
+  }
+
+  // Update the extractInputMatrix function to use the R channel data
+  function extractInputMatrix() {
+    // No need to extract since we already have inputMatrix from RGB decomposition
+    if (inputMatrix.length === 0 && gridData.length > 0) {
+      // Fallback: extract R channel if somehow missed
+      inputMatrix = [];
+      gridData.forEach(row => {
+        const matrixRow = [];
+        row.forEach(cell => {
+          matrixRow.push({
+            ...cell,
+            intensity: cell.color.r / 255, // Use Red channel
+            displayIntensity: cell.color.r
+          });
+        });
+        inputMatrix.push(matrixRow);
+      });
+    }
+    console.log(`Using Red channel input matrix: ${inputMatrix.length}x${inputMatrix[0]?.length || 0}`);
   }
   
   // Neural network animation
   function animateNeuralNetwork() {
-    if (predictionStage < 3) return;
+    if (predictionStage < 4) return;
     
     const ctx = neuralNetworkCanvas.getContext('2d');
     const width = neuralNetworkCanvas.width;
@@ -733,13 +886,13 @@ document.addEventListener('DOMContentLoaded', function() {
     const animate = () => {
       ctx.clearRect(0, 0, width, height);
       
-      // Define neural network layers - now we skip input (it's shown in vectorSection)
-      // and only show hidden and output layers
+      // Define neural network layers - now we show input as a compact vector
       const layers = [
-        { name: 'hidden1', neurons: 6, x: 160, color: '#06b6d4' },  // Reduced to 6 neurons
+        { name: 'input', neurons: 128, x: 80, color: '#3b82f6', compact: true }, // Compact input representation
+        { name: 'hidden1', neurons: 6, x: 240, color: '#06b6d4' },
         { name: 'hidden2', neurons: 3, x: 400, color: '#14b8a6' },
-        { name: 'hidden3', neurons: 6, x: 620, color: '#10b981' },
-        { name: 'output', neurons: 3, x: 760, color: '#ec4899' }
+        { name: 'hidden3', neurons: 6, x: 560, color: '#10b981' },
+        { name: 'output', neurons: 3, x: 720, color: '#ec4899' }
       ];
       
       // Get currently active nodes and connections
@@ -751,32 +904,6 @@ document.addEventListener('DOMContentLoaded', function() {
         output: activeNeuronIndices.output
       };
       
-      // Generate random size variations for neurons
-      // Do this once so they remain consistent across animation frames
-      if (!window.neuronSizeFactors) {
-        window.neuronSizeFactors = {};
-        window.connectionWidthFactors = {};
-        
-        // For each layer, create random size factors for each neuron
-        layers.forEach(layer => {
-          window.neuronSizeFactors[layer.name] = [];
-          window.connectionWidthFactors[layer.name] = [];
-          
-          for (let i = 0; i < layer.neurons; i++) {
-            // Generate random size factor between 0.7 and 1.5
-            window.neuronSizeFactors[layer.name][i] = 0.7 + Math.random() * 0.8;
-            
-            // Generate random connection width factor between 0.6 and 2.0
-            window.connectionWidthFactors[layer.name][i] = 0.6 + Math.random() * 1.4;
-          }
-        });
-      }
-      
-      // First, check if cellsInVector exists and has BW coordinates
-      const hasBWCells = cellsInVector && cellsInVector.length > 0 && 
-                        cellsInVector[0].hasOwnProperty('bwX') &&
-                        cellsInVector[0].hasOwnProperty('bwY');
-                        
       // Add a background glow effect to active neural network
       ctx.fillStyle = 'rgba(10, 15, 25, 0.3)';
       ctx.fillRect(0, 0, width, height);
@@ -801,131 +928,57 @@ document.addEventListener('DOMContentLoaded', function() {
         ctx.stroke();
       }
       
-      // OPTIMIZATION: Only redraw a portion of persistent connections per frame to improve performance
-      const maxConnectionsPerFrame = 120; // Increased from 100 to 120
-      const connectionsToDraw = persistentConnections.length > maxConnectionsPerFrame ? 
-                            persistentConnections.slice(-maxConnectionsPerFrame) : // Draw the LAST N connections
-                            persistentConnections;
-      
-      // Draw connections between layers following the specific pattern
-      connectionsToDraw.forEach(conn => {
-        const gradient = ctx.createLinearGradient(conn.fromX, conn.fromY, conn.toX, conn.toY);
-        gradient.addColorStop(0, conn.gradient[0]);
-        gradient.addColorStop(1, conn.gradient[1]);
-        
-        // Use the line width stored in the connection object
-        const lineWidth = conn.lineWidth || 1.5;
-        
-        ctx.beginPath();
-        ctx.moveTo(conn.fromX, conn.fromY);
-        ctx.lineTo(conn.toX, conn.toY);
-        ctx.strokeStyle = gradient;
-        ctx.lineWidth = lineWidth;
-        ctx.stroke();
-      });
-      
-      // Now draw new active connections
+      // Draw connections - simplified for 128 inputs
       layers.forEach((layer, layerIndex) => {
-        if (layerIndex === 0) {
-          // For the first hidden layer, connections come from outside (the input vector)
-          const inputActive = currentNodeIndices.input;
-          const targetActive = currentNodeIndices.hidden1;
-          
-          // Calculate consistent vertical padding
-          const verticalPadding = 40;
-          const availableHeight = height - (verticalPadding * 2);
-          
-          // For each neuron in the first hidden layer
-          for (let j = 0; j < layer.neurons; j++) {
-            const targetX = layer.x;
+        if (layerIndex === 0) return; // Skip input layer connections (handle separately)
+        
+        const prevLayer = layers[layerIndex - 1];
+        const sourceActive = currentNodeIndices[prevLayer.name];
+        const targetActive = currentNodeIndices[layer.name];
+        
+        if (sourceActive >= 0) {
+          // For input layer, draw from compact representation
+          if (prevLayer.name === 'input') {
+            const inputCenterY = height / 2;
             
-            // *** FIX: Use consistent Y calculation for TARGET neuron (hidden1), respecting padding ***
-            let targetVerticalPadding = 40; // Default padding
-            if (layer.name === 'hidden2' || layer.name === 'output') { // 3-neuron layers
+            for (let j = 0; j < layer.neurons; j++) {
+              const targetX = layer.x;
+              
+              let targetVerticalPadding = 40;
+              if (layer.name === 'hidden2' || layer.name === 'output') {
                 targetVerticalPadding = 90;
-            } else if (layer.name === 'hidden1' || layer.name === 'hidden3') { // 6-neuron layers (this layer is hidden1)
+              } else if (layer.name === 'hidden1' || layer.name === 'hidden3') {
                 targetVerticalPadding = 70;
-            }
-            const targetAvailableHeight = height - (targetVerticalPadding * 2);
-            const targetSpacing = layer.neurons > 1 ? targetAvailableHeight / (layer.neurons - 1) : targetAvailableHeight;
-            const targetY = targetVerticalPadding + (targetSpacing * j);
-            
-            // Only draw connection if:
-            // 1. Input neuron is active AND
-            // 2. Either this target neuron is the currently activating one OR
-            //    we've already activated this target neuron
-            const isTargetCurrentlyActivating = j === targetActive;
-            const isTargetAlreadyActive = j < targetActive;
-            const isTargetVisible = isTargetCurrentlyActivating || isTargetAlreadyActive;
-            
-            // Only draw connection from the active input to relevant targets if BW cells exist
-            if (inputActive >= 0 && isTargetVisible && hasBWCells && cellsInVector[inputActive]) {
-              // Draw from the BW cell center
-              const cell = cellsInVector[inputActive];
-              const sourceX = 0; // Left edge of neural network canvas
-              
-              // Calculate center of BW circle for proper connection point
-              const circleSize = Math.min(cell.width, cell.height);
-              const sourceY = cell.bwY + circleSize/2; // Center of BW circle
-              
-              const gradient = ctx.createLinearGradient(sourceX, sourceY, targetX, targetY);
-              gradient.addColorStop(0, '#3b82f6'); // Input color
-              gradient.addColorStop(1, layer.color);
-              
-              // Create connection info
-              const connection = {
-                fromLayer: 'input',
-                fromIndex: inputActive,
-                toLayer: layer.name,
-                toIndex: j,
-                fromX: sourceX,
-                fromY: sourceY,
-                toX: targetX,
-                toY: targetY,
-                gradient: ['#3b82f6', layer.color],
-                lineWidth: 1.5 * (window.connectionWidthFactors[layer.name][j] || 1)
-              };
-              
-              // Check if this connection already exists
-              const existingConnection = persistentConnections.find(c => 
-                c.fromLayer === connection.fromLayer && 
-                c.fromIndex === connection.fromIndex &&
-                c.toLayer === connection.toLayer &&
-                c.toIndex === connection.toIndex
-              );
-              
-              if (!existingConnection) {
-                persistentConnections.push(connection);
               }
+              const targetAvailableHeight = height - (targetVerticalPadding * 2);
+              const targetSpacing = layer.neurons > 1 ? targetAvailableHeight / (layer.neurons - 1) : targetAvailableHeight;
+              const targetY = targetVerticalPadding + (targetSpacing * j);
               
-              // Get randomized line width for this target neuron
-              const lineWidthFactor = window.connectionWidthFactors[layer.name][j] || 1;
-              const randomizedLineWidth = 1.5 * lineWidthFactor;
+              const isTargetCurrentlyActivating = j === targetActive;
+              const isTargetAlreadyActive = j < targetActive;
+              const isTargetVisible = isTargetCurrentlyActivating || isTargetAlreadyActive;
               
-              ctx.beginPath();
-              ctx.moveTo(sourceX, sourceY);
-              ctx.lineTo(targetX, targetY);
-              ctx.strokeStyle = gradient;
-              ctx.lineWidth = randomizedLineWidth;
-              ctx.stroke();
+              if (isTargetVisible) {
+                const gradient = ctx.createLinearGradient(prevLayer.x, inputCenterY, targetX, targetY);
+                gradient.addColorStop(0, prevLayer.color);
+                gradient.addColorStop(1, layer.color);
+                
+                ctx.beginPath();
+                ctx.moveTo(prevLayer.x + 40, inputCenterY); // From right edge of input representation
+                ctx.lineTo(targetX, targetY);
+                ctx.strokeStyle = gradient;
+                ctx.lineWidth = 1.5;
+                ctx.stroke();
+              }
             }
-          }
-        } else {
-          // Normal connections between visible layers
-          const prevLayer = layers[layerIndex - 1];
-          const sourceActive = currentNodeIndices[prevLayer.name];
-          const targetActive = currentNodeIndices[layer.name];
-          
-          // Draw connections only from the currently active source neuron
-          // to appropriate target neurons
-          if (sourceActive >= 0) {
+          } else {
+            // Normal connections between hidden layers
             const sourceX = prevLayer.x;
             
-            // *** FIX: Use consistent Y calculation for SOURCE neuron, respecting padding ***
-            let sourceVerticalPadding = 40; // Default padding
-            if (prevLayer.name === 'hidden2' || prevLayer.name === 'output') { // 3-neuron layers
+            let sourceVerticalPadding = 40;
+            if (prevLayer.name === 'hidden2' || prevLayer.name === 'output') {
                 sourceVerticalPadding = 90;
-            } else if (prevLayer.name === 'hidden1' || prevLayer.name === 'hidden3') { // 6-neuron layers
+            } else if (prevLayer.name === 'hidden1' || layer.name === 'hidden3') {
                 sourceVerticalPadding = 70;
             }
             const sourceAvailableHeight = height - (sourceVerticalPadding * 2);
@@ -935,73 +988,30 @@ document.addEventListener('DOMContentLoaded', function() {
             for (let j = 0; j < layer.neurons; j++) {
               const targetX = layer.x;
               
-              // *** FIX: Use consistent Y calculation for target neuron, respecting padding ***
-              let targetVerticalPadding = 40; // Default padding
-              if (layer.name === 'hidden2' || layer.name === 'output') { // 3-neuron layers
+              let targetVerticalPadding = 40;
+              if (layer.name === 'hidden2' || layer.name === 'output') {
                 targetVerticalPadding = 90;
-              } else if (layer.name === 'hidden1' || layer.name === 'hidden3') { // 6-neuron layers
+              } else if (layer.name === 'hidden1' || layer.name === 'hidden3') {
                 targetVerticalPadding = 70;
               }
               const targetAvailableHeight = height - (targetVerticalPadding * 2);
               const targetSpacing = layer.neurons > 1 ? targetAvailableHeight / (layer.neurons - 1) : targetAvailableHeight;
               const targetY = targetVerticalPadding + (targetSpacing * j);
               
-              // Only draw connection to this target if:
-              // 1. It's the currently activating target, OR
-              // 2. It's already been activated
               const isTargetCurrentlyActivating = j === targetActive;
               const isTargetAlreadyActive = j < targetActive;
               const isTargetRelevant = isTargetCurrentlyActivating || isTargetAlreadyActive;
               
               if (isTargetRelevant) {
-                // Create connection info
-                const connection = {
-                  fromLayer: prevLayer.name,
-                  fromIndex: sourceActive,
-                  toLayer: layer.name,
-                  toIndex: j,
-                  fromX: sourceX,
-                  fromY: sourceY,
-                  toX: targetX,
-                  toY: targetY,
-                  gradient: [prevLayer.color, layer.color],
-                  lineWidth: 1.5 * (window.connectionWidthFactors[layer.name][j] || 1)
-                };
-                
-                // Check if this connection already exists
-                const existingConnection = persistentConnections.find(c => 
-                  c.fromLayer === connection.fromLayer && 
-                  c.fromIndex === connection.fromIndex &&
-                  c.toLayer === connection.toLayer &&
-                  c.toIndex === connection.toIndex
-                );
-                
-                if (!existingConnection) {
-                  persistentConnections.push(connection);
-                }
-                
-                // Draw connection with gradient
                 const gradient = ctx.createLinearGradient(sourceX, sourceY, targetX, targetY);
                 gradient.addColorStop(0, prevLayer.color);
                 gradient.addColorStop(1, layer.color);
-                
-                // Get randomized line width for this target neuron
-                const lineWidthFactor = window.connectionWidthFactors[layer.name][j] || 1;
-                const randomizedLineWidth = 1.5 * lineWidthFactor;
                 
                 ctx.beginPath();
                 ctx.moveTo(sourceX, sourceY);
                 ctx.lineTo(targetX, targetY);
                 ctx.strokeStyle = gradient;
-                ctx.lineWidth = randomizedLineWidth;
-                ctx.stroke();
-              } else {
-                // Draw inactive connection
-                ctx.beginPath();
-                ctx.moveTo(sourceX, sourceY);
-                ctx.lineTo(targetX, targetY);
-                ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
-                ctx.lineWidth = 0.5;
+                ctx.lineWidth = 1.5;
                 ctx.stroke();
               }
             }
@@ -1009,73 +1019,102 @@ document.addEventListener('DOMContentLoaded', function() {
         }
       });
       
-      // Draw neurons
+      // Draw layer representations
       layers.forEach((layer, layerIndex) => {
         const activeIndex = currentNodeIndices[layer.name];
         
-        // Adjust spacing based on neuron count - special case for layer with few neurons
-        let verticalPadding = 40;
-        
-        // For layers with 3 neurons (hidden2, output), use higher padding to center them
-        if (layer.name === 'hidden2' || layer.name === 'output') {
-          verticalPadding = 90; // Much higher padding to center the 3 neurons
-        } else if (layer.name === 'hidden1' || layer.name === 'hidden3') { // 6-neuron layers
-          verticalPadding = 70; // Bring them closer to the middle
-        }
-        
-        const availableHeight = height - (verticalPadding * 2);
-        const spacing = layer.neurons > 1 ? availableHeight / (layer.neurons - 1) : availableHeight;
-        
-        for (let i = 0; i < layer.neurons; i++) {
-          const x = layer.x;
-          const y = verticalPadding + (spacing * i);
+        if (layer.compact && layer.name === 'input') {
+          // Draw compact input representation (128 features as a block)
+          const blockWidth = 80;
+          const blockHeight = 200;
+          const blockX = layer.x - blockWidth/2;
+          const blockY = height/2 - blockHeight/2;
           
-          // Determine if this neuron is active
-          const isActive = i <= activeIndex;
+          // Draw background
+          ctx.fillStyle = 'rgba(59, 130, 246, 0.1)';
+          ctx.fillRect(blockX, blockY, blockWidth, blockHeight);
           
-          // Get the randomized size factor for this neuron
-          const sizeFactor = window.neuronSizeFactors[layer.name][i] || 1;
-          
-          // Calculate neuron size
-          const baseSize = layer.name === 'output' ? 10 : 6;
-          const size = isActive ? baseSize * 1.2 * sizeFactor : baseSize * sizeFactor;
-          
-          // Draw neuron
-          ctx.beginPath();
-          ctx.arc(x, y, size, 0, Math.PI * 2);
-          ctx.fillStyle = isActive ? layer.color : 'rgba(255, 255, 255, 0.3)';
-          
-          // Add glow effect to active neurons
-          if (isActive) {
+          // Draw active portion
+          if (activeIndex >= 0) {
+            const activePortion = (activeIndex + 1) / layer.neurons;
+            const activeHeight = blockHeight * activePortion;
+            
+            ctx.fillStyle = layer.color;
+            ctx.fillRect(blockX, blockY + blockHeight - activeHeight, blockWidth, activeHeight);
+            
+            // Add glow effect
             ctx.shadowColor = layer.color;
             ctx.shadowBlur = 10;
-          } else {
+            ctx.fillRect(blockX, blockY + blockHeight - activeHeight, blockWidth, activeHeight);
             ctx.shadowBlur = 0;
           }
           
-          ctx.fill();
-          ctx.shadowBlur = 0;
-          
-          // Draw neuron border
+          // Draw border
           ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
-          ctx.lineWidth = 1;
-          ctx.stroke();
+          ctx.lineWidth = 2;
+          ctx.strokeRect(blockX, blockY, blockWidth, blockHeight);
+          
+          // Draw feature count
+          ctx.fillStyle = '#ffffff';
+          ctx.font = '12px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText(`${layer.neurons} Features`, layer.x, blockY + blockHeight + 20);
+          ctx.fillText(`${activeIndex + 1}/${layer.neurons} Active`, layer.x, blockY + blockHeight + 35);
+          
+        } else {
+          // Draw normal neurons for hidden and output layers
+          let verticalPadding = 40;
+          
+          if (layer.name === 'hidden2' || layer.name === 'output') {
+            verticalPadding = 90;
+          } else if (layer.name === 'hidden1' || layer.name === 'hidden3') {
+            verticalPadding = 70;
+          }
+          
+          const availableHeight = height - (verticalPadding * 2);
+          const spacing = layer.neurons > 1 ? availableHeight / (layer.neurons - 1) : availableHeight;
+          
+          for (let i = 0; i < layer.neurons; i++) {
+            const x = layer.x;
+            const y = verticalPadding + (spacing * i);
+            
+            const isActive = i <= activeIndex;
+            
+            const baseSize = layer.name === 'output' ? 10 : 6;
+            const size = isActive ? baseSize * 1.2 : baseSize;
+            
+            ctx.beginPath();
+            ctx.arc(x, y, size, 0, Math.PI * 2);
+            ctx.fillStyle = isActive ? layer.color : 'rgba(255, 255, 255, 0.3)';
+            
+            if (isActive) {
+              ctx.shadowColor = layer.color;
+              ctx.shadowBlur = 10;
+            } else {
+              ctx.shadowBlur = 0;
+            }
+            
+            ctx.fill();
+            ctx.shadowBlur = 0;
+            
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+          }
         }
         
         // Add layer label with improved styling
         const labelY = 25;
         
-        // First draw a semi-transparent background for better readability
-        ctx.fillStyle = 'rgba(17, 24, 39, 0.8)'; // Darker background
-        ctx.fillRect(layer.x - 70, labelY - 20, 140, 30); // Larger background area
+        ctx.fillStyle = 'rgba(17, 24, 39, 0.8)';
+        ctx.fillRect(layer.x - 70, labelY - 20, 140, 30);
 
-        // Then draw the text
-        ctx.fillStyle = layer.name === 'output' ? '#ec4899' : '#22d3ee'; // Pink for output, cyan for hidden
-        ctx.font = '1rem sans-serif'; // Larger font
+        ctx.fillStyle = layer.name === 'output' ? '#ec4899' : '#22d3ee';
+        ctx.font = '1rem sans-serif';
         ctx.textAlign = 'center';
         
-        // Layer names
-        const displayName = layer.name === 'hidden1' ? 'Hidden Layer 1' :
+        const displayName = layer.name === 'input' ? 'CNN Features' :
+                           layer.name === 'hidden1' ? 'Hidden Layer 1' :
                            layer.name === 'hidden2' ? 'Hidden Layer 2' :
                            layer.name === 'hidden3' ? 'Hidden Layer 3' : 
                            'Output';
@@ -1084,14 +1123,14 @@ document.addEventListener('DOMContentLoaded', function() {
       });
       
       // Continue animation
-      if (predictionStage === 3) {
+      if (predictionStage >= 4) {
         animationFrame = requestAnimationFrame(animate);
       }
     };
     
     animationFrame = requestAnimationFrame(animate);
     
-    // Create cleanup handler to cancel animation frame
+    // Create cleanup handler
     const cleanup = () => {
       if (animationFrame) {
         cancelAnimationFrame(animationFrame);
@@ -1099,7 +1138,6 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     };
     
-    // Register cleanup handler
     if (window.animationCleanupHandlers) {
       window.animationCleanupHandlers.push(cleanup);
     }
@@ -1265,6 +1303,14 @@ document.addEventListener('DOMContentLoaded', function() {
     persistentConnections = []; 
     activeNeuronIndices = { input: -1, hidden1: -1, hidden2: -1, hidden3: -1, output: -1 };
     
+    // Reset CNN state variables
+    inputMatrix = [];
+    currentKernelIndex = 0;
+    currentCNNStage = 'convolution';
+    featureMaps = [];
+    currentConvStep = 0;
+    finalFeatureVector = [];
+    
     // Generate new random position for selection box
     const margin = 50;
     const minX = Math.ceil(800 / 3);
@@ -1286,16 +1332,18 @@ document.addEventListener('DOMContentLoaded', function() {
           canvas.innerHTML = ''; 
       }
     };
-    // Clear grid, vector, NN, prediction. Keep mapCanvas as it holds the background.
-    [gridCanvas, vectorCanvas, neuralNetworkCanvas, predictionSection].forEach(clearCanvas);
+    // Clear grid, vector, CNN, NN, prediction. Keep mapCanvas as it holds the background.
+    [gridCanvas, vectorCanvas, cnnCanvas, neuralNetworkCanvas, predictionSection].forEach(clearCanvas);
     
     // Reset section visibility and transforms
     visualizationWrapper.style.opacity = '0';
+    cnnWrapper.style.opacity = '0';
     vectorSection.style.transform = 'translateX(-100%)';
     nnSection.style.opacity = '0';
     nnSection.style.transform = 'scale(0.95)';
     predictionSection.style.transform = 'translateX(100%)';
     mapCanvas.style.opacity = '1'; // Ensure map is fully visible after reset
+    gridCanvas.style.opacity = '1'; // Reset grid canvas opacity
     selectionBox.style.display = 'none';
     selectionBox.style.opacity = '1'; // Reset selection box opacity
 
@@ -1337,56 +1385,54 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Function to animate neural network with proper activation pattern
   function animateNeuralNetworkSequence() {
-    // Define layer info
+    // Define layer info - updated for CNN input
     const layerInfo = [
-      { name: 'input', size: 9 },  // 3x3 grid
-      { name: 'hidden1', size: 6 }, // Changed from 9 to 6 neurons
+      { name: 'input', size: 128 },  // 128 features from CNN
+      { name: 'hidden1', size: 6 }, 
       { name: 'hidden2', size: 3 }, 
       { name: 'hidden3', size: 6 },
       { name: 'output', size: 3 }
     ];
     
-    // Check if black and white nodes exist - if not, delay start
-    if (!cellsInVector || !cellsInVector[0] || typeof cellsInVector[0].bwX === 'undefined') {
-      console.log("BW nodes not ready, delaying neural network animation");
-      setTimeout(animateNeuralNetworkSequence, 1000);
-      return;
+    // For 128 inputs, we'll use a simplified visualization
+    // Instead of showing every connection, we'll show representative ones
+    
+    // Check if we have finalFeatureVector from CNN
+    if (!finalFeatureVector || finalFeatureVector.length === 0) {
+      console.log("CNN feature vector not ready, using placeholder");
+      // Create placeholder vector
+      finalFeatureVector = [];
+      for (let i = 0; i < 128; i++) {
+        finalFeatureVector.push(Math.random() * 0.8 + 0.1);
+      }
     }
     
-    // Queue of animation steps to perform
+    // Create a simplified animation that shows groups of inputs activating
     const animationSteps = [];
     
-    // First, build the complete sequence of node activations:
+    // Group inputs into batches for visualization
+    const inputBatchSize = 16; // Show 16 inputs at a time
+    const numBatches = Math.ceil(layerInfo[0].size / inputBatchSize);
     
-    // 1. For each input node, activate it and connect to all relevant hidden1 nodes
-    for (let inputNode = 0; inputNode < layerInfo[0].size; inputNode++) {
+    // 1. Activate inputs in batches and connect to hidden1
+    for (let batch = 0; batch < numBatches; batch++) {
       animationSteps.push({
-        type: 'activate',
-        layer: 'input',
-        node: inputNode
+        type: 'activate_input_batch',
+        batch: batch,
+        batchSize: inputBatchSize
       });
       
-      // Let each input node fully connect to hidden1 before moving to the next input
+      // Show connections to hidden1 for each batch
       for (let hidden1Node = 0; hidden1Node < layerInfo[1].size; hidden1Node++) {
-        if (hidden1Node === 0) {
-          // For the first hidden node, add it separately
-          animationSteps.push({
-            type: 'activate',
-            layer: 'hidden1',
-            node: hidden1Node
-          });
-        } else {
-          // For subsequent nodes, show connections from current input to this node
-          animationSteps.push({
-            type: 'activate',
-            layer: 'hidden1',
-            node: hidden1Node
-          });
-        }
+        animationSteps.push({
+          type: 'activate',
+          layer: 'hidden1',
+          node: hidden1Node
+        });
       }
       
-      // Reset hidden1 activation before next input neuron
-      if (inputNode < layerInfo[0].size - 1) {
+      // Reset hidden1 before next batch
+      if (batch < numBatches - 1) {
         animationSteps.push({
           type: 'reset',
           layer: 'hidden1'
@@ -1394,16 +1440,14 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     }
     
-    // 2. For each hidden1 node, connect to all relevant hidden2 nodes
+    // 2. Continue with normal hidden layer processing
     for (let hidden1Node = 0; hidden1Node < layerInfo[1].size; hidden1Node++) {
-      // Reactivate the hidden1 node
       animationSteps.push({
         type: 'activate',
         layer: 'hidden1',
         node: hidden1Node
       });
       
-      // Connect to each hidden2 node
       for (let hidden2Node = 0; hidden2Node < layerInfo[2].size; hidden2Node++) {
         animationSteps.push({
           type: 'activate',
@@ -1412,7 +1456,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
       }
       
-      // Reset hidden2 activation before next hidden1 neuron
       if (hidden1Node < layerInfo[1].size - 1) {
         animationSteps.push({
           type: 'reset',
@@ -1421,16 +1464,14 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     }
     
-    // 3. For each hidden2 node, connect to all relevant hidden3 nodes
+    // 3. Hidden2 to Hidden3
     for (let hidden2Node = 0; hidden2Node < layerInfo[2].size; hidden2Node++) {
-      // Reactivate the hidden2 node
       animationSteps.push({
         type: 'activate',
         layer: 'hidden2',
         node: hidden2Node
       });
       
-      // Connect to each hidden3 node
       for (let hidden3Node = 0; hidden3Node < layerInfo[3].size; hidden3Node++) {
         animationSteps.push({
           type: 'activate',
@@ -1439,7 +1480,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
       }
       
-      // Reset hidden3 activation before next hidden2 neuron
       if (hidden2Node < layerInfo[2].size - 1) {
         animationSteps.push({
           type: 'reset',
@@ -1448,16 +1488,14 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     }
     
-    // 4. For each hidden3 node, connect to all output nodes
+    // 4. Hidden3 to Output
     for (let hidden3Node = 0; hidden3Node < layerInfo[3].size; hidden3Node++) {
-      // Reactivate the hidden3 node
       animationSteps.push({
         type: 'activate',
         layer: 'hidden3',
         node: hidden3Node
       });
       
-      // Connect to each output node
       for (let outputNode = 0; outputNode < layerInfo[4].size; outputNode++) {
         animationSteps.push({
           type: 'activate',
@@ -1466,7 +1504,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
       }
       
-      // Reset output activation before next hidden3 neuron
       if (hidden3Node < layerInfo[3].size - 1) {
         animationSteps.push({
           type: 'reset',
@@ -1475,33 +1512,33 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     }
     
-    // Last step: Full activation to show final prediction
+    // Final full activation
     animationSteps.push({
       type: 'full_activation'
     });
     
     // Execute the animation sequence
     let currentStep = 0;
+    let currentInputBatch = 0;
     
-    // SPEED CONTROL: Adjust these values to control animation speed
-    let initialStepDelay = 30; // Reduced from 40 to 30 - adjust this for overall speed
-    let midStageDelay = 15;    // Reduced from 20 to 15
-    let lateStageDelay = 5;    // Reduced from 10 to 5
+    // SPEED CONTROL: Much faster for 128 inputs
+    let initialStepDelay = 15; // Faster initial speed
+    let midStageDelay = 8;     
+    let lateStageDelay = 3;    
     let stepDelay = initialStepDelay;
     
     const processNextStep = () => {
-      // Adjust the delay based on progress to speed up in later stages
-      if (currentStep > animationSteps.length * 0.3) {
-        stepDelay = midStageDelay; // Faster in middle stages
+      if (currentStep > animationSteps.length * 0.2) {
+        stepDelay = midStageDelay;
       }
-      if (currentStep > animationSteps.length * 0.6) {
-        stepDelay = lateStageDelay; // Much faster in later stages
+      if (currentStep > animationSteps.length * 0.5) {
+        stepDelay = lateStageDelay;
       }
       
       if (currentStep >= animationSteps.length) {
         // Animation sequence complete, show predictions
         setTimeout(() => {
-          predictionStage = 4;
+          predictionStage = 5; // Final prediction stage
           predictionResults = [
             { type: 'Gold', probability: 0.82, color: '#FFD700' },
             { type: 'Copper', probability: 0.47, color: '#B87333' },
@@ -1510,7 +1547,7 @@ document.addEventListener('DOMContentLoaded', function() {
           predictionSection.style.transform = 'translateX(0)';
           updateStageIndicators();
           showPredictionResults();
-          scheduleReset(); // Call scheduleReset to trigger the reset after predictions
+          scheduleReset();
         }, 500);
         return;
       }
@@ -1518,13 +1555,14 @@ document.addEventListener('DOMContentLoaded', function() {
       const step = animationSteps[currentStep];
       
       if (step.type === 'activate') {
-        // Activate a specific node in a layer
         activeNeuronIndices[step.layer] = step.node;
       } else if (step.type === 'reset') {
-        // Reset a layer's activation
         activeNeuronIndices[step.layer] = -1;
+      } else if (step.type === 'activate_input_batch') {
+        // Activate a batch of input neurons
+        currentInputBatch = step.batch;
+        activeNeuronIndices.input = (step.batch + 1) * step.batchSize - 1;
       } else if (step.type === 'full_activation') {
-        // Fully activate all layers for final display
         activeNeuronIndices.input = layerInfo[0].size - 1;
         activeNeuronIndices.hidden1 = layerInfo[1].size - 1;
         activeNeuronIndices.hidden2 = layerInfo[2].size - 1;
@@ -1535,24 +1573,22 @@ document.addEventListener('DOMContentLoaded', function() {
       // Trigger neural network animation frame
       animateNeuralNetwork();
       
-      // Move to next step
       currentStep++;
       
-      // Use requestAnimationFrame for smoother animation and to ensure previous frame completes
       requestAnimationFrame(() => {
         setTimeout(processNextStep, stepDelay);
       });
     };
     
-    // Start the animation sequence after making sure neurons are drawn
-    animateNeuralNetwork(); // Draw the initial state first
-    setTimeout(processNextStep, 1000); // Start sequence after a delay
+    // Start the animation sequence
+    animateNeuralNetwork();
+    setTimeout(processNextStep, 1000);
   }
   
   // New function to handle reset after full visualization completes
   function scheduleReset() {
     // Only reset if we've completed the prediction stage
-    if (predictionStage === 4) {
+    if (predictionStage === 5) {
       console.log("Scheduling visualization reset...");
       setTimeout(() => {
         console.log("Resetting visualization now.");
@@ -1570,4 +1606,797 @@ document.addEventListener('DOMContentLoaded', function() {
   // Initialize and start visualization by loading the image
   console.log("Initiating visualization by loading image...");
   backgroundImage.src = 'assets/images/geophysics-image.png';
+
+  // NEW: CNN Visualization Functions
+  function showCNNVisualization() {
+    if (predictionStage < 2) return;
+    
+    // Extract input matrix from gridData
+    extractInputMatrix();
+    
+    // Show CNN wrapper
+    cnnWrapper.style.opacity = '1';
+    
+    // Start CNN animation sequence
+    setTimeout(() => {
+      animateCNNConvolution();
+    }, 500);
+  }
+  
+  function animateCNNConvolution() {
+    const ctx = cnnCanvas.getContext('2d');
+    const width = cnnCanvas.width;
+    const height = cnnCanvas.height;
+    
+    // Clear canvas
+    ctx.clearRect(0, 0, width, height);
+    
+    // Draw dark blue background
+    ctx.fillStyle = '#1e3a8a'; // Dark blue background
+    ctx.fillRect(0, 0, width, height);
+    
+    // Layout parameters
+    const cellSize = 25;
+    const kernelSize = 20;
+    const spacing = 60;
+    
+    // Center the input matrix on the left
+    const matrixWidth = inputMatrix[0]?.length || 0;
+    const matrixHeight = inputMatrix.length;
+    const matrixPixelWidth = matrixWidth * cellSize;
+    const matrixPixelHeight = matrixHeight * cellSize;
+    
+    const inputX = 50;
+    const inputY = height/2 - matrixPixelHeight/2;
+    
+    // Draw "Convolution" stage header
+    ctx.fillStyle = '#06b6d4'; // cyan
+    ctx.font = 'bold 18px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('CNN Convolution - Real-time Feature Map Generation', width / 2, 30);
+    
+    // Draw Input Matrix
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '14px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(`Input Matrix`, inputX + matrixPixelWidth/2, inputY - 15);
+    ctx.fillText(`${matrixHeight}×${matrixWidth}`, inputX + matrixPixelWidth/2, inputY - 2);
+    
+    // Draw input matrix
+    if (inputMatrix.length > 0) {
+      inputMatrix.forEach((row, i) => {
+        row.forEach((cell, j) => {
+          const x = inputX + j * cellSize;
+          const y = inputY + i * cellSize;
+          
+          // Draw cell with grayscale intensity
+          const intensity = Math.round(cell.displayIntensity);
+          ctx.fillStyle = `rgb(${intensity}, ${intensity}, ${intensity})`;
+          ctx.fillRect(x, y, cellSize - 2, cellSize - 2);
+          
+          // Draw border
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+          ctx.lineWidth = 1;
+          ctx.strokeRect(x, y, cellSize - 2, cellSize - 2);
+        });
+      });
+    }
+    
+    // Position for kernels (middle)
+    const kernelsX = inputX + matrixPixelWidth + spacing;
+    const kernelsY = height/2 - 100; // Start higher to fit all kernels
+    
+    // Position for feature maps (right side)
+    const featureMapSize = (matrixHeight - 2) * 15; // Smaller cells for feature maps
+    const featureMapsX = kernelsX + (kernelSize * 3) + spacing;
+    const featureMapsY = height/2 - (featureMapSize * 2); // Adjust for multiple feature maps
+    
+    // Draw kernels and empty feature maps initially
+    cnnKernels.slice(0, 3).forEach((kernel, kernelIndex) => { // Show first 3 kernels
+      const kernelY = kernelsY + kernelIndex * 80;
+      
+      // Draw kernel label
+      ctx.fillStyle = kernel.color;
+      ctx.font = '12px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(`${kernel.name}`, kernelsX + (kernelSize * 3)/2, kernelY - 10);
+      
+      // Draw 3x3 kernel
+      kernel.values.forEach((row, i) => {
+        row.forEach((value, j) => {
+          const x = kernelsX + j * kernelSize;
+          const y = kernelY + i * kernelSize;
+          
+          // Color based on value
+          const intensity = Math.abs(value);
+          const color = value >= 0 ? 
+            `rgba(59, 130, 246, ${Math.min(1, intensity * 0.8)})` : // blue for positive
+            `rgba(239, 68, 68, ${Math.min(1, intensity * 0.8)})`; // red for negative
+          
+          ctx.fillStyle = color;
+          ctx.fillRect(x, y, kernelSize - 2, kernelSize - 2);
+          
+          // Draw border
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+          ctx.lineWidth = 1;
+          ctx.strokeRect(x, y, kernelSize - 2, kernelSize - 2);
+          
+          // Draw value
+          ctx.fillStyle = '#ffffff';
+          ctx.font = '8px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText(value.toFixed(1), x + kernelSize/2, y + kernelSize/2 + 2);
+        });
+      });
+      
+      // Draw empty feature map placeholder
+      const fMapY = featureMapsY + kernelIndex * (featureMapSize + 30);
+      
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+      ctx.fillRect(featureMapsX, fMapY, featureMapSize, featureMapSize);
+      
+      ctx.strokeStyle = kernel.color;
+      ctx.lineWidth = 2;
+      ctx.strokeRect(featureMapsX, fMapY, featureMapSize, featureMapSize);
+      
+      // Feature map label
+      ctx.fillStyle = kernel.color;
+      ctx.font = '12px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(`Feature Map ${kernelIndex + 1}`, featureMapsX + featureMapSize/2, fMapY - 5);
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '10px sans-serif';
+      ctx.fillText(`${matrixHeight-2}×${matrixWidth-2}`, featureMapsX + featureMapSize/2, fMapY + featureMapSize + 12);
+    });
+    
+    // Initialize feature maps storage
+    const featureMaps = cnnKernels.slice(0, 3).map(() => 
+      Array(matrixHeight - 2).fill().map(() => Array(matrixWidth - 2).fill(null))
+    );
+    
+    // Start the progressive convolution animation
+    setTimeout(() => {
+      animateProgressiveConvolution(featureMaps);
+    }, 2000);
+  }
+  
+  function animateProgressiveConvolution(featureMaps) {
+    const ctx = cnnCanvas.getContext('2d');
+    const width = cnnCanvas.width;
+    const height = cnnCanvas.height;
+    
+    const matrixWidth = inputMatrix[0]?.length || 0;
+    const matrixHeight = inputMatrix.length;
+    const cellSize = 25;
+    const kernelSize = 20;
+    const spacing = 60;
+    
+    const inputX = 50;
+    const inputY = height/2 - (matrixHeight * cellSize)/2;
+    const kernelsX = inputX + (matrixWidth * cellSize) + spacing;
+    const featureMapsX = kernelsX + (kernelSize * 3) + spacing;
+    
+    // Calculate all convolution positions
+    const convolutionPositions = [];
+    for (let i = 0; i <= matrixHeight - 3; i++) {
+      for (let j = 0; j <= matrixWidth - 3; j++) {
+        convolutionPositions.push({ row: i, col: j });
+      }
+    }
+    
+    let currentPosition = 0;
+    
+    const animateNextPosition = () => {
+      if (currentPosition >= convolutionPositions.length) {
+        // All convolutions complete, move to next stage
+        setTimeout(() => {
+          currentCNNStage = 'relu';
+          animateReLU();
+        }, 2000);
+        return;
+      }
+      
+      const pos = convolutionPositions[currentPosition];
+      
+      // Redraw the base scene
+      ctx.clearRect(0, 0, width, height);
+      ctx.fillStyle = '#1e3a8a';
+      ctx.fillRect(0, 0, width, height);
+      
+      // Header
+      ctx.fillStyle = '#06b6d4';
+      ctx.font = 'bold 18px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('CNN Convolution - Real-time Feature Map Generation', width / 2, 30);
+      
+      // Draw input matrix with current kernel position highlighted
+      ctx.fillStyle = '#ffffff';
+      ctx.font = '14px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(`Input Matrix`, inputX + (matrixWidth * cellSize)/2, inputY - 15);
+      
+      inputMatrix.forEach((row, i) => {
+        row.forEach((cell, j) => {
+          const x = inputX + j * cellSize;
+          const y = inputY + i * cellSize;
+          
+          // Highlight the current 3x3 region for ALL kernels
+          const isInKernel = i >= pos.row && i < pos.row + 3 && 
+                           j >= pos.col && j < pos.col + 3;
+          
+          const intensity = Math.round(cell.displayIntensity);
+          ctx.fillStyle = `rgb(${intensity}, ${intensity}, ${intensity})`;
+          ctx.fillRect(x, y, cellSize - 2, cellSize - 2);
+          
+          // Different border for kernel region
+          if (isInKernel) {
+            ctx.strokeStyle = '#06b6d4'; // Cyan highlight
+            ctx.lineWidth = 2;
+          } else {
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+            ctx.lineWidth = 1;
+          }
+          ctx.strokeRect(x, y, cellSize - 2, cellSize - 2);
+        });
+      });
+      
+      // Draw kernels and perform convolutions
+      const kernelsY = height/2 - 100;
+      const featureMapsY = height/2 - (120); // Adjust for feature maps
+      
+      cnnKernels.slice(0, 3).forEach((kernel, kernelIndex) => {
+        const kernelY = kernelsY + kernelIndex * 80;
+        
+        // Draw kernel
+        ctx.fillStyle = kernel.color;
+        ctx.font = '12px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(`${kernel.name}`, kernelsX + (kernelSize * 3)/2, kernelY - 10);
+        
+        kernel.values.forEach((row, i) => {
+          row.forEach((value, j) => {
+            const x = kernelsX + j * kernelSize;
+            const y = kernelY + i * kernelSize;
+            
+            const intensity = Math.abs(value);
+            const color = value >= 0 ? 
+              `rgba(59, 130, 246, ${Math.min(1, intensity * 0.8)})` :
+              `rgba(239, 68, 68, ${Math.min(1, intensity * 0.8)})`;
+            
+            ctx.fillStyle = color;
+            ctx.fillRect(x, y, kernelSize - 2, kernelSize - 2);
+            
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(x, y, kernelSize - 2, kernelSize - 2);
+            
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '8px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(value.toFixed(1), x + kernelSize/2, y + kernelSize/2 + 2);
+          });
+        });
+        
+        // Calculate convolution result
+        let convResult = 0;
+        for (let ki = 0; ki < 3; ki++) {
+          for (let kj = 0; kj < 3; kj++) {
+            const inputValue = inputMatrix[pos.row + ki][pos.col + kj].intensity;
+            const kernelValue = kernel.values[ki][kj];
+            convResult += inputValue * kernelValue;
+          }
+        }
+        
+        // Apply ReLU
+        const reluResult = Math.max(0, convResult);
+        
+        // Store in feature map
+        featureMaps[kernelIndex][pos.row][pos.col] = reluResult;
+        
+        // Draw feature map with all values computed so far
+        const fMapY = featureMapsY + kernelIndex * 90;
+        const featureMapSize = (matrixHeight - 2) * 15;
+        const featureCellSize = 15;
+        
+        // Background
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+        ctx.fillRect(featureMapsX, fMapY, featureMapSize, featureMapSize);
+        
+        // Draw computed feature map cells
+        featureMaps[kernelIndex].forEach((row, i) => {
+          row.forEach((value, j) => {
+            const x = featureMapsX + j * featureCellSize;
+            const y = fMapY + i * featureCellSize;
+            
+            if (value !== null) {
+              // Color based on activation strength
+              const intensity = Math.min(255, Math.max(0, value * 255));
+              ctx.fillStyle = `rgba(${intensity}, ${intensity}, ${intensity}, 0.8)`;
+              ctx.fillRect(x, y, featureCellSize - 1, featureCellSize - 1);
+            }
+            
+            // Border
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.lineWidth = 0.5;
+            ctx.strokeRect(x, y, featureCellSize - 1, featureCellSize - 1);
+          });
+        });
+        
+        // Highlight current position being calculated
+        const currentX = featureMapsX + pos.col * featureCellSize;
+        const currentY = fMapY + pos.row * featureCellSize;
+        ctx.strokeStyle = kernel.color;
+        ctx.lineWidth = 2;
+        ctx.strokeRect(currentX - 1, currentY - 1, featureCellSize + 2, featureCellSize + 2);
+        
+        // Feature map outline
+        ctx.strokeStyle = kernel.color;
+        ctx.lineWidth = 2;
+        ctx.strokeRect(featureMapsX, fMapY, featureMapSize, featureMapSize);
+        
+        // Labels
+        ctx.fillStyle = kernel.color;
+        ctx.font = '12px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(`Feature Map ${kernelIndex + 1}`, featureMapsX + featureMapSize/2, fMapY - 5);
+        
+        // Show current calculation result
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '10px sans-serif';
+        ctx.fillText(`Result: ${reluResult.toFixed(2)}`, featureMapsX + featureMapSize/2, fMapY + featureMapSize + 25);
+      });
+      
+      // Show calculation details
+      const calcX = width - 150;
+      const calcY = 80;
+      
+      ctx.fillStyle = '#06b6d4';
+      ctx.font = '12px sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText(`Position: (${pos.row}, ${pos.col})`, calcX, calcY);
+      ctx.fillText(`Step: ${currentPosition + 1}/${convolutionPositions.length}`, calcX, calcY + 15);
+      
+      currentPosition++;
+      
+      // Continue to next position
+      setTimeout(animateNextPosition, 300); // Slower animation speed for better viewing
+    };
+    
+    animateNextPosition();
+  }
+  
+  function animateReLU() {
+    const ctx = cnnCanvas.getContext('2d');
+    const width = cnnCanvas.width;
+    const height = cnnCanvas.height;
+    
+    // Animation stages for ReLU
+    let reluStage = 0; // 0: move feature maps left, 1: show ReLU operation, 2: show output
+    
+    const matrixHeight = inputMatrix.length;
+    const featureMapDim = matrixHeight - 2; // Feature map dimensions
+    
+    // Store the final feature maps from convolution (simulate some negative values for demo)
+    const originalFeatureMaps = cnnKernels.slice(0, 3).map((kernel, kernelIndex) => {
+      const featureMap = [];
+      for (let i = 0; i < featureMapDim; i++) {
+        const row = [];
+        for (let j = 0; j < featureMapDim; j++) {
+          // Generate realistic values including some negatives for ReLU demo
+          let value = (Math.random() - 0.3) * 2; // Range from -0.6 to 1.4
+          row.push(value);
+        }
+        featureMap.push(row);
+      }
+      return featureMap;
+    });
+    
+    const animateReluStage = () => {
+      if (reluStage === 0) {
+        // Stage 1: Move feature maps to the left
+        ctx.clearRect(0, 0, width, height);
+        ctx.fillStyle = '#111827'; // Darker background for ReLU stage
+        ctx.fillRect(0, 0, width, height);
+        
+        // Header
+        ctx.fillStyle = '#10b981'; // Green for ReLU
+        ctx.font = 'bold 20px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('ReLU Activation Function', width / 2, 40);
+        
+        // Subtitle
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '14px sans-serif';
+        ctx.fillText('f(x) = max(0, x) - Converting negative values to zero', width / 2, 65);
+        
+        const cellSize = 20;
+        const mapSpacing = 50;
+        const leftX = 80;
+        const startY = height/2 - (featureMapDim * cellSize * 3 + mapSpacing * 2) / 2;
+        
+        // Draw the 3 feature maps on the left side
+        cnnKernels.slice(0, 3).forEach((kernel, kernelIndex) => {
+          const mapY = startY + kernelIndex * (featureMapDim * cellSize + mapSpacing);
+          
+          // Feature map label
+          ctx.fillStyle = kernel.color;
+          ctx.font = 'bold 14px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText(`Feature Map ${kernelIndex + 1}`, leftX + (featureMapDim * cellSize)/2, mapY - 10);
+          
+          // Draw feature map
+          originalFeatureMaps[kernelIndex].forEach((row, i) => {
+            row.forEach((value, j) => {
+              const x = leftX + j * cellSize;
+              const y = mapY + i * cellSize;
+              
+              // Color based on value (red for negative, grayscale for positive)
+              let fillColor;
+              if (value < 0) {
+                const intensity = Math.min(255, Math.abs(value) * 200);
+                fillColor = `rgba(239, 68, 68, 0.8)`; // Red for negative values
+              } else {
+                const intensity = Math.min(255, value * 200);
+                fillColor = `rgba(${intensity}, ${intensity}, ${intensity}, 0.8)`;
+              }
+              
+              ctx.fillStyle = fillColor;
+              ctx.fillRect(x, y, cellSize - 1, cellSize - 1);
+              
+              // Border
+              ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+              ctx.lineWidth = 0.5;
+              ctx.strokeRect(x, y, cellSize - 1, cellSize - 1);
+              
+              // Show value if negative (to demonstrate what will be changed)
+              if (value < 0 && cellSize > 15) {
+                ctx.fillStyle = '#ffffff';
+                ctx.font = '8px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText(value.toFixed(1), x + cellSize/2, y + cellSize/2 + 2);
+              }
+            });
+          });
+          
+          // Outline
+          ctx.strokeStyle = kernel.color;
+          ctx.lineWidth = 2;
+          ctx.strokeRect(leftX, mapY, featureMapDim * cellSize, featureMapDim * cellSize);
+        });
+        
+        // Add arrow pointing to ReLU operation
+        const arrowX = leftX + featureMapDim * cellSize + 30;
+        const arrowY = height/2;
+        
+        ctx.strokeStyle = '#10b981';
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(arrowX, arrowY);
+        ctx.lineTo(arrowX + 80, arrowY);
+        ctx.stroke();
+        drawArrowHead(ctx, arrowX + 80, arrowY, 0);
+        
+        // ReLU operation label
+        ctx.fillStyle = '#10b981';
+        ctx.font = 'bold 16px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('ReLU', arrowX + 40, arrowY - 10);
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '12px sans-serif';
+        ctx.fillText('max(0, x)', arrowX + 40, arrowY + 15);
+        
+        reluStage++;
+        setTimeout(animateReluStage, 3000);
+        
+      } else if (reluStage === 1) {
+        // Stage 2: Show ReLU operation in action
+        ctx.clearRect(0, 0, width, height);
+        ctx.fillStyle = '#111827';
+        ctx.fillRect(0, 0, width, height);
+        
+        // Header
+        ctx.fillStyle = '#10b981';
+        ctx.font = 'bold 20px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('ReLU Activation: Negative → Zero', width / 2, 40);
+        
+        const cellSize = 18;
+        const mapSpacing = 40;
+        const inputX = 60;
+        const outputX = 400;
+        const startY = height/2 - (featureMapDim * cellSize * 3 + mapSpacing * 2) / 2;
+        
+        // Draw input and output side by side
+        cnnKernels.slice(0, 3).forEach((kernel, kernelIndex) => {
+          const mapY = startY + kernelIndex * (featureMapDim * cellSize + mapSpacing);
+          
+          // Input label
+          ctx.fillStyle = '#ffffff';
+          ctx.font = '12px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText('Before ReLU', inputX + (featureMapDim * cellSize)/2, mapY - 25);
+          
+          // Output label  
+          ctx.fillText('After ReLU', outputX + (featureMapDim * cellSize)/2, mapY - 25);
+          
+          // Feature map labels
+          ctx.fillStyle = kernel.color;
+          ctx.font = 'bold 12px sans-serif';
+          ctx.fillText(`Map ${kernelIndex + 1}`, inputX + (featureMapDim * cellSize)/2, mapY - 10);
+          ctx.fillText(`Map ${kernelIndex + 1}`, outputX + (featureMapDim * cellSize)/2, mapY - 10);
+          
+          // Draw input feature map
+          originalFeatureMaps[kernelIndex].forEach((row, i) => {
+            row.forEach((value, j) => {
+              const x = inputX + j * cellSize;
+              const y = mapY + i * cellSize;
+              
+              // Color based on value
+              let fillColor;
+              if (value < 0) {
+                fillColor = `rgba(239, 68, 68, 0.8)`; // Red for negative
+              } else {
+                const intensity = Math.min(255, value * 200);
+                fillColor = `rgba(${intensity}, ${intensity}, ${intensity}, 0.8)`;
+              }
+              
+              ctx.fillStyle = fillColor;
+              ctx.fillRect(x, y, cellSize - 1, cellSize - 1);
+              
+              ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+              ctx.lineWidth = 0.5;
+              ctx.strokeRect(x, y, cellSize - 1, cellSize - 1);
+            });
+          });
+          
+          // Draw output feature map (after ReLU)
+          originalFeatureMaps[kernelIndex].forEach((row, i) => {
+            row.forEach((value, j) => {
+              const x = outputX + j * cellSize;
+              const y = mapY + i * cellSize;
+              
+              // Apply ReLU
+              const reluValue = Math.max(0, value);
+              const intensity = Math.min(255, reluValue * 200);
+              
+              ctx.fillStyle = `rgba(${intensity}, ${intensity}, ${intensity}, 0.8)`;
+              ctx.fillRect(x, y, cellSize - 1, cellSize - 1);
+              
+              ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+              ctx.lineWidth = 0.5;
+              ctx.strokeRect(x, y, cellSize - 1, cellSize - 1);
+              
+              // Show "0" for values that were negative
+              if (value < 0) {
+                ctx.fillStyle = '#ffffff';
+                ctx.font = '8px sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillText('0', x + cellSize/2, y + cellSize/2 + 2);
+              }
+            });
+          });
+          
+          // Draw arrow between input and output
+          const arrowY = mapY + (featureMapDim * cellSize) / 2;
+          ctx.strokeStyle = '#10b981';
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.moveTo(inputX + featureMapDim * cellSize + 10, arrowY);
+          ctx.lineTo(outputX - 10, arrowY);
+          ctx.stroke();
+          drawArrowHead(ctx, outputX - 10, arrowY, 0);
+        });
+        
+        // Show ReLU equation
+        ctx.fillStyle = '#10b981';
+        ctx.font = 'bold 16px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('f(x) = max(0, x)', width/2, height - 40);
+        
+        reluStage++;
+        setTimeout(animateReluStage, 4000);
+        
+      } else if (reluStage === 2) {
+        // Stage 3: Show final output and transition to max pooling
+        ctx.clearRect(0, 0, width, height);
+        ctx.fillStyle = '#111827';
+        ctx.fillRect(0, 0, width, height);
+        
+        // Header
+        ctx.fillStyle = '#10b981';
+        ctx.font = 'bold 20px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('ReLU Output → Max Pooling', width / 2, 40);
+        
+        const cellSize = 20;
+        const mapSpacing = 50;
+        const leftX = 80;
+        const startY = height/2 - (featureMapDim * cellSize * 3 + mapSpacing * 2) / 2;
+        
+        // Draw the ReLU output feature maps
+        cnnKernels.slice(0, 3).forEach((kernel, kernelIndex) => {
+          const mapY = startY + kernelIndex * (featureMapDim * cellSize + mapSpacing);
+          
+          ctx.fillStyle = kernel.color;
+          ctx.font = 'bold 14px sans-serif';
+          ctx.textAlign = 'center';
+          ctx.fillText(`ReLU Output ${kernelIndex + 1}`, leftX + (featureMapDim * cellSize)/2, mapY - 10);
+          
+          // Draw ReLU output
+          originalFeatureMaps[kernelIndex].forEach((row, i) => {
+            row.forEach((value, j) => {
+              const x = leftX + j * cellSize;
+              const y = mapY + i * cellSize;
+              
+              // Apply ReLU
+              const reluValue = Math.max(0, value);
+              const intensity = Math.min(255, reluValue * 200);
+              
+              ctx.fillStyle = `rgba(${intensity}, ${intensity}, ${intensity}, 0.8)`;
+              ctx.fillRect(x, y, cellSize - 1, cellSize - 1);
+              
+              ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+              ctx.lineWidth = 0.5;
+              ctx.strokeRect(x, y, cellSize - 1, cellSize - 1);
+            });
+          });
+          
+          ctx.strokeStyle = kernel.color;
+          ctx.lineWidth = 2;
+          ctx.strokeRect(leftX, mapY, featureMapDim * cellSize, featureMapDim * cellSize);
+        });
+        
+        // Arrow to max pooling
+        const arrowX = leftX + featureMapDim * cellSize + 30;
+        const arrowY = height/2;
+        
+        ctx.strokeStyle = '#f59e0b'; // Amber for max pooling
+        ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(arrowX, arrowY);
+        ctx.lineTo(arrowX + 80, arrowY);
+        ctx.stroke();
+        drawArrowHead(ctx, arrowX + 80, arrowY, 0);
+        
+        ctx.fillStyle = '#f59e0b';
+        ctx.font = 'bold 16px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('Max Pooling', arrowX + 40, arrowY - 10);
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '12px sans-serif';
+        ctx.fillText('2×2 Downsampling', arrowX + 40, arrowY + 15);
+        
+        // Transition to max pooling
+        setTimeout(() => {
+          currentCNNStage = 'maxpool';
+          animateMaxPool();
+        }, 3000);
+      }
+    };
+    
+    animateReluStage();
+  }
+  
+  function animateMaxPool() {
+    const ctx = cnnCanvas.getContext('2d');
+    const width = cnnCanvas.width;
+    const height = cnnCanvas.height;
+    
+    // Clear and redraw with MaxPool focus
+    ctx.clearRect(0, 0, width, height);
+    ctx.fillStyle = '#111827';
+    ctx.fillRect(0, 0, width, height);
+    
+    // Draw "MaxPool" stage header
+    ctx.fillStyle = '#f59e0b'; // amber
+    ctx.font = 'bold 18px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Max Pooling', width / 2, 30);
+    
+    // Show max pooling visualization
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '14px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('2x2 Max Pooling (Downsampling)', width / 2, 60);
+    
+    // After MaxPool, show multiple rounds
+    setTimeout(() => {
+      showMultipleRounds();
+    }, 2000);
+  }
+  
+  function showMultipleRounds() {
+    const ctx = cnnCanvas.getContext('2d');
+    const width = cnnCanvas.width;
+    const height = cnnCanvas.height;
+    
+    // Clear and show simplified multiple rounds
+    ctx.clearRect(0, 0, width, height);
+    ctx.fillStyle = '#111827';
+    ctx.fillRect(0, 0, width, height);
+    
+    // Draw header
+    ctx.fillStyle = '#8b5cf6'; // purple
+    ctx.font = 'bold 18px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Deep Convolution Layers', width / 2, 30);
+    
+    // Show simplified flow
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '14px sans-serif';
+    ctx.fillText('Round 1: 4 Feature Maps → Round 2: 8 Feature Maps → Round 3: 20 Feature Maps', width / 2, 70);
+    
+    // Generate final feature vector (simulate 128 features)
+    finalFeatureVector = [];
+    for (let i = 0; i < 128; i++) {
+      finalFeatureVector.push(Math.random() * 0.8 + 0.1); // Random values between 0.1-0.9
+    }
+    
+    // Show final flattening
+    setTimeout(() => {
+      showFeatureFlattening();
+    }, 3000);
+  }
+  
+  function showFeatureFlattening() {
+    const ctx = cnnCanvas.getContext('2d');
+    const width = cnnCanvas.width;
+    const height = cnnCanvas.height;
+    
+    // Clear and show flattening
+    ctx.clearRect(0, 0, width, height);
+    ctx.fillStyle = '#111827';
+    ctx.fillRect(0, 0, width, height);
+    
+    // Draw header
+    ctx.fillStyle = '#ec4899'; // pink
+    ctx.font = 'bold 18px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Feature Vector Flattening', width / 2, 30);
+    
+    // Show final vector
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '14px sans-serif';
+    ctx.fillText(`20 Feature Maps → Flattened to ${finalFeatureVector.length} Features`, width / 2, 70);
+    
+    // Draw a representation of the flattened vector
+    const vectorStartX = 100;
+    const vectorStartY = 100;
+    const cellWidth = 4;
+    const cellHeight = 15;
+    
+    finalFeatureVector.slice(0, 100).forEach((value, i) => { // Show first 100 features
+      const x = vectorStartX + (i % 20) * cellWidth;
+      const y = vectorStartY + Math.floor(i / 20) * cellHeight;
+      
+      const intensity = Math.round(value * 255);
+      ctx.fillStyle = `rgb(${intensity}, ${intensity}, ${intensity})`;
+      ctx.fillRect(x, y, cellWidth - 1, cellHeight - 1);
+    });
+    
+    // Continue to neural network
+    setTimeout(() => {
+      predictionStage = 4; // Skip to neural network stage
+      cnnWrapper.style.opacity = '0';
+      
+      // Show neural network visualization
+      setTimeout(() => {
+        visualizationWrapper.style.opacity = '1';
+        vectorSection.style.transform = 'translateX(0)';
+        nnSection.style.opacity = '1';
+        nnSection.style.transform = 'scale(1)';
+        
+        // Update neural network to use 128 inputs instead of 9
+        updateNeuralNetworkForCNN();
+      }, 500);
+    }, 3000);
+  }
+  
+  function updateNeuralNetworkForCNN() {
+    // Modify the neural network to handle 128 inputs
+    // This will be a simplified version showing the dense vector input
+    predictionStage = 4;
+    updateStageIndicators();
+    animateNeuralNetworkSequence();
+  }
 }); 
