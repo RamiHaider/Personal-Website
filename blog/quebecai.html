@@ -431,18 +431,28 @@
 
                 <div id="project-overview" class="project-overview">
                     <h2>Ambitions</h2>
-                    <p><a href="https://www.youtube.com/watch?v=6aWJHDblMlQ" target="_blank" rel="noopener" style="color: #64b5f6; text-decoration: none;">As a previous field geologist</a>, and current Machine Learning Engineer, I combined my passions together to create a mineral prospectivity mapper.</p>
+                    <p><a href="https://www.youtube.com/watch?v=6aWJHDblMlQ" target="_blank" rel="noopener" style="color: #64b5f6; text-decoration: none;">As a previous field geologist</a>, and current Machine Learning Engineer, can I leverage both skills to develop a mineral prospectivity mapper?</p>
                     
                     <h2>Background</h2>
-                    <p>Mineral Exploration relies on Field Geologists to physically sample rocks in the area for chemical analysis. The argument is that surficial mineralization is indicative of deposits within, and perhaps even surficial deposits exist. Anyways, since the last 10 years, with the rise of accessible technology, data has moved digitally, this has made room for machine learning to come into play and identify spatial patterns. We still need field geologists to collect data to ground truth, but now, we are able to, more accurately pick places of higher prospectivity due to our predictive modeling, which looks at available data, and says whether it is worth it or not in the first place to send expensive geologists there.</p>
+                    <p>Finding mineral deposits usually goes like this: </p>
+                    <ol>
+                        <li> Stake mineral claims based on desktop studies using existing data</li>
+                        <li> Conduct geophysical surveys to get an idea of structure and identify potential magnetite-bearing zoner</li>
+                        <li> Geologists ground-truth the most prospective areas by collecting and geochemical sampling surficial rock samples to determine the elemental constituents in ppm and ppb</li>
+                        <li> Depending on the above results, you conduct a higher sampling rate around any potentially high-ppm mineralization zones</li>
+                        <li> If you are confident that your sitting on top of a potential zone, you drill </li>
+                    </ol>    
+                        
+                    <p> Can we potentially replace this method using AI/ML? </p>
+
+                    <p> lets utilize a computer vision model to associate geophysical images + geological data with geochemical assay results </p>
+
                     
-                    <p>Thus, the idea is that this predictive model will help to supplement desktop research, which is done to help pinpoint prospective regions, before we send the geologists on the ground.</p>
-                    
-                    <h2>High Level Overview</h2>
+                    <h2>The Data</h2>
                     <div style="display: flex; justify-content: space-between; align-items: center; margin: 30px 0; flex-wrap: wrap;">
                         <div style="flex: 1; min-width: 300px; text-align: center; margin: 10px;">
                             <h4>Airborne Geophysical Magnetic Data</h4>
-                            <img src="../assets/images/Quebec-Minerals/magnetic_image_sample.png" alt="Airborne Geophysical Data" style="width: 90%; max-width: 400px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.3);">
+                            <img src="../assets/images/Quebec-Minerals/airborne_geophysics.png" alt="Airborne Geophysical Data" style="width: 90%; max-width: 400px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.3);">
                             <p style="font-size: 0.9em; margin-top: 10px;">High resolution (20m cell size) magnetic data covering ~70% of Quebec's landmass</p>
                         </div>
                         

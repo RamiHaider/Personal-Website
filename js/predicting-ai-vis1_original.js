@@ -1559,7 +1559,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Instead of runVisualization, trigger the image loading again
         // which starts the whole process over
         if (backgroundImage) {
-           backgroundImage.src = 'assets/images/geophysics-image.png'; // Reload image to restart
+           backgroundImage.src = 'assets/images/usgs-Qu8lplStSSE-unsplash.jpg'; // Reload image to restart
         } else {
            console.error("Cannot restart, backgroundImage object not found.");
         }
@@ -1569,5 +1569,5 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Initialize and start visualization by loading the image
   console.log("Initiating visualization by loading image...");
-  backgroundImage.src = 'assets/images/geophysics-image.png';
+  backgroundImage.src = 'assets/images/usgs-Qu8lplStSSE-unsplash.jpg';
 }); 
