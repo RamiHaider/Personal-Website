@@ -1927,21 +1927,21 @@ document.addEventListener('DOMContentLoaded', function() {
     
     console.log("Starting combined ReLU and MaxPooling visualization");
     
-    // Generate some realistic feature map data with negative values for demonstration
+    // Use the actual computed feature maps from convolution (with some negatives added for ReLU demo)
     const matrixHeight = inputMatrix.length;
     const featureMapDim = matrixHeight - 2;
-    const demonstrationFeatureMaps = cnnKernels.slice(0, 3).map((kernel, kernelIndex) => {
-      const featureMap = [];
-      for (let i = 0; i < featureMapDim; i++) {
-        const row = [];
-        for (let j = 0; j < featureMapDim; j++) {
-          // Generate values with some negatives for ReLU demonstration
-          let value = (Math.random() - 0.4) * 2; // Range from -0.8 to 1.2
-          row.push(value);
-        }
-        featureMap.push(row);
-      }
-      return featureMap;
+    
+    // Use actual feature maps but add some negative values to demonstrate ReLU effect
+    const demonstrationFeatureMaps = featureMaps.map((featureMap, kernelIndex) => {
+      return featureMap.map(row => {
+        return row.map(value => {
+          // Use actual computed value but occasionally make some negative for ReLU demonstration
+          const actualValue = value || 0;
+          // Add some negative bias to about 20% of values for demonstration
+          const shouldMakeNegative = Math.random() < 0.2;
+          return shouldMakeNegative ? actualValue - Math.random() * 0.5 : actualValue;
+        });
+      });
     });
     
     // Calculate rectified feature maps
@@ -3266,9 +3266,14 @@ document.addEventListener('DOMContentLoaded', function() {
     
     const featureMapDim = inputFeatureMaps[0].length; // Should be 13x13
     
-    // Generate realistic feature maps with some negatives
+    // Use actual computed feature maps but add some negative values for ReLU demonstration
     const demonstrationFeatureMaps = inputFeatureMaps.map(featureMap => 
-      featureMap.map(row => row.map(value => (value || 0) + (Math.random() - 0.4) * 0.5))
+      featureMap.map(row => row.map(value => {
+        const actualValue = value || 0;
+        // Add some negative bias to about 15% of values for ReLU demonstration
+        const shouldMakeNegative = Math.random() < 0.15;
+        return shouldMakeNegative ? actualValue - Math.random() * 0.3 : actualValue;
+      }))
     );
     
     // Calculate rectified feature maps
