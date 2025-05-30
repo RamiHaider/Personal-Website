@@ -496,10 +496,10 @@ document.addEventListener('DOMContentLoaded', function() {
     gridCanvas.style.opacity = '0';
     visualizationWrapper.style.opacity = '0';
     
-    // Immediate transition to RGB decomposition
+    // Faster transition to RGB decomposition
     setTimeout(() => {
       showRGBDecomposition();
-    }, 300); // Very short delay for smooth transition
+    }, 150); // Reduced from 300ms to 150ms for faster transition
   }
 
   // NEW: RGB Decomposition Visualization
@@ -509,12 +509,12 @@ document.addEventListener('DOMContentLoaded', function() {
     // Show CNN wrapper for RGB decomposition
     cnnWrapper.style.opacity = '1';
     
-    // Start RGB decomposition animation
+    // Start RGB decomposition animation immediately (simplified)
     setTimeout(() => {
       animateRGBDecomposition();
-    }, 500);
+    }, 300);
   }
-
+  
   function animateRGBDecomposition() {
     const ctx = cnnCanvas.getContext('2d');
     const width = cnnCanvas.width;
@@ -526,418 +526,223 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
       }
       
-    // Animation stages
-    let animationStage = 0; // 0: show 4 matrices, 1: highlight red channel, 2: overlay message, 3: convert to intensity values
-    
+    // Simplified animation - just one stage showing Original + R/G/B
     const matrixRows = gridData.length;
     const matrixCols = gridData[0]?.length || 0;
     
     console.log(`RGB Decomposition starting with ${matrixRows}x${matrixCols} matrix`);
     
-    const animateStage = () => {
-      if (animationStage === 0) {
-        // Stage 1: Show complete decomposition with all 4 matrices
-        ctx.clearRect(0, 0, width, height);
-        
-        // Dark blue background
-        ctx.fillStyle = '#0f172a';
-        ctx.fillRect(0, 0, width, height);
-        
-        const cellSize = 8; // Size for original matrix
-        const smallCellSize = 3; // Much smaller for the 3 stacked channels
-        const channelSpacing = 40; // Vertical spacing between channels
-        
-        // Calculate positions
-        const originalX = 120; // Fixed position for original on left
-        const originalY = height / 2 - (matrixRows * cellSize) / 2;
-        
-        const channelsStartX = originalX + (matrixCols * cellSize) + 80; // Channels on right
-        const channelsStartY = height / 2 - (3 * matrixRows * smallCellSize + 2 * channelSpacing) / 2;
-        
-        // Draw original matrix with black strokes
-        ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 16px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText('Original RGB', originalX + (matrixCols * cellSize)/2, originalY - 25);
-        
-        gridData.forEach((row, i) => {
-          row.forEach((cell, j) => {
-            const x = originalX + j * cellSize;
-            const y = originalY + i * cellSize;
-            
-            // Draw original RGB cell
-            ctx.fillStyle = `rgb(${cell.color.r}, ${cell.color.g}, ${cell.color.b})`;
-            ctx.fillRect(x, y, cellSize - 1, cellSize - 1);
-            
-            // Black stroke, thinner
-            ctx.strokeStyle = '#000000';
-            ctx.lineWidth = 0.5;
-            ctx.strokeRect(x, y, cellSize - 1, cellSize - 1);
-          });
-        });
-        
-        // Draw the 3 channels stacked vertically
-        const channels = [
-          { name: 'R', color: '#ff4444', getValue: (cell) => cell.color.r },
-          { name: 'G', color: '#44ff44', getValue: (cell) => cell.color.g },
-          { name: 'B', color: '#4444ff', getValue: (cell) => cell.color.b }
-        ];
-        
-        channels.forEach((channel, channelIndex) => {
-          const channelY = channelsStartY + channelIndex * (matrixRows * smallCellSize + channelSpacing);
-          
-          // Channel label to the left
-          ctx.fillStyle = channel.color;
-          ctx.font = 'bold 20px sans-serif';
-          ctx.textAlign = 'center';
-          ctx.fillText(channel.name, channelsStartX - 30, channelY + (matrixRows * smallCellSize) / 2 + 7);
-          
-          // Draw channel matrix
-          gridData.forEach((row, i) => {
-            row.forEach((cell, j) => {
-              const x = channelsStartX + j * smallCellSize;
-              const y = channelY + i * smallCellSize;
-              
-              const value = channel.getValue(cell);
-              if (channel.name === 'R') {
-                ctx.fillStyle = `rgb(${value}, 0, 0)`;
-              } else if (channel.name === 'G') {
-                ctx.fillStyle = `rgb(0, ${value}, 0)`;
-            } else {
-                ctx.fillStyle = `rgb(0, 0, ${value})`;
-              }
-              
-              ctx.fillRect(x, y, smallCellSize - 1, smallCellSize - 1);
-              
-              // Thin black stroke
-              ctx.strokeStyle = '#000000';
-              ctx.lineWidth = 0.3;
-              ctx.strokeRect(x, y, smallCellSize - 1, smallCellSize - 1);
-          });
-        });
-        
-          // Channel outline
-          ctx.strokeStyle = channel.color;
-          ctx.lineWidth = 1.5;
-          ctx.strokeRect(channelsStartX - 2, channelY - 2, 
-                        matrixCols * smallCellSize + 4, matrixRows * smallCellSize + 4);
-        });
-        
-        animationStage++;
-        setTimeout(animateStage, 2500); // Wait 2.5 seconds as requested
-        
-      } else if (animationStage === 1) {
-        // Stage 2: Highlight the Red channel specifically
-        ctx.clearRect(0, 0, width, height);
-        
-        // Dark blue background
-        ctx.fillStyle = '#0f172a';
-        ctx.fillRect(0, 0, width, height);
-        
-        const cellSize = 8;
-        const smallCellSize = 3;
-        const channelSpacing = 40;
-        
-        const originalX = 120;
-        const originalY = height / 2 - (matrixRows * cellSize) / 2;
-        const channelsStartX = originalX + (matrixCols * cellSize) + 80;
-        const channelsStartY = height / 2 - (3 * matrixRows * smallCellSize + 2 * channelSpacing) / 2;
-        
-        // Draw original matrix (slightly dimmed)
-        ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 16px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText('Original RGB', originalX + (matrixCols * cellSize)/2, originalY - 25);
-        
-        gridData.forEach((row, i) => {
-          row.forEach((cell, j) => {
-            const x = originalX + j * cellSize;
-            const y = originalY + i * cellSize;
-            
-            ctx.fillStyle = `rgba(${cell.color.r}, ${cell.color.g}, ${cell.color.b}, 0.6)`; // Dimmed
-            ctx.fillRect(x, y, cellSize - 1, cellSize - 1);
-            
-            ctx.strokeStyle = '#000000';
-            ctx.lineWidth = 0.5;
-            ctx.strokeRect(x, y, cellSize - 1, cellSize - 1);
-          });
-        });
-        
-        // Draw channels with Red highlighted
-        const channels = [
-          { name: 'R', color: '#ff4444', getValue: (cell) => cell.color.r, highlighted: true },
-          { name: 'G', color: '#44ff44', getValue: (cell) => cell.color.g, highlighted: false },
-          { name: 'B', color: '#4444ff', getValue: (cell) => cell.color.b, highlighted: false }
-        ];
-        
-        channels.forEach((channel, channelIndex) => {
-          const channelY = channelsStartY + channelIndex * (matrixRows * smallCellSize + channelSpacing);
-          
-          // Channel label - highlighted if Red
-          ctx.fillStyle = channel.highlighted ? '#ff6666' : channel.color;
-          ctx.font = channel.highlighted ? 'bold 24px sans-serif' : 'bold 20px sans-serif';
-          ctx.textAlign = 'center';
-          ctx.fillText(channel.name, channelsStartX - 30, channelY + (matrixRows * smallCellSize) / 2 + 7);
-          
-          // Draw channel matrix
-          gridData.forEach((row, i) => {
-            row.forEach((cell, j) => {
-              const x = channelsStartX + j * smallCellSize;
-              const y = channelY + i * smallCellSize;
-              
-              const value = channel.getValue(cell);
-              const alpha = channel.highlighted ? 1.0 : 0.4; // Dim non-highlighted channels
-              
-              if (channel.name === 'R') {
-                ctx.fillStyle = `rgba(${value}, 0, 0, ${alpha})`;
-              } else if (channel.name === 'G') {
-                ctx.fillStyle = `rgba(0, ${value}, 0, ${alpha})`;
-              } else {
-                ctx.fillStyle = `rgba(0, 0, ${value}, ${alpha})`;
-              }
-              
-              ctx.fillRect(x, y, smallCellSize - 1, smallCellSize - 1);
-              
-              ctx.strokeStyle = '#000000';
-              ctx.lineWidth = 0.3;
-              ctx.strokeRect(x, y, smallCellSize - 1, smallCellSize - 1);
-            });
-          });
-          
-          // Channel outline - enhanced for Red
-          ctx.strokeStyle = channel.highlighted ? '#ff6666' : channel.color;
-          ctx.lineWidth = channel.highlighted ? 3 : 1.5;
-          if (channel.highlighted) {
-            ctx.shadowColor = '#ff6666';
-            ctx.shadowBlur = 10;
-          }
-          ctx.strokeRect(channelsStartX - 2, channelY - 2, 
-                        matrixCols * smallCellSize + 4, matrixRows * smallCellSize + 4);
-          ctx.shadowBlur = 0; // Reset shadow
-        });
-        
-        animationStage++;
-        setTimeout(animateStage, 1500); // Wait 1.5 seconds as requested
-        
-      } else if (animationStage === 2) {
-        // Stage 3: Show overlay message with blur effect
-        // First blur the background
-        ctx.filter = 'blur(3px)';
-        // Redraw the previous scene (blurred)
-        ctx.clearRect(0, 0, width, height);
-        ctx.fillStyle = '#0f172a';
-        ctx.fillRect(0, 0, width, height);
-        
-        // Draw dimmed version of the RGB scene
-        const cellSize = 8;
-        const smallCellSize = 3;
-        const channelSpacing = 40;
-        
-        const originalX = 120;
-        const originalY = height / 2 - (matrixRows * cellSize) / 2;
-        const channelsStartX = originalX + (matrixCols * cellSize) + 80;
-        const channelsStartY = height / 2 - (3 * matrixRows * smallCellSize + 2 * channelSpacing) / 2;
-        
-        gridData.forEach((row, i) => {
-          row.forEach((cell, j) => {
-            const x = originalX + j * cellSize;
-            const y = originalY + i * cellSize;
-            
-            ctx.fillStyle = `rgba(${cell.color.r}, ${cell.color.g}, ${cell.color.b}, 0.3)`;
-            ctx.fillRect(x, y, cellSize - 1, cellSize - 1);
-          });
-        });
-        
-        const channels = [
-          { name: 'R', color: '#ff4444', getValue: (cell) => cell.color.r },
-          { name: 'G', color: '#44ff44', getValue: (cell) => cell.color.g },
-          { name: 'B', color: '#4444ff', getValue: (cell) => cell.color.b }
-        ];
-        
-        channels.forEach((channel, channelIndex) => {
-          const channelY = channelsStartY + channelIndex * (matrixRows * smallCellSize + channelSpacing);
-          
-          gridData.forEach((row, i) => {
-            row.forEach((cell, j) => {
-              const x = channelsStartX + j * smallCellSize;
-              const y = channelY + i * smallCellSize;
-              
-              const value = channel.getValue(cell);
-              if (channel.name === 'R') {
-                ctx.fillStyle = `rgba(${value}, 0, 0, 0.3)`;
-              } else if (channel.name === 'G') {
-                ctx.fillStyle = `rgba(0, ${value}, 0, 0.3)`;
-              } else {
-                ctx.fillStyle = `rgba(0, 0, ${value}, 0.3)`;
-              }
-              
-              ctx.fillRect(x, y, smallCellSize - 1, smallCellSize - 1);
-            });
-          });
-        });
-        
-        // Remove blur filter for overlay text
-        ctx.filter = 'none';
-        
-        // Draw semi-transparent overlay
-        ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
-        ctx.fillRect(0, 0, width, height);
-        
-        // Draw overlay message
-        ctx.fillStyle = '#06b6d4';
-        ctx.font = 'bold 24px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText('Processing Note', width / 2, height / 2 - 40);
-        
-        ctx.fillStyle = '#ffffff';
-        ctx.font = '18px sans-serif';
-        ctx.fillText('For visualization purposes only the Red channel is shown,', width / 2, height / 2 + 10);
-        ctx.fillText('however all 3 channels are processed simultaneously', width / 2, height / 2 + 40);
-        
-        animationStage++;
-        setTimeout(animateStage, 3000); // Wait 3 seconds as requested
-        
-      } else if (animationStage === 3) {
-        // Stage 4: Move to intensity conversion (existing stage 2)
-        ctx.filter = 'none'; // Ensure no blur
-        ctx.clearRect(0, 0, width, height);
-        ctx.fillStyle = '#0f172a';
-        ctx.fillRect(0, 0, width, height);
-        
-        // Header
-        ctx.fillStyle = '#06b6d4';
-        ctx.font = 'bold 18px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText('Red Channel → Intensity Values', width / 2, 40);
-        
-        const cellSize = 8; // Reduced from 25 to 8 to fit 32x32 matrices
-        const matrixSpacing = 40;
-        
-        // Position Red matrix on the left side
-        const leftX = 80;
-        const leftY = height / 2 - (matrixRows * cellSize) / 2;
-        
-        // Draw Red Channel matrix on the left
-        ctx.fillStyle = '#ff4444';
-        ctx.font = 'bold 16px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText('Red Channel', leftX + (matrixCols * cellSize)/2, leftY - 25);
-        
-        gridData.forEach((row, i) => {
-          row.forEach((cell, j) => {
-            const x = leftX + j * cellSize;
-            const y = leftY + i * cellSize;
-            
-            ctx.fillStyle = `rgb(${cell.color.r}, 0, 0)`;
-            ctx.fillRect(x, y, cellSize - 2, cellSize - 2);
-            ctx.strokeStyle = 'rgba(255, 68, 68, 0.6)';
-            ctx.lineWidth = 1;
-            ctx.strokeRect(x, y, cellSize - 2, cellSize - 2);
-          });
-        });
-        
-        // Draw arrow pointing to intensity conversion
-        const arrowStartX = leftX + matrixCols * cellSize + 20;
-        const arrowEndX = arrowStartX + 80;
-        const arrowY = leftY + (matrixRows * cellSize) / 2;
-        
-        ctx.strokeStyle = '#06b6d4';
-        ctx.lineWidth = 3;
-        ctx.beginPath();
-        ctx.moveTo(arrowStartX, arrowY);
-        ctx.lineTo(arrowEndX, arrowY);
-        ctx.stroke();
-        drawArrowHead(ctx, arrowEndX, arrowY, 0);
-        
-        // Label for conversion
-        ctx.fillStyle = '#ffffff';
-        ctx.font = '14px sans-serif';
-      ctx.textAlign = 'center';
-        ctx.fillText('Convert to', arrowStartX + 40, arrowY - 10);
-        ctx.fillText('Intensity Values', arrowStartX + 40, arrowY + 10);
-        
-        animationStage++;
-        setTimeout(animateStage, 2000);
-        
-      } else if (animationStage === 4) {
-        // Stage 5: Show intensity values matrix (grayscale with numbers) - existing stage 3
-        ctx.clearRect(0, 0, width, height);
-        
-        // Dark blue background
-        ctx.fillStyle = '#0f172a';
-        ctx.fillRect(0, 0, width, height);
-        
-        // Header
-        ctx.fillStyle = '#06b6d4';
-        ctx.font = 'bold 20px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText('Intensity Matrix (Grayscale Values)', width / 2, 40);
-        
-        const cellSize = 8; // Reduced to fit 32x32 matrix
-        
-        // Position intensity matrix in center-left
-        const intensityX = 120;
-        const intensityY = height / 2 - (matrixRows * cellSize) / 2;
-        
-        // Draw intensity matrix label
-        ctx.fillStyle = '#ffffff';
-        ctx.font = 'bold 16px sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText('Input Matrix (0-255)', intensityX + (matrixCols * cellSize)/2, intensityY - 25);
-        
-        // Prepare input matrix for CNN
-        inputMatrix = [];
-        gridData.forEach((row, i) => {
-          const matrixRow = [];
-          row.forEach((cell, j) => {
-            const x = intensityX + j * cellSize;
-            const y = intensityY + i * cellSize;
-            
-            // Draw grayscale cell based on red intensity
-            const intensity = cell.color.r;
-            ctx.fillStyle = `rgb(${intensity}, ${intensity}, ${intensity})`;
-            ctx.fillRect(x, y, cellSize - 2, cellSize - 2);
-            
-            // Draw border
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
-            ctx.lineWidth = 1;
-            ctx.strokeRect(x, y, cellSize - 2, cellSize - 2);
-            
-            // Store for CNN input
-            matrixRow.push({
-              ...cell,
-              intensity: intensity / 255, // Normalize to 0-1
-              displayIntensity: intensity
-            });
-          });
-          inputMatrix.push(matrixRow);
-        });
-        
-        // Draw outline around intensity matrix
-        ctx.strokeStyle = '#06b6d4';
-        ctx.lineWidth = 3;
-        ctx.strokeRect(intensityX - 3, intensityY - 3, 
-                      matrixCols * cellSize + 6, matrixRows * cellSize + 6);
-        
-        // Add note about values
-        ctx.fillStyle = '#94a3b8';
-              ctx.font = '12px sans-serif';
-              ctx.textAlign = 'center';
-        ctx.fillText(`${matrixRows}×${matrixCols} matrix with values 0-255`, 
-                    intensityX + (matrixCols * cellSize)/2, intensityY + matrixRows * cellSize + 20);
-        
-        console.log(`Intensity matrix prepared: ${inputMatrix.length}x${inputMatrix[0]?.length || 0}`);
-        
-        // Transition to CNN processing
-        setTimeout(() => {
-          predictionStage = 3; // CNN Processing stage
-          updateStageIndicators();
-          animateCNNConvolution();
-        }, 3000);
-      }
-    };
+    // Single stage: Show complete decomposition with all 4 matrices
+    ctx.clearRect(0, 0, width, height);
     
-    animateStage();
+    // Dark blue background (consistent)
+    ctx.fillStyle = '#0f172a';
+    ctx.fillRect(0, 0, width, height);
+    
+    const cellSize = 8; // Size for original matrix
+    const smallCellSize = 3; // Much smaller for the 3 stacked channels
+    const channelSpacing = 40; // Vertical spacing between channels
+    
+    // Calculate positions
+    const originalX = 120; // Fixed position for original on left
+    const originalY = height / 2 - (matrixRows * cellSize) / 2;
+    
+    const channelsStartX = originalX + (matrixCols * cellSize) + 80; // Channels on right
+    const channelsStartY = height / 2 - (3 * matrixRows * smallCellSize + 2 * channelSpacing) / 2;
+    
+    // Draw original matrix with black strokes
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 16px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Original RGB', originalX + (matrixCols * cellSize)/2, originalY - 25);
+    
+    gridData.forEach((row, i) => {
+      row.forEach((cell, j) => {
+        const x = originalX + j * cellSize;
+        const y = originalY + i * cellSize;
+        
+        // Draw original RGB cell
+        ctx.fillStyle = `rgb(${cell.color.r}, ${cell.color.g}, ${cell.color.b})`;
+        ctx.fillRect(x, y, cellSize - 1, cellSize - 1);
+        
+        // Black stroke, thinner
+        ctx.strokeStyle = '#000000';
+        ctx.lineWidth = 0.5;
+        ctx.strokeRect(x, y, cellSize - 1, cellSize - 1);
+      });
+    });
+    
+    // Draw the 3 channels stacked vertically
+    const channels = [
+      { name: 'R', color: '#ff4444', getValue: (cell) => cell.color.r, opacity: 1.0 },
+      { name: 'G', color: '#44ff44', getValue: (cell) => cell.color.g, opacity: 0.6 },
+      { name: 'B', color: '#4444ff', getValue: (cell) => cell.color.b, opacity: 0.6 }
+    ];
+    
+    channels.forEach((channel, channelIndex) => {
+      const channelY = channelsStartY + channelIndex * (matrixRows * smallCellSize + channelSpacing);
+      
+      // Channel label to the left
+      ctx.fillStyle = channel.color;
+      ctx.font = 'bold 20px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(channel.name, channelsStartX - 30, channelY + (matrixRows * smallCellSize) / 2 + 7);
+      
+      // Draw channel matrix
+      gridData.forEach((row, i) => {
+        row.forEach((cell, j) => {
+          const x = channelsStartX + j * smallCellSize;
+          const y = channelY + i * smallCellSize;
+          
+          const value = channel.getValue(cell);
+          if (channel.name === 'R') {
+            ctx.fillStyle = `rgba(${value}, 0, 0, ${channel.opacity})`;
+          } else if (channel.name === 'G') {
+            ctx.fillStyle = `rgba(0, ${value}, 0, ${channel.opacity})`;
+        } else {
+            ctx.fillStyle = `rgba(0, 0, ${value}, ${channel.opacity})`;
+          }
+          
+          ctx.fillRect(x, y, smallCellSize - 1, smallCellSize - 1);
+          
+          // Thin black stroke
+          ctx.strokeStyle = '#000000';
+          ctx.lineWidth = 0.3;
+          ctx.strokeRect(x, y, smallCellSize - 1, smallCellSize - 1);
+      });
+    });
+    
+      // Channel outline (dimmed for G and B)
+      ctx.strokeStyle = channel.opacity < 1.0 ? `${channel.color}80` : channel.color; // Add transparency to outline for dimmed channels
+      ctx.lineWidth = 1.5;
+      ctx.strokeRect(channelsStartX - 2, channelY - 2, 
+                    matrixCols * smallCellSize + 4, matrixRows * smallCellSize + 4);
+    });
+    
+    // Show overlay message after 2 seconds
+    setTimeout(() => {
+      showRedChannelConversion(); // Go directly to Red channel conversion, skip processing overlay
+    }, 2500); // Increased from 2000ms to 2500ms for more viewing time
+  }
+  
+  function showRedChannelConversion() {
+    // Move to the Red → Intensity conversion scene
+    const ctx = cnnCanvas.getContext('2d');
+    const width = cnnCanvas.width;
+    const height = cnnCanvas.height;
+    const matrixRows = gridData.length;
+    const matrixCols = gridData[0]?.length || 0;
+    
+    // Stage: Show Red Channel and Intensity Matrix side by side
+    ctx.clearRect(0, 0, width, height);
+    ctx.fillStyle = '#0f172a';
+    ctx.fillRect(0, 0, width, height);
+    
+    // Header
+    ctx.fillStyle = '#06b6d4';
+    ctx.font = 'bold 18px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Red Channel → Intensity Values', width / 2, 40);
+    
+    const cellSize = 8;
+    const matrixSpacing = 120; // Increased spacing between matrices
+    
+    // Position Red matrix on the left side
+    const leftX = 100;
+    const leftY = height / 2 - (matrixRows * cellSize) / 2;
+    
+    // Position Intensity matrix on the right side
+    const rightX = leftX + (matrixCols * cellSize) + matrixSpacing;
+    const rightY = height / 2 - (matrixRows * cellSize) / 2;
+    
+    // Draw Red Channel matrix on the left
+    ctx.fillStyle = '#ff4444';
+    ctx.font = 'bold 16px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Red Channel', leftX + (matrixCols * cellSize)/2, leftY - 25);
+    
+    gridData.forEach((row, i) => {
+      row.forEach((cell, j) => {
+        const x = leftX + j * cellSize;
+        const y = leftY + i * cellSize;
+        
+        ctx.fillStyle = `rgb(${cell.color.r}, 0, 0)`;
+        ctx.fillRect(x, y, cellSize - 2, cellSize - 2);
+        ctx.strokeStyle = 'rgba(255, 68, 68, 0.6)';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(x, y, cellSize - 2, cellSize - 2);
+      });
+    });
+    
+    // Draw Intensity Matrix on the right
+    ctx.fillStyle = '#ffffff';
+    ctx.font = 'bold 16px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Intensity Matrix (0-255)', rightX + (matrixCols * cellSize)/2, rightY - 25);
+    
+    // Prepare input matrix for CNN
+    inputMatrix = [];
+    gridData.forEach((row, i) => {
+      const matrixRow = [];
+      row.forEach((cell, j) => {
+        const x = rightX + j * cellSize;
+        const y = rightY + i * cellSize;
+        
+        // Draw grayscale cell based on red intensity
+        const intensity = cell.color.r;
+        ctx.fillStyle = `rgb(${intensity}, ${intensity}, ${intensity})`;
+        ctx.fillRect(x, y, cellSize - 2, cellSize - 2);
+        
+        // Draw border
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+        ctx.lineWidth = 1;
+        ctx.strokeRect(x, y, cellSize - 2, cellSize - 2);
+        
+        // Store for CNN input
+        matrixRow.push({
+          ...cell,
+          intensity: intensity / 255, // Normalize to 0-1
+          displayIntensity: intensity
+        });
+      });
+      inputMatrix.push(matrixRow);
+    });
+    
+    // Draw outlines around both matrices
+    ctx.strokeStyle = '#ff4444';
+    ctx.lineWidth = 3;
+    ctx.strokeRect(leftX - 3, leftY - 3, 
+                  matrixCols * cellSize + 6, matrixRows * cellSize + 6);
+    
+    ctx.strokeStyle = '#06b6d4';
+    ctx.lineWidth = 3;
+    ctx.strokeRect(rightX - 3, rightY - 3, 
+                  matrixCols * cellSize + 6, matrixRows * cellSize + 6);
+    
+    // Conversion text in the middle (no arrow)
+    ctx.fillStyle = '#ffffff';
+    ctx.font = '14px sans-serif';
+    ctx.textAlign = 'center';
+    const middleX = leftX + (matrixCols * cellSize) + matrixSpacing/2;
+    const middleY = height / 2;
+    ctx.fillText('Convert to', middleX, middleY - 10);
+    ctx.fillText('Intensity Values', middleX, middleY + 10);
+    
+    // Add note about values
+    ctx.fillStyle = '#94a3b8';
+    ctx.font = '12px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(`${matrixRows}×${matrixCols} matrix with values 0-255`, 
+                rightX + (matrixCols * cellSize)/2, rightY + matrixRows * cellSize + 20);
+    
+    console.log(`Intensity matrix prepared: ${inputMatrix.length}x${inputMatrix[0]?.length || 0}`);
+    
+    // Transition to CNN processing
+    setTimeout(() => {
+      predictionStage = 3; // CNN Processing stage
+      updateStageIndicators();
+      animateCNNConvolution();
+    }, 3000);
   }
   
   // Helper function to draw arrow heads
@@ -1738,9 +1543,28 @@ document.addEventListener('DOMContentLoaded', function() {
     // Clear canvas
     ctx.clearRect(0, 0, width, height);
     
-    // Draw dark blue background
-    ctx.fillStyle = '#1e3a8a'; // Dark blue background
+    // Draw dark blue background (consistent with other scenes)
+    ctx.fillStyle = '#0f172a'; // Changed from '#1e3a8a' to '#0f172a' for consistency
     ctx.fillRect(0, 0, width, height);
+    
+    // Draw stage headers at the top
+    ctx.font = 'bold 18px sans-serif';
+    ctx.textAlign = 'center';
+    
+    const headerY = 25;
+    const stageSpacing = width / 3;
+    
+    // Convolution stage (active - fully white)
+    ctx.fillStyle = '#ffffff';
+    ctx.fillText('Convolution', stageSpacing * 0.5, headerY);
+    
+    // ReLU stage (inactive - dimmed)
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+    ctx.fillText('ReLU', stageSpacing * 1.5, headerY);
+    
+    // MaxPooling stage (inactive - dimmed)
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+    ctx.fillText('MaxPooling', stageSpacing * 2.5, headerY);
     
     // Layout parameters
     const cellSize = 8; // Reduced from 25 to 8 to fit 32x32 matrices
@@ -1759,20 +1583,16 @@ document.addEventListener('DOMContentLoaded', function() {
     const matrixPixelWidth = matrixWidth * cellSize;
     const matrixPixelHeight = matrixHeight * cellSize;
     
-    // Calculate feature map dimensions and size
+    // Calculate feature map dimensions and size (smaller to avoid title overlap)
     const featureMapDim = matrixHeight - 2; // 30x30 after 3x3 convolution on 32x32
-    const featureMapSize = featureMapDim * 2; // Size for drawing (2px per cell = 60px total)
+    const featureMapSize = featureMapDim * 3.2; // Smaller feature maps to avoid title overlap
     
     const inputX = 50;
-    const inputY = height/2 - matrixPixelHeight/2;
+    const inputY = height / 2 - (matrixHeight * cellSize)/2;
+    const kernelsX = inputX + (matrixWidth * cellSize) + spacing;
+    const featureMapsX = kernelsX + (kernelSize * 3) + spacing;
     
-    // Draw "Convolution" stage header
-    ctx.fillStyle = '#06b6d4'; // cyan
-    ctx.font = 'bold 18px sans-serif';
-    ctx.textAlign = 'center';
-    ctx.fillText('CNN Convolution - Real-time Feature Map Generation', width / 2, 30);
-    
-    // Draw Input Matrix
+    // Draw Input Matrix (removed subtitle)
     ctx.fillStyle = '#ffffff';
     ctx.font = '14px sans-serif';
     ctx.textAlign = 'center';
@@ -1800,16 +1620,17 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Position for kernels (middle)
-    const kernelsX = inputX + matrixPixelWidth + spacing;
-    const kernelsY = height/2 - 100; // Start higher to fit all kernels
+    const kernelsY = height/2 - 110; // Adjusted up slightly to accommodate smaller feature maps
     
-    // Position for feature maps (right side)
-    const featureMapsX = kernelsX + (kernelSize * 3) + spacing;
-    const featureMapsY = height/2 - (featureMapSize * 1.5); // Adjust for vertical stacking
+    // Position for feature maps (right side) - adjusted for smaller maps
+    const featureMapsY = height/2 - (featureMapSize * 1.6); // Reduced from 1.8 to 1.6 for smaller maps
+    
+    // Position for results (to the right of feature maps)
+    const resultsX = featureMapsX + featureMapSize + 30; // 30px spacing from feature maps
     
     // Draw kernels and empty feature maps initially
     cnnKernels.slice(0, 3).forEach((kernel, kernelIndex) => {
-      const kernelY = kernelsY + kernelIndex * 80;
+      const kernelY = kernelsY + kernelIndex * 85; // Increased spacing from 80 to 85 for better alignment
       
       // Draw kernel label
       ctx.fillStyle = kernel.color;
@@ -1845,8 +1666,8 @@ document.addEventListener('DOMContentLoaded', function() {
         });
       });
       
-      // Draw empty feature map placeholder
-      const fMapY = featureMapsY + kernelIndex * (featureMapSize + 25); // Smaller spacing to prevent overlap
+      // Draw empty feature map placeholder (better aligned with kernel)
+      const fMapY = featureMapsY + kernelIndex * (featureMapSize + 35); // Increased spacing from 30 to 35 for better alignment
       
       ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
       ctx.fillRect(featureMapsX, fMapY, featureMapSize, featureMapSize);
@@ -1875,11 +1696,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // Start the progressive convolution animation
     setTimeout(() => {
       console.log("Starting progressive convolution animation");
-      animateProgressiveConvolution(featureMaps);
+      animateProgressiveConvolution(featureMaps, resultsX); // Pass resultsX for positioning
     }, 2000);
   }
   
-  function animateProgressiveConvolution(featureMaps) {
+  function animateProgressiveConvolution(featureMaps, resultsX) {
     const ctx = cnnCanvas.getContext('2d');
     const width = cnnCanvas.width;
     const height = cnnCanvas.height;
@@ -1892,7 +1713,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Calculate feature map size based on convolution output
     const featureMapDim = matrixHeight - 2; // 30x30 after 3x3 convolution on 32x32
-    const featureMapSize = featureMapDim * 2; // Size for drawing (2px per cell = 60px total)
+    const featureMapSize = featureMapDim * 3.2; // Smaller feature maps to avoid title overlap
     
     const inputX = 50;
     const inputY = height/2 - (matrixHeight * cellSize)/2;
@@ -1926,16 +1747,29 @@ document.addEventListener('DOMContentLoaded', function() {
       
       // Redraw the base scene
       ctx.clearRect(0, 0, width, height);
-      ctx.fillStyle = '#1e3a8a';
+      ctx.fillStyle = '#0f172a';
       ctx.fillRect(0, 0, width, height);
       
-      // Header
-      ctx.fillStyle = '#06b6d4';
+      // Draw stage headers at the top
       ctx.font = 'bold 18px sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText('CNN Convolution - Real-time Feature Map Generation', width / 2, 30);
       
-      // Draw input matrix with current kernel position highlighted
+      const headerY = 25;
+      const stageSpacing = width / 3;
+      
+      // Convolution stage (active - fully white)
+      ctx.fillStyle = '#ffffff';
+      ctx.fillText('Convolution', stageSpacing * 0.5, headerY);
+      
+      // ReLU stage (inactive - dimmed)
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+      ctx.fillText('ReLU', stageSpacing * 1.5, headerY);
+      
+      // MaxPooling stage (inactive - dimmed)
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+      ctx.fillText('MaxPooling', stageSpacing * 2.5, headerY);
+      
+      // Draw input matrix with current kernel position highlighted (removed subtitle)
       ctx.fillStyle = '#ffffff';
       ctx.font = '14px sans-serif';
       ctx.textAlign = 'center';
@@ -1967,11 +1801,11 @@ document.addEventListener('DOMContentLoaded', function() {
       });
       
       // Draw kernels and perform convolutions
-      const kernelsY = height/2 - 100;
-      const featureMapsY = height/2 - (120); // Adjust for feature maps
+      const kernelsY = height/2 - 110; // Updated to match new position
+      const featureMapsY = height/2 - (featureMapSize * 1.6); // Updated to match new position
       
       cnnKernels.slice(0, 3).forEach((kernel, kernelIndex) => {
-        const kernelY = kernelsY + kernelIndex * 80;
+        const kernelY = kernelsY + kernelIndex * 85; // Updated spacing to match
         
         // Draw kernel
         ctx.fillStyle = kernel.color;
@@ -2019,9 +1853,9 @@ document.addEventListener('DOMContentLoaded', function() {
         // Store in feature map
         featureMaps[kernelIndex][pos.row][pos.col] = reluResult;
         
-        // Draw feature map with all values computed so far
-        const fMapY = featureMapsY + kernelIndex * (featureMapSize + 25); // Updated spacing
-        const featureCellSize = 2; // Reduced from 5 to 2 for smaller feature maps
+        // Draw feature map with all values computed so far (smaller size)
+        const fMapY = featureMapsY + kernelIndex * (featureMapSize + 35); // Updated spacing to match
+        const featureCellSize = 3.2; // Reduced from 4 to 3.2 for smaller feature maps
         
         // Background
         ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
@@ -2065,26 +1899,20 @@ document.addEventListener('DOMContentLoaded', function() {
         ctx.textAlign = 'center';
         ctx.fillText(`Feature Map ${kernelIndex + 1}`, featureMapsX + featureMapSize/2, fMapY - 5);
         
-        // Show current calculation result
+        // Show current calculation result to the RIGHT of feature maps
+        const resultY = fMapY + (featureMapSize / 2);
         ctx.fillStyle = '#ffffff';
-        ctx.font = '10px sans-serif';
-        ctx.fillText(`Result: ${reluResult.toFixed(2)}`, featureMapsX + featureMapSize/2, fMapY + featureMapSize + 25);
+        ctx.font = '12px sans-serif';
+        ctx.textAlign = 'left'; // Left align for right-side positioning
+        ctx.fillText(`Result: ${reluResult.toFixed(2)}`, resultsX, resultY);
       });
       
-      // Show calculation details
-      const calcX = width - 150;
-      const calcY = 80;
-      
-      ctx.fillStyle = '#06b6d4';
-      ctx.font = '12px sans-serif';
-      ctx.textAlign = 'left';
-      ctx.fillText(`Position: (${pos.row}, ${pos.col})`, calcX, calcY);
-      ctx.fillText(`Step: ${currentPosition + 1}/${convolutionPositions.length}`, calcX, calcY + 15);
+      // Removed calculation details (position/step text)
       
       currentPosition++;
       
-      // Continue to next position
-      setTimeout(animateNextPosition, 100); // Sped up from 300ms to 100ms (3x faster)
+      // Continue to next position (much faster)
+      setTimeout(animateNextPosition, 20); // Reduced from 30ms to 20ms for much faster speed
     };
     
     // Start the animation
@@ -2122,19 +1950,33 @@ document.addEventListener('DOMContentLoaded', function() {
       if (reluStage === 0) {
         // Stage 1: Move feature maps to the left
         ctx.clearRect(0, 0, width, height);
-        ctx.fillStyle = '#111827'; // Darker background for ReLU stage
+        ctx.fillStyle = '#0f172a'; // Consistent dark background
         ctx.fillRect(0, 0, width, height);
         
-        // Header
-        ctx.fillStyle = '#10b981'; // Green for ReLU
-        ctx.font = 'bold 20px sans-serif';
+        // Draw stage headers with ReLU highlighted
+        ctx.font = 'bold 18px sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText('ReLU Activation Function', width / 2, 40);
+        
+        const headerY = 25;
+        const stageSpacing = width / 3;
+        
+        // Convolution stage (inactive - dimmed)
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+        ctx.fillText('Convolution', stageSpacing * 0.5, headerY);
+        
+        // ReLU stage (active - fully white)
+        ctx.fillStyle = '#ffffff';
+        ctx.fillText('ReLU', stageSpacing * 1.5, headerY);
+        
+        // MaxPooling stage (inactive - dimmed)
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+        ctx.fillText('MaxPooling', stageSpacing * 2.5, headerY);
         
         // Subtitle
-        ctx.fillStyle = '#ffffff';
-        ctx.font = '14px sans-serif';
-        ctx.fillText('f(x) = max(0, x) - Converting negative values to zero', width / 2, 65);
+        ctx.fillStyle = '#10b981'; // Green for ReLU
+        ctx.font = 'bold 16px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('f(x) = max(0, x) - Converting negative values to zero', width / 2, 50);
         
         const cellSize = 8; // Reduced from 20 to 8 for 30x30 feature maps
         const mapSpacing = 60;
@@ -2218,14 +2060,33 @@ document.addEventListener('DOMContentLoaded', function() {
       } else if (reluStage === 1) {
         // Stage 2: Show ReLU operation in action
         ctx.clearRect(0, 0, width, height);
-        ctx.fillStyle = '#111827';
+        ctx.fillStyle = '#0f172a'; // Consistent dark background
         ctx.fillRect(0, 0, width, height);
         
-        // Header
-        ctx.fillStyle = '#10b981';
-        ctx.font = 'bold 20px sans-serif';
+        // Draw stage headers with ReLU highlighted
+        ctx.font = 'bold 18px sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText('ReLU Activation: Negative → Zero', width / 2, 40);
+        
+        const headerY = 25;
+        const stageSpacing = width / 3;
+        
+        // Convolution stage (inactive - dimmed)
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+        ctx.fillText('Convolution', stageSpacing * 0.5, headerY);
+        
+        // ReLU stage (active - fully white)
+        ctx.fillStyle = '#ffffff';
+        ctx.fillText('ReLU', stageSpacing * 1.5, headerY);
+        
+        // MaxPooling stage (inactive - dimmed)
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+        ctx.fillText('MaxPooling', stageSpacing * 2.5, headerY);
+        
+        // Subtitle
+        ctx.fillStyle = '#10b981';
+        ctx.font = 'bold 16px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('Negative → Zero', width / 2, 50);
         
         const cellSize = 6; // Reduced from 18 to 6 for 30x30 input maps
         const mapSpacing = 50;
@@ -2326,14 +2187,33 @@ document.addEventListener('DOMContentLoaded', function() {
       } else if (reluStage === 2) {
         // Stage 3: Show final output and transition to max pooling
         ctx.clearRect(0, 0, width, height);
-        ctx.fillStyle = '#111827';
+        ctx.fillStyle = '#0f172a'; // Consistent dark background
         ctx.fillRect(0, 0, width, height);
         
-        // Header
-        ctx.fillStyle = '#10b981';
-        ctx.font = 'bold 20px sans-serif';
+        // Draw stage headers with ReLU highlighted
+        ctx.font = 'bold 18px sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText('ReLU Output → Max Pooling', width / 2, 40);
+        
+        const headerY = 25;
+        const stageSpacing = width / 3;
+        
+        // Convolution stage (inactive - dimmed)
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+        ctx.fillText('Convolution', stageSpacing * 0.5, headerY);
+        
+        // ReLU stage (active - fully white)
+        ctx.fillStyle = '#ffffff';
+        ctx.fillText('ReLU', stageSpacing * 1.5, headerY);
+        
+        // MaxPooling stage (inactive - dimmed)
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+        ctx.fillText('MaxPooling', stageSpacing * 2.5, headerY);
+        
+        // Subtitle
+        ctx.fillStyle = '#10b981';
+        ctx.font = 'bold 16px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('ReLU Output → Max Pooling', width / 2, 50);
         
         const cellSize = 20;
         const mapSpacing = 50;
@@ -2440,19 +2320,33 @@ document.addEventListener('DOMContentLoaded', function() {
       if (poolStage === 0) {
         // Stage 1: Setup - show ReLU outputs and explain max pooling
         ctx.clearRect(0, 0, width, height);
-        ctx.fillStyle = '#111827';
+        ctx.fillStyle = '#0f172a'; // Consistent dark background
         ctx.fillRect(0, 0, width, height);
         
-        // Header
-        ctx.fillStyle = '#f59e0b'; // Amber for max pooling
-        ctx.font = 'bold 20px sans-serif';
+        // Draw stage headers with MaxPooling highlighted
+        ctx.font = 'bold 18px sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText('Max Pooling - 2×2 Downsampling', width / 2, 40);
+        
+        const headerY = 25;
+        const stageSpacing = width / 3;
+        
+        // Convolution stage (inactive - dimmed)
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+        ctx.fillText('Convolution', stageSpacing * 0.5, headerY);
+        
+        // ReLU stage (inactive - dimmed)
+        ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+        ctx.fillText('ReLU', stageSpacing * 1.5, headerY);
+        
+        // MaxPooling stage (active - fully white)
+        ctx.fillStyle = '#ffffff';
+        ctx.fillText('MaxPooling', stageSpacing * 2.5, headerY);
         
         // Subtitle
-        ctx.fillStyle = '#ffffff';
-        ctx.font = '14px sans-serif';
-        ctx.fillText('Sliding 2×2 window, taking maximum value from each region', width / 2, 65);
+        ctx.fillStyle = '#f59e0b'; // Amber for max pooling
+        ctx.font = 'bold 16px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('2×2 Downsampling - Sliding window taking maximum values', width / 2, 50);
         
         const cellSize = 20;
         const mapSpacing = 60;
