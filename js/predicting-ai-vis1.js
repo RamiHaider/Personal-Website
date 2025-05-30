@@ -99,14 +99,6 @@ document.addEventListener('DOMContentLoaded', function() {
   predictionSection.style.transition = 'all 0.5s ease-in-out';
   vizContainer.appendChild(predictionSection);
   
-  // Create selection box - only one selection box now
-  const selectionBox = document.createElement('div');
-  selectionBox.style.position = 'absolute';
-  selectionBox.style.border = '2px solid #06b6d4'; // cyan-500
-  selectionBox.style.transition = 'all 0.5s ease-in-out';
-  selectionBox.style.display = 'none'; // Initially hidden
-  container.appendChild(selectionBox);
-  
   // Create stage indicators
   const stageIndicatorContainer = document.createElement('div');
   stageIndicatorContainer.style.position = 'absolute';
@@ -300,19 +292,8 @@ document.addEventListener('DOMContentLoaded', function() {
   
   // Update selection box and grid data
   function updateSelection() {
-    // Only show and update selection box in stage 1
+    // Only show and update selection in stage 1
     if (predictionStage === 1) {
-      selectionBox.style.display = 'block';
-      selectionBox.style.left = selectionBoxState.x + 'px';
-      selectionBox.style.top = selectionBoxState.y + 'px';
-      selectionBox.style.width = selectionBoxState.width + 'px';
-      selectionBox.style.height = selectionBoxState.height + 'px';
-      
-      selectionBox.style.borderStyle = 'dashed';
-      selectionBox.style.borderWidth = '3px'; // Increased from 2px to 3px for better visibility
-      selectionBox.style.boxShadow = '0 0 15px rgba(6, 182, 212, 0.7)'; // Enhanced glow
-      selectionBox.style.animation = 'pulse 1.5s infinite alternate';
-      
       // Extract grid data from pixels in selection - ensure exact pixel boundaries
       // Make sure to snap to the grid boundaries
       const pixelSize = 5;
@@ -322,12 +303,6 @@ document.addEventListener('DOMContentLoaded', function() {
       const snappedY = Math.floor(selectionBoxState.y / pixelSize) * pixelSize;
       const snappedWidth = Math.ceil(selectionBoxState.width / pixelSize) * pixelSize;
       const snappedHeight = Math.ceil(selectionBoxState.height / pixelSize) * pixelSize;
-      
-      // Update the selection box position to match the grid
-      selectionBox.style.left = snappedX + 'px';
-      selectionBox.style.top = snappedY + 'px';
-      selectionBox.style.width = snappedWidth + 'px';
-      selectionBox.style.height = snappedHeight + 'px';
       
       gridData = [];
       backgroundPixels.forEach(row => {
@@ -350,32 +325,126 @@ document.addEventListener('DOMContentLoaded', function() {
         }
       });
       
-      // Draw only the selection outline - no individual cell grids
+      // Create selective blur effect - blur everything EXCEPT the selected region
+      const mapCtx = mapCanvas.getContext('2d');
+      const width = mapCanvas.width;
+      const height = mapCanvas.height;
+      
+      // Clear and redraw the full pixelated background first
+      mapCtx.clearRect(0, 0, width, height);
+      
+      // Draw all background pixels
+      backgroundPixels.forEach(row => {
+        row.forEach(pixel => {
+          mapCtx.fillStyle = `rgb(${pixel.color.r}, ${pixel.color.g}, ${pixel.color.b})`;
+          mapCtx.fillRect(pixel.x, pixel.y, pixel.width, pixel.height);
+        });
+      });
+      
+      // Apply blur to everything first
+      mapCtx.save();
+      mapCtx.filter = 'blur(6px)';
+      
+      // Create a temporary canvas for the blurred version
+      const tempCanvas = document.createElement('canvas');
+      tempCanvas.width = width;
+      tempCanvas.height = height;
+      const tempCtx = tempCanvas.getContext('2d');
+      
+      // Draw pixelated background to temp canvas
+      backgroundPixels.forEach(row => {
+        row.forEach(pixel => {
+          tempCtx.fillStyle = `rgb(${pixel.color.r}, ${pixel.color.g}, ${pixel.color.b})`;
+          tempCtx.fillRect(pixel.x, pixel.y, pixel.width, pixel.height);
+        });
+      });
+      
+      // Apply blur and draw the blurred version
+      mapCtx.filter = 'blur(6px)';
+      mapCtx.drawImage(tempCanvas, 0, 0);
+      
+      // Remove blur filter and draw sharp pixelated version in selected region
+      mapCtx.filter = 'none';
+      
+      // Clip to the selected region and draw sharp pixelated version
+      mapCtx.save();
+      mapCtx.beginPath();
+      mapCtx.rect(snappedX, snappedY, snappedWidth, snappedHeight);
+      mapCtx.clip();
+      
+      // Draw sharp pixelated version in the clipped area
+      backgroundPixels.forEach(row => {
+        row.forEach(pixel => {
+          // Only draw pixels that are in the selected region
+          if (pixel.x >= snappedX && pixel.x < snappedX + snappedWidth &&
+              pixel.y >= snappedY && pixel.y < snappedY + snappedHeight) {
+            mapCtx.fillStyle = `rgb(${pixel.color.r}, ${pixel.color.g}, ${pixel.color.b})`;
+            mapCtx.fillRect(pixel.x, pixel.y, pixel.width, pixel.height);
+          }
+        });
+      });
+      
+      mapCtx.restore();
+      mapCtx.restore();
+      
+      // Draw animated white selection outline on canvas
+      const ctx = gridCanvas.getContext('2d');
+      
+      // Create animation frame for dashed line movement (slower)
+      let dashOffset = 0;
+      const animateSelection = () => {
+        if (predictionStage !== 1) return; // Stop animation if stage changed
+        
+        ctx.clearRect(0, 0, gridCanvas.width, gridCanvas.height);
+        
+        // Draw white selection outline with animated dash (reduced stroke width)
+        ctx.strokeStyle = '#ffffff'; // White color as requested
+        ctx.lineWidth = 3; // Reduced from 6 to 3 for thinner stroke
+        ctx.setLineDash([12, 6]); // Dashed line pattern
+        ctx.lineDashOffset = -dashOffset; // Animate the dash offset
+        
+        // Add glow effect
+        ctx.shadowColor = '#ffffff';
+        ctx.shadowBlur = 10; // Reduced glow for thinner stroke
+        ctx.shadowOffsetX = 0;
+        ctx.shadowOffsetY = 0;
+        
+        ctx.strokeRect(
+          snappedX - 3, 
+          snappedY - 3, 
+          snappedWidth + 6, 
+          snappedHeight + 6
+        );
+        
+        // Reset shadow
+        ctx.shadowBlur = 0;
+        
+        // Increment dash offset for animation (slower)
+        dashOffset = (dashOffset + 0.3) % 18; // Reduced from +1 to +0.3 for slower animation
+        
+        // Continue animation
+        requestAnimationFrame(animateSelection);
+      };
+      
+      // Start the animation
+      animateSelection();
+      
+    } else {
+      // For other stages, hide the selection and restore normal background
       const ctx = gridCanvas.getContext('2d');
       ctx.clearRect(0, 0, gridCanvas.width, gridCanvas.height);
       
-      // Draw enhanced selection outline only
-      ctx.strokeStyle = 'rgba(6, 182, 212, 0.9)'; // Cyan with high opacity
-      ctx.lineWidth = 4; // Increased from 2 to 4 for better visibility
-      ctx.setLineDash([8, 4]); // Dashed line pattern
-      ctx.strokeRect(
-        snappedX - 2, 
-        snappedY - 2, 
-        snappedWidth + 4, 
-        snappedHeight + 4
-      );
-      ctx.setLineDash([]); // Reset line dash
+      // Restore normal pixelated background without blur
+      const mapCtx = mapCanvas.getContext('2d');
+      mapCtx.clearRect(0, 0, mapCanvas.width, mapCanvas.height);
       
-    } else if (predictionStage === 0) {
-      // If we're in stage 0, just set the position but keep hidden
-      selectionBox.style.display = 'none';
-      selectionBox.style.left = selectionBoxState.x + 'px';
-      selectionBox.style.top = selectionBoxState.y + 'px';
-      selectionBox.style.width = selectionBoxState.width + 'px';
-      selectionBox.style.height = selectionBoxState.height + 'px';
-    } else {
-      // For other stages, hide the selection box
-      selectionBox.style.display = 'none';
+      // Redraw pixelated background
+      backgroundPixels.forEach(row => {
+        row.forEach(pixel => {
+          mapCtx.fillStyle = `rgb(${pixel.color.r}, ${pixel.color.g}, ${pixel.color.b})`;
+          mapCtx.fillRect(pixel.x, pixel.y, pixel.width, pixel.height);
+        });
+      });
     }
   }
   
@@ -389,8 +458,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Make the background slightly transparent
     mapCanvas.style.opacity = '0.3';
     
-    // Make selection box transition
-    selectionBox.style.opacity = '0';
+    // Note: selectionBox div removed - selection now handled by canvas only
     
     // Highlight matrix cells
     const ctx = gridCanvas.getContext('2d');
@@ -1381,8 +1449,7 @@ document.addEventListener('DOMContentLoaded', function() {
     predictionSection.style.transform = 'translateX(100%)';
     mapCanvas.style.opacity = '1'; // Ensure map is fully visible after reset
     gridCanvas.style.opacity = '1'; // Reset grid canvas opacity
-    selectionBox.style.display = 'none';
-    selectionBox.style.opacity = '1'; // Reset selection box opacity
+    // Note: selectionBox div removed - no longer needed
 
     // Reset stage indicators visually
     updateStageIndicators();
@@ -1408,7 +1475,7 @@ document.addEventListener('DOMContentLoaded', function() {
        updateStageIndicators(); 
      }, 500); // Short delay after pixel background is drawn
      
-     // Stage 1 -> 2: Extract Data & Go directly to RGB decomposition
+     // Stage 1 -> 2: Extract Data & Go directly to RGB decomposition (longer delay)
      setTimeout(() => {
        predictionStage = 2; 
        updateStageIndicators(); 
@@ -1417,7 +1484,7 @@ document.addEventListener('DOMContentLoaded', function() {
        vectorSection.style.transform = 'translateX(0)';
        
        animateVectorization(); // This now goes directly to RGB with no intermediate steps
-     }, 2000); // Reduced from 2500 to 2000 for faster transition
+     }, 4000); // Increased from 2000 to 4000 for longer appreciation of selection
   }
 
   // Function to animate neural network with proper activation pattern
