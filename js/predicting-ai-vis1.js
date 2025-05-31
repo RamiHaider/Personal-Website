@@ -152,8 +152,8 @@ document.addEventListener('DOMContentLoaded', function() {
   let currentConvStep = 0;
   let finalFeatureVector = [];
   
-  // DEVELOPMENT MODE - Set to true to skip directly to neural network
-  const DEVELOPMENT_MODE = true;
+  // CONFIGURATION - FULL ANIMATION MODE
+  const DEVELOPMENT_MODE = false; // Show full CNN pipeline
   
   // Hard-coded feature vector for development (216 values)
   const HARDCODED_FEATURE_VECTOR = Array.from({ length: 216 }, (_, i) => {
@@ -850,8 +850,10 @@ document.addEventListener('DOMContentLoaded', function() {
       { from: 3, to: 4, name: 'Hidden3 → Output' }
     ];
     
-    // Generate realistic feature vector using our hardcoded data
-    const featureVector = HARDCODED_FEATURE_VECTOR.slice(0, 60); // Use first 60 values
+    // Generate realistic feature vector using our actual flattened data
+    const featureVector = finalFeatureVector.length > 0 ? 
+      finalFeatureVector.slice(0, 60) : // Use actual CNN flattened data
+      HARDCODED_FEATURE_VECTOR.slice(0, 60); // Fallback to hardcoded if not available
     
     function getLayerPositions(layerIndex) {
       const layer = layers[layerIndex];
@@ -988,21 +990,14 @@ document.addEventListener('DOMContentLoaded', function() {
           const cellHeight = columnHeight / layer.visualNeurons;
           const startY = (height - columnHeight) / 2;
           
-          // Draw all visual cells with rainbow colors (matching our flattening scene)
+          // Draw all visual cells with grayscale intensity (matching flattening scene)
           for (let i = 0; i < layer.visualNeurons; i++) {
             const value = featureVector[i % featureVector.length];
             
-            // Use rainbow colors like in flattening scene
-            const section = Math.floor(i / 36); // 6 sections for 6 feature maps
-            const colors = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6', '#8b5cf6'];
-            const baseColor = colors[section % colors.length];
-            
-            // Apply intensity based on value
-            const intensity = Math.max(0.3, value);
-            ctx.fillStyle = baseColor;
-            ctx.globalAlpha = intensity;
+            // Use grayscale intensity like in flattening scene (no more rainbow colors)
+            const intensity = Math.min(255, Math.max(50, value * 200)); // Ensure visibility
+            ctx.fillStyle = `rgb(${intensity}, ${intensity}, ${intensity})`;
             ctx.fillRect(layer.x, startY + i * cellHeight, columnWidth, Math.max(1, cellHeight - 0.5));
-            ctx.globalAlpha = 1;
           }
           
           // Highlight active processing neurons
@@ -1115,7 +1110,14 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Main animation loop
     function animate() {
-      if (predictionStage < 4) return;
+      // Stop animation if we've moved past the neural network stage
+      if (predictionStage !== 4) {
+        if (state.animationFrame) {
+          cancelAnimationFrame(state.animationFrame);
+          state.animationFrame = null;
+        }
+        return;
+      }
       
       drawBackground();
       updateAnimation();
@@ -1123,7 +1125,8 @@ document.addEventListener('DOMContentLoaded', function() {
       drawConnections();
       drawLayers();
       
-      if (predictionStage >= 4) {
+      // Continue animation only if still in neural network stage
+      if (predictionStage === 4) {
         state.animationFrame = requestAnimationFrame(animate);
       }
     }
@@ -1618,7 +1621,7 @@ document.addEventListener('DOMContentLoaded', function() {
              console.error("Cannot restart, backgroundImage object not found.");
           }
         }
-      }, 7000); // Show prediction results for 7 seconds before resetting
+      }, 3000); // Show prediction results for 3 seconds before resetting
     }
   }
   
@@ -3900,12 +3903,14 @@ document.addEventListener('DOMContentLoaded', function() {
       ctx.lineWidth = 2;
       ctx.strokeRect(vectorX, vectorStartY, vectorWidth, vectorHeight);
       
-      // Draw flattened elements in the vector
+      // Draw flattened elements in the vector - matching neural network style
       const cellHeight = vectorHeight / totalElements;
       flattenedVector.forEach((element, index) => {
         const y = vectorStartY + index * cellHeight;
         const intensity = Math.min(255, element.value * 200);
-        ctx.fillStyle = element.color;
+        
+        // Use grayscale intensity like neural network input (not colors)
+        ctx.fillStyle = `rgb(${intensity}, ${intensity}, ${intensity})`;
         ctx.fillRect(vectorX + 2, y, vectorWidth - 4, Math.max(1, cellHeight - 0.5));
       });
       
@@ -3931,7 +3936,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             flattenedVector.push({
               value: value,
-              color: mapColors[currentMapIndex],
+              color: '#ffffff', // Remove color coding - use white for all cells
               mapIndex: currentMapIndex,
               cellIndex: currentCellIndex
             });
