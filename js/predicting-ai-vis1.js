@@ -152,6 +152,16 @@ document.addEventListener('DOMContentLoaded', function() {
   let currentConvStep = 0;
   let finalFeatureVector = [];
   
+  // DEVELOPMENT MODE - Set to true to skip directly to neural network
+  const DEVELOPMENT_MODE = true;
+  
+  // Hard-coded feature vector for development (216 values)
+  const HARDCODED_FEATURE_VECTOR = Array.from({ length: 216 }, (_, i) => {
+    // Create realistic feature values with some variation
+    const baseValue = 0.3 + Math.sin(i * 0.1) * 0.3 + Math.random() * 0.4;
+    return Math.max(0, Math.min(1, baseValue));
+  });
+  
   // Define CNN kernels (3x3)
   const cnnKernels = [
     {
@@ -180,6 +190,24 @@ document.addEventListener('DOMContentLoaded', function() {
   backgroundImage.onload = () => {
     console.log("Background image loaded.");
     imageLoaded = true;
+    
+    // DEVELOPMENT MODE: Skip directly to neural network
+    if (DEVELOPMENT_MODE) {
+      console.log("DEVELOPMENT MODE: Skipping to neural network visualization");
+      
+      // Set up for neural network directly
+      finalFeatureVector = [...HARDCODED_FEATURE_VECTOR];
+      predictionStage = 4; // Neural Network stage
+      updateStageIndicators();
+      
+      // Show the flattening scene briefly, then go to neural network
+      setTimeout(() => {
+        showDevelopmentFlattening();
+      }, 1000);
+      
+      return; // Skip normal pipeline
+    }
+    
     drawImageBackground(); // Draw the full image first
 
     // After showing the image, convert it to pixels and start the animation sequence
@@ -782,7 +810,7 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log(`Using Red channel input matrix: ${inputMatrix.length}x${inputMatrix[0]?.length || 0}`);
   }
   
-  // Neural network animation
+  // Neural network animation - COMPLETELY REPLACED with sophisticated version
   function animateNeuralNetwork() {
     if (predictionStage < 4) return;
     
@@ -790,268 +818,330 @@ document.addEventListener('DOMContentLoaded', function() {
     const width = neuralNetworkCanvas.width;
     const height = neuralNetworkCanvas.height;
     
-    let animationFrame;
+    // SOPHISTICATED NEURAL NETWORK ARCHITECTURE
+    const layers = [
+      { name: 'input', neurons: 60, visualNeurons: 216, x: 80, color: '#3b82f6' },
+      { name: 'hidden1', neurons: 30, visualNeurons: 96, x: 240, color: '#06b6d4' },
+      { name: 'hidden2', neurons: 32, visualNeurons: 32, x: 400, color: '#14b8a6' },
+      { name: 'hidden3', neurons: 12, visualNeurons: 12, x: 560, color: '#10b981' },
+      { name: 'output', neurons: 3, visualNeurons: 3, x: 720, color: '#ec4899' }
+    ];
     
-    const animate = () => {
-      ctx.clearRect(0, 0, width, height);
+    // Animation state for new system
+    if (!window.neuralAnimationState) {
+      window.neuralAnimationState = {
+        currentInputIndex: 0,
+        currentLayerPair: 0,
+        animationStep: 0,
+        cascadeSpeed: 4,
+        activeConnections: [],
+        connectionIdCounter: 0,
+        animationFrame: null
+      };
+    }
+    
+    const state = window.neuralAnimationState;
+    
+    // Layer pairs for cascade animation
+    const layerPairs = [
+      { from: 0, to: 1, name: 'Input → Hidden1' },
+      { from: 1, to: 2, name: 'Hidden1 → Hidden2' },
+      { from: 2, to: 3, name: 'Hidden2 → Hidden3' },
+      { from: 3, to: 4, name: 'Hidden3 → Output' }
+    ];
+    
+    // Generate realistic feature vector using our hardcoded data
+    const featureVector = HARDCODED_FEATURE_VECTOR.slice(0, 60); // Use first 60 values
+    
+    function getLayerPositions(layerIndex) {
+      const layer = layers[layerIndex];
+      const positions = [];
       
-      // Define neural network layers - now we show input as a compact vector
-      const layers = [
-        { name: 'input', neurons: 128, x: 80, color: '#3b82f6', compact: true }, // Compact input representation
-        { name: 'hidden1', neurons: 6, x: 240, color: '#06b6d4' },
-        { name: 'hidden2', neurons: 3, x: 400, color: '#14b8a6' },
-        { name: 'hidden3', neurons: 6, x: 560, color: '#10b981' },
-        { name: 'output', neurons: 3, x: 720, color: '#ec4899' }
-      ];
+      if (layerIndex === 0) {
+        // Input: visual column but actual processing count
+        const columnWidth = 24;
+        const columnHeight = 400; // Slightly smaller to fit our canvas
+        const cellHeight = columnHeight / layer.visualNeurons;
+        const startY = (height - columnHeight) / 2;
+        
+        for (let i = 0; i < layer.neurons; i++) {
+          // Map actual neurons to visual positions
+          const visualIndex = Math.floor((i / layer.neurons) * layer.visualNeurons);
+          positions.push({
+            x: layer.x,
+            y: startY + visualIndex * cellHeight,
+            width: columnWidth,
+            height: Math.max(2, cellHeight * 3), // Make cells slightly larger
+            visualY: startY + visualIndex * cellHeight
+          });
+        }
+      } else {
+        // Hidden/Output: spread vertically
+        const startY = 80;
+        const endY = height - 80;
+        const spacing = layer.neurons > 1 ? (endY - startY) / (layer.neurons - 1) : 0;
+        
+        for (let i = 0; i < layer.neurons; i++) {
+          positions.push({
+            x: layer.x,
+            y: startY + i * spacing,
+            width: 14,
+            height: 14
+          });
+        }
+      }
       
-      // Get currently active nodes and connections
-      const currentNodeIndices = {
-        input: activeNeuronIndices.input,
-        hidden1: activeNeuronIndices.hidden1,
-        hidden2: activeNeuronIndices.hidden2,
-        hidden3: activeNeuronIndices.hidden3,
-        output: activeNeuronIndices.output
+      return positions;
+    }
+    
+    function addConnection(fromPos, toPos, fromColor, toColor) {
+      const connection = {
+        id: state.connectionIdCounter++,
+        fromX: fromPos.x + fromPos.width,
+        fromY: fromPos.y + fromPos.height/2,
+        toX: toPos.x,
+        toY: toPos.y + toPos.height/2,
+        fromColor: fromColor,
+        toColor: toColor,
+        age: 0,
+        maxAge: 600 // Persist for 10 seconds at 60fps
       };
       
-      // Add a background glow effect to active neural network
-      ctx.fillStyle = 'rgba(10, 15, 25, 0.3)';
-      ctx.fillRect(0, 0, width, height);
-      
-      // Draw grid lines
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
-      ctx.lineWidth = 0.5;
-      
-      // Horizontal grid lines
-      for (let i = 50; i < height - 50; i += 30) {
-        ctx.beginPath();
-        ctx.moveTo(0, i);
-        ctx.lineTo(width, i);
-        ctx.stroke();
-      }
-      
-      // Vertical grid lines
-      for (let i = 0; i < width; i += 60) {
-        ctx.beginPath();
-        ctx.moveTo(i, 0);
-        ctx.lineTo(i, height);
-        ctx.stroke();
-      }
-      
-      // Draw connections - simplified for 128 inputs
-      layers.forEach((layer, layerIndex) => {
-        if (layerIndex === 0) return; // Skip input layer connections (handle separately)
+      state.activeConnections.push(connection);
+    }
+    
+    function updateConnections() {
+      // Age all connections and remove old ones
+      state.activeConnections = state.activeConnections.filter(conn => {
+        conn.age++;
+        return conn.age < conn.maxAge;
+      });
+    }
+    
+    function drawConnections() {
+      state.activeConnections.forEach(conn => {
+        // Static alpha - no glowing effect
+        const alpha = Math.max(0.1, 1 - (conn.age / conn.maxAge));
         
-        const prevLayer = layers[layerIndex - 1];
-        const sourceActive = currentNodeIndices[prevLayer.name];
-        const targetActive = currentNodeIndices[layer.name];
+        // Create gradient
+        const gradient = ctx.createLinearGradient(
+          conn.fromX, conn.fromY,
+          conn.toX, conn.toY
+        );
+        gradient.addColorStop(0, conn.fromColor);
+        gradient.addColorStop(1, conn.toColor);
         
-        if (sourceActive >= 0) {
-          // For input layer, draw from compact representation
-          if (prevLayer.name === 'input') {
-            const inputCenterY = height / 2;
-            
-            for (let j = 0; j < layer.neurons; j++) {
-              const targetX = layer.x;
-              
-              let targetVerticalPadding = 40;
-              if (layer.name === 'hidden2' || layer.name === 'output') {
-                targetVerticalPadding = 90;
-              } else if (layer.name === 'hidden1' || layer.name === 'hidden3') {
-                targetVerticalPadding = 70;
-              }
-              const targetAvailableHeight = height - (targetVerticalPadding * 2);
-              const targetSpacing = layer.neurons > 1 ? targetAvailableHeight / (layer.neurons - 1) : targetAvailableHeight;
-              const targetY = targetVerticalPadding + (targetSpacing * j);
-              
-              const isTargetCurrentlyActivating = j === targetActive;
-              const isTargetAlreadyActive = j < targetActive;
-              const isTargetVisible = isTargetCurrentlyActivating || isTargetAlreadyActive;
-              
-              if (isTargetVisible) {
-                const gradient = ctx.createLinearGradient(prevLayer.x, inputCenterY, targetX, targetY);
-                gradient.addColorStop(0, prevLayer.color);
-                gradient.addColorStop(1, layer.color);
-                
-                ctx.beginPath();
-                ctx.moveTo(prevLayer.x + 40, inputCenterY); // From right edge of input representation
-                ctx.lineTo(targetX, targetY);
-                ctx.strokeStyle = gradient;
-                ctx.lineWidth = 1.5;
-                ctx.stroke();
-              }
-            }
-          } else {
-            // Normal connections between hidden layers
-            const sourceX = prevLayer.x;
-            
-            let sourceVerticalPadding = 40;
-            if (prevLayer.name === 'hidden2' || prevLayer.name === 'output') {
-                sourceVerticalPadding = 90;
-            } else if (prevLayer.name === 'hidden1' || layer.name === 'hidden3') {
-                sourceVerticalPadding = 70;
-            }
-            const sourceAvailableHeight = height - (sourceVerticalPadding * 2);
-            const sourceSpacing = prevLayer.neurons > 1 ? sourceAvailableHeight / (prevLayer.neurons - 1) : sourceAvailableHeight;
-            const sourceY = sourceVerticalPadding + (sourceSpacing * sourceActive);
-            
-            for (let j = 0; j < layer.neurons; j++) {
-              const targetX = layer.x;
-              
-              let targetVerticalPadding = 40;
-              if (layer.name === 'hidden2' || layer.name === 'output') {
-                targetVerticalPadding = 90;
-              } else if (layer.name === 'hidden1' || layer.name === 'hidden3') {
-                targetVerticalPadding = 70;
-              }
-              const targetAvailableHeight = height - (targetVerticalPadding * 2);
-              const targetSpacing = layer.neurons > 1 ? targetAvailableHeight / (layer.neurons - 1) : targetAvailableHeight;
-              const targetY = targetVerticalPadding + (targetSpacing * j);
-              
-              const isTargetCurrentlyActivating = j === targetActive;
-              const isTargetAlreadyActive = j < targetActive;
-              const isTargetRelevant = isTargetCurrentlyActivating || isTargetAlreadyActive;
-              
-              if (isTargetRelevant) {
-                const gradient = ctx.createLinearGradient(sourceX, sourceY, targetX, targetY);
-                gradient.addColorStop(0, prevLayer.color);
-                gradient.addColorStop(1, layer.color);
-                
-                ctx.beginPath();
-                ctx.moveTo(sourceX, sourceY);
-                ctx.lineTo(targetX, targetY);
-                ctx.strokeStyle = gradient;
-                ctx.lineWidth = 1.5;
-                ctx.stroke();
-              }
-            }
-          }
-        }
+        ctx.strokeStyle = gradient;
+        ctx.lineWidth = 1.5;
+        ctx.globalAlpha = alpha * 0.6; // Consistent opacity
+        
+        // Draw connection line
+        ctx.beginPath();
+        ctx.moveTo(conn.fromX, conn.fromY);
+        ctx.lineTo(conn.toX, conn.toY);
+        ctx.stroke();
       });
       
-      // Draw layer representations
-      layers.forEach((layer, layerIndex) => {
-        const activeIndex = currentNodeIndices[layer.name];
+      ctx.globalAlpha = 1;
+    }
+    
+    function drawBackground() {
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(0, 0, width, height);
+      
+      // Subtle grid
+      ctx.strokeStyle = 'rgba(255, 255, 255, 0.02)';
+      ctx.lineWidth = 1;
+      for (let x = 0; x < width; x += 50) {
+        ctx.beginPath();
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, height);
+        ctx.stroke();
+      }
+    }
+    
+    function drawLayers() {
+      layers.forEach((layer, layerIdx) => {
+        const positions = getLayerPositions(layerIdx);
         
-        if (layer.compact && layer.name === 'input') {
-          // Draw compact input representation (128 features as a block)
-          const blockWidth = 80;
-          const blockHeight = 200;
-          const blockX = layer.x - blockWidth/2;
-          const blockY = height/2 - blockHeight/2;
+        // Layer title
+        ctx.fillStyle = layer.color;
+        ctx.font = 'bold 14px Arial'; // Slightly smaller for our canvas
+        ctx.textAlign = 'center';
+        
+        const layerNames = {
+          input: 'CNN Features',
+          hidden1: 'Hidden 1',
+          hidden2: 'Hidden 2', 
+          hidden3: 'Hidden 3',
+          output: 'Output'
+        };
+        
+        ctx.fillText(layerNames[layer.name], layer.x + (layerIdx === 0 ? 12 : 0), 35);
+        ctx.font = '10px Arial';
+        ctx.fillText(`(${layer.visualNeurons})`, layer.x + (layerIdx === 0 ? 12 : 0), 50);
+        
+        if (layerIdx === 0) {
+          // Draw full visual column first
+          const columnWidth = 24;
+          const columnHeight = 400;
+          const cellHeight = columnHeight / layer.visualNeurons;
+          const startY = (height - columnHeight) / 2;
           
-          // Draw background
-          ctx.fillStyle = 'rgba(59, 130, 246, 0.1)';
-          ctx.fillRect(blockX, blockY, blockWidth, blockHeight);
-          
-          // Draw active portion
-          if (activeIndex >= 0) {
-            const activePortion = (activeIndex + 1) / layer.neurons;
-            const activeHeight = blockHeight * activePortion;
+          // Draw all visual cells with rainbow colors (matching our flattening scene)
+          for (let i = 0; i < layer.visualNeurons; i++) {
+            const value = featureVector[i % featureVector.length];
             
-            ctx.fillStyle = layer.color;
-            ctx.fillRect(blockX, blockY + blockHeight - activeHeight, blockWidth, activeHeight);
+            // Use rainbow colors like in flattening scene
+            const section = Math.floor(i / 36); // 6 sections for 6 feature maps
+            const colors = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6', '#8b5cf6'];
+            const baseColor = colors[section % colors.length];
             
-            // Add glow effect
-            ctx.shadowColor = layer.color;
-            ctx.shadowBlur = 10;
-            ctx.fillRect(blockX, blockY + blockHeight - activeHeight, blockWidth, activeHeight);
-            ctx.shadowBlur = 0;
+            // Apply intensity based on value
+            const intensity = Math.max(0.3, value);
+            ctx.fillStyle = baseColor;
+            ctx.globalAlpha = intensity;
+            ctx.fillRect(layer.x, startY + i * cellHeight, columnWidth, Math.max(1, cellHeight - 0.5));
+            ctx.globalAlpha = 1;
           }
           
-          // Draw border
-          ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
-          ctx.lineWidth = 2;
-          ctx.strokeRect(blockX, blockY, blockWidth, blockHeight);
-          
-          // Draw feature count
-          ctx.fillStyle = '#ffffff';
-          ctx.font = '12px sans-serif';
-          ctx.textAlign = 'center';
-          ctx.fillText(`${layer.neurons} Features`, layer.x, blockY + blockHeight + 20);
-          ctx.fillText(`${activeIndex + 1}/${layer.neurons} Active`, layer.x, blockY + blockHeight + 35);
-          
-        } else {
-          // Draw normal neurons for hidden and output layers
-          let verticalPadding = 40;
-          
-          if (layer.name === 'hidden2' || layer.name === 'output') {
-            verticalPadding = 90;
-          } else if (layer.name === 'hidden1' || layer.name === 'hidden3') {
-            verticalPadding = 70;
-          }
-          
-          const availableHeight = height - (verticalPadding * 2);
-          const spacing = layer.neurons > 1 ? availableHeight / (layer.neurons - 1) : availableHeight;
-          
-          for (let i = 0; i < layer.neurons; i++) {
-            const x = layer.x;
-            const y = verticalPadding + (spacing * i);
-            
-            const isActive = i <= activeIndex;
-            
-            const baseSize = layer.name === 'output' ? 10 : 6;
-            const size = isActive ? baseSize * 1.2 : baseSize;
-            
-            ctx.beginPath();
-            ctx.arc(x, y, size, 0, Math.PI * 2);
-            ctx.fillStyle = isActive ? layer.color : 'rgba(255, 255, 255, 0.3)';
+          // Highlight active processing neurons
+          positions.forEach((pos, i) => {
+            const pair = layerPairs[state.currentLayerPair] || layerPairs[0];
+            const isActive = (pair.from === layerIdx) && 
+                            (i === state.currentInputIndex % layer.neurons);
             
             if (isActive) {
-              ctx.shadowColor = layer.color;
-              ctx.shadowBlur = 10;
+              ctx.strokeStyle = layer.color;
+              ctx.lineWidth = 3;
+              ctx.strokeRect(pos.x - 2, pos.y - 1, pos.width + 4, pos.height + 2);
+            }
+          });
+          
+          // Column border
+          ctx.strokeStyle = layer.color;
+          ctx.lineWidth = 2;
+          ctx.strokeRect(layer.x - 3, startY - 3, columnWidth + 6, columnHeight + 6);
+          
+        } else {
+          // Hidden/Output layers: circular neurons
+          positions.forEach((pos, i) => {
+            const pair = layerPairs[state.currentLayerPair] || layerPairs[0];
+            const isTargetLayer = pair.to === layerIdx;
+            const isActive = isTargetLayer && (state.animationStep % 15) < 8;
+            
+            ctx.beginPath();
+            ctx.arc(pos.x, pos.y + pos.height/2, pos.width/2, 0, Math.PI * 2);
+            
+            if (isActive) {
+              ctx.fillStyle = layer.color;
             } else {
-              ctx.shadowBlur = 0;
+              ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
             }
             
             ctx.fill();
-            ctx.shadowBlur = 0;
             
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+            // Border
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
             ctx.lineWidth = 1;
             ctx.stroke();
-          }
+          });
         }
-        
-        // Add layer label with improved styling
-        const labelY = 25;
-        
-        ctx.fillStyle = 'rgba(17, 24, 39, 0.8)';
-        ctx.fillRect(layer.x - 70, labelY - 20, 140, 30);
-
-        ctx.fillStyle = layer.name === 'output' ? '#ec4899' : '#22d3ee';
-        ctx.font = '1rem sans-serif';
-        ctx.textAlign = 'center';
-        
-        const displayName = layer.name === 'input' ? 'CNN Features' :
-                           layer.name === 'hidden1' ? 'Hidden Layer 1' :
-                           layer.name === 'hidden2' ? 'Hidden Layer 2' :
-                           layer.name === 'hidden3' ? 'Hidden Layer 3' : 
-                           'Output';
-        
-        ctx.fillText(displayName, layer.x, labelY);
       });
-      
-      // Continue animation
-      if (predictionStage >= 4) {
-        animationFrame = requestAnimationFrame(animate);
-      }
-    };
-    
-    animationFrame = requestAnimationFrame(animate);
-    
-    // Create cleanup handler
-    const cleanup = () => {
-      if (animationFrame) {
-        cancelAnimationFrame(animationFrame);
-        animationFrame = null;
-      }
-    };
-    
-    if (window.animationCleanupHandlers) {
-      window.animationCleanupHandlers.push(cleanup);
     }
     
-    return cleanup;
+    function updateAnimation() {
+      state.animationStep++;
+      
+      // Move to next input neuron every few frames
+      if (state.animationStep % state.cascadeSpeed === 0) {
+        const pair = layerPairs[state.currentLayerPair] || layerPairs[0];
+        const fromPositions = getLayerPositions(pair.from);
+        const toPositions = getLayerPositions(pair.to);
+        const fromLayer = layers[pair.from];
+        const toLayer = layers[pair.to];
+        
+        // Current active input neuron
+        const activeInputIdx = state.currentInputIndex % fromLayer.neurons;
+        
+        if (activeInputIdx < fromPositions.length) {
+          const fromPos = fromPositions[activeInputIdx];
+          
+          // Add connections from current input to ALL neurons in target layer
+          toPositions.forEach((toPos) => {
+            addConnection(fromPos, toPos, fromLayer.color, toLayer.color);
+          });
+        }
+        
+        state.currentInputIndex++;
+        
+        // If we've gone through all inputs in current layer, move to next layer pair
+        if (state.currentInputIndex >= fromLayer.neurons) {
+          state.currentInputIndex = 0;
+          state.currentLayerPair++;
+          
+          // Check if we've completed all layer pairs (ONE FORWARD PASS ONLY)
+          if (state.currentLayerPair >= layerPairs.length) {
+            // ANIMATION COMPLETE - immediately show prediction results
+            console.log("Neural network forward pass complete!");
+            
+            // Stop the animation loop
+            if (state.animationFrame) {
+              cancelAnimationFrame(state.animationFrame);
+              state.animationFrame = null;
+            }
+            
+            // Immediately transition to prediction results (no delay)
+            setTimeout(() => {
+              if (predictionStage === 4) {
+                predictionStage = 5;
+                predictionResults = [
+                  { type: 'Gold', probability: 0.78, color: '#FFD700' },
+                  { type: 'Copper', probability: 0.52, color: '#B87333' },
+                  { type: 'Iron', probability: 0.31, color: '#a52a2a' }
+                ];
+                predictionSection.style.transform = 'translateX(0)';
+                updateStageIndicators();
+                showPredictionResults();
+                scheduleReset();
+              }
+            }, 500); // Very short delay just for visual smoothness
+            
+            return; // Exit the animation loop
+          }
+        }
+      }
+    }
+    
+    // Main animation loop
+    function animate() {
+      if (predictionStage < 4) return;
+      
+      drawBackground();
+      updateAnimation();
+      updateConnections();
+      drawConnections();
+      drawLayers();
+      
+      if (predictionStage >= 4) {
+        state.animationFrame = requestAnimationFrame(animate);
+      }
+    }
+    
+    // Start animation if not already running
+    if (!state.animationFrame) {
+      animate();
+    }
+    
+    // Cleanup function
+    window.neuralNetworkCleanup = () => {
+      if (state.animationFrame) {
+        cancelAnimationFrame(state.animationFrame);
+        state.animationFrame = null;
+      }
+      state.activeConnections = [];
+      window.neuralAnimationState = null;
+    };
   }
   
   // Show prediction results
@@ -1294,33 +1384,32 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Function to animate neural network with proper activation pattern
   function animateNeuralNetworkSequence() {
-    // Define layer info - updated for CNN input
+    // Define layer info - updated for flattened CNN features
     const layerInfo = [
-      { name: 'input', size: 128 },  // 128 features from CNN
-      { name: 'hidden1', size: 6 }, 
-      { name: 'hidden2', size: 3 }, 
-      { name: 'hidden3', size: 6 },
-      { name: 'output', size: 3 }
+      { name: 'input', size: 216 },    // 216 features from flattened 6 feature maps
+      { name: 'hidden1', size: 96 },   // First hidden layer
+      { name: 'hidden2', size: 32 },   // Second hidden layer  
+      { name: 'hidden3', size: 12 },   // Third hidden layer
+      { name: 'output', size: 3 }      // Output layer (3 mineral types)
     ];
-    
-    // For 128 inputs, we'll use a simplified visualization
-    // Instead of showing every connection, we'll show representative ones
     
     // Check if we have finalFeatureVector from CNN
     if (!finalFeatureVector || finalFeatureVector.length === 0) {
       console.log("CNN feature vector not ready, using placeholder");
       // Create placeholder vector
       finalFeatureVector = [];
-      for (let i = 0; i < 128; i++) {
+      for (let i = 0; i < 216; i++) {
         finalFeatureVector.push(Math.random() * 0.8 + 0.1);
       }
     }
     
+    console.log(`Neural network starting with ${finalFeatureVector.length} input features`);
+    
     // Create a simplified animation that shows groups of inputs activating
     const animationSteps = [];
     
-    // Group inputs into batches for visualization
-    const inputBatchSize = 16; // Show 16 inputs at a time
+    // Group inputs into batches for visualization (smaller batches for 216 inputs)
+    const inputBatchSize = 12; // Show 12 inputs at a time for smoother animation
     const numBatches = Math.ceil(layerInfo[0].size / inputBatchSize);
     
     // 1. Activate inputs in batches and connect to hidden1
@@ -1340,7 +1429,7 @@ document.addEventListener('DOMContentLoaded', function() {
         });
       }
       
-      // Reset hidden1 before next batch
+      // Reset hidden1 before next batch (except last batch)
       if (batch < numBatches - 1) {
         animationSteps.push({
           type: 'reset',
@@ -1349,7 +1438,7 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     }
     
-    // 2. Continue with normal hidden layer processing
+    // 2. Hidden1 → Hidden2 connections
     for (let hidden1Node = 0; hidden1Node < layerInfo[1].size; hidden1Node++) {
       animationSteps.push({
         type: 'activate',
@@ -1373,7 +1462,7 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     }
     
-    // 3. Hidden2 to Hidden3
+    // 3. Hidden2 → Hidden3 connections
     for (let hidden2Node = 0; hidden2Node < layerInfo[2].size; hidden2Node++) {
       animationSteps.push({
         type: 'activate',
@@ -1397,7 +1486,7 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     }
     
-    // 4. Hidden3 to Output
+    // 4. Hidden3 → Output connections
     for (let hidden3Node = 0; hidden3Node < layerInfo[3].size; hidden3Node++) {
       animationSteps.push({
         type: 'activate',
@@ -1430,17 +1519,18 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentStep = 0;
     let currentInputBatch = 0;
     
-    // SPEED CONTROL: Much faster for 128 inputs
-    let initialStepDelay = 15; // Faster initial speed
-    let midStageDelay = 8;     
-    let lateStageDelay = 3;    
+    // SPEED CONTROL: Adjusted for 216 inputs and new layer structure
+    let initialStepDelay = 8;  // Faster initial speed for 216 inputs
+    let midStageDelay = 5;     // Medium speed for hidden layers
+    let lateStageDelay = 15;   // Slower for final output layer
     let stepDelay = initialStepDelay;
     
     const processNextStep = () => {
-      if (currentStep > animationSteps.length * 0.2) {
+      // Adjust speed based on progress
+      if (currentStep > animationSteps.length * 0.3) {
         stepDelay = midStageDelay;
       }
-      if (currentStep > animationSteps.length * 0.5) {
+      if (currentStep > animationSteps.length * 0.8) {
         stepDelay = lateStageDelay;
       }
       
@@ -1449,9 +1539,9 @@ document.addEventListener('DOMContentLoaded', function() {
         setTimeout(() => {
           predictionStage = 5; // Final prediction stage
           predictionResults = [
-            { type: 'Gold', probability: 0.82, color: '#FFD700' },
-            { type: 'Copper', probability: 0.47, color: '#B87333' },
-            { type: 'Iron', probability: 0.23, color: '#a52a2a' }
+            { type: 'Gold', probability: 0.78, color: '#FFD700' },
+            { type: 'Copper', probability: 0.52, color: '#B87333' },
+            { type: 'Iron', probability: 0.31, color: '#a52a2a' }
           ];
           predictionSection.style.transform = 'translateX(0)';
           updateStageIndicators();
@@ -1501,12 +1591,32 @@ document.addEventListener('DOMContentLoaded', function() {
       console.log("Scheduling visualization reset...");
       setTimeout(() => {
         console.log("Resetting visualization now.");
-        // Instead of runVisualization, trigger the image loading again
-        // which starts the whole process over
-        if (backgroundImage) {
-           backgroundImage.src = 'assets/images/geophysics-image.png'; // Reload image to restart
+        
+        if (DEVELOPMENT_MODE) {
+          // In development mode, restart from neural network
+          console.log("DEVELOPMENT MODE: Restarting from neural network");
+          
+          // Reset neural network state
+          activeNeuronIndices = { input: -1, hidden1: -1, hidden2: -1, hidden3: -1, output: -1 };
+          predictionStage = 4;
+          predictionResults = null;
+          
+          // Clear sections
+          predictionSection.style.transform = 'translateX(100%)';
+          visualizationWrapper.style.opacity = '0';
+          nnSection.style.opacity = '0';
+          
+          // Restart development sequence
+          setTimeout(() => {
+            showDevelopmentFlattening();
+          }, 1000);
         } else {
-           console.error("Cannot restart, backgroundImage object not found.");
+          // Normal mode - restart from image loading
+          if (backgroundImage) {
+             backgroundImage.src = 'assets/images/geophysics-image.png'; // Reload image to restart
+          } else {
+             console.error("Cannot restart, backgroundImage object not found.");
+          }
         }
       }, 7000); // Show prediction results for 7 seconds before resetting
     }
@@ -3633,7 +3743,12 @@ document.addEventListener('DOMContentLoaded', function() {
               
               console.log(`Final feature vector length: ${finalFeatureVector.length}`);
               
-              // COMMENTED OUT: Transition to neural network stage
+              // NEW: Transition to flattening animation
+              setTimeout(() => {
+                animateFeatureMapFlattening(pooledFeatureMaps);
+              }, 500); // Reduced from 2000ms for faster transition
+              
+              // COMMENTED OUT: Direct transition to neural network stage
               // Uncomment these lines when ready to continue to neural network visualization
               /*
               setTimeout(() => {
@@ -3659,4 +3774,249 @@ document.addEventListener('DOMContentLoaded', function() {
     }, 1000); // Initial delay before starting
   }
 
+  // NEW: Feature Map Flattening Animation
+  function animateFeatureMapFlattening(pooledFeatureMaps) {
+    const ctx = cnnCanvas.getContext('2d');
+    const width = cnnCanvas.width;
+    const height = cnnCanvas.height;
+    
+    console.log("Starting feature map flattening animation");
+    
+    // Calculate dimensions
+    const featureMapDim = pooledFeatureMaps[0].length; // Should be ~6x6 or similar
+    const totalElements = featureMapDim * featureMapDim * 6; // 6 maps
+    
+    console.log(`Flattening ${pooledFeatureMaps.length} maps of ${featureMapDim}x${featureMapDim} = ${totalElements} elements`);
+    
+    // Colors for the 6 maps
+    const mapColors = [
+      '#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6', '#8b5cf6'
+    ];
+    
+    // Calculate sizes for display
+    const mapCellSize = 12; // Size for feature map cells
+    const vectorCellSize = 2; // Very small size for column vector
+    const mapSpacing = 20;
+    
+    // Positions
+    const leftMargin = 50;
+    const mapStartY = 100;
+    const vectorX = width - 150; // Column vector on the right
+    const vectorStartY = 80;
+    const vectorWidth = 20;
+    const vectorHeight = height - 160; // Available height for vector
+    
+    let currentMapIndex = 0;
+    let currentCellIndex = 0;
+    let flattenedVector = [];
+    let animationStage = 0; // 0: show maps, 1: flatten one by one, 2: show complete vector, 3: transition
+    
+    const animateFlattening = () => {
+      // Clear canvas
+      ctx.clearRect(0, 0, width, height);
+      ctx.fillStyle = '#0f172a';
+      ctx.fillRect(0, 0, width, height);
+      
+      // Header
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 18px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('Flattening Feature Maps', width/2, 30);
+      
+      ctx.fillStyle = '#06b6d4';
+      ctx.font = '14px sans-serif';
+      ctx.fillText('Converting 2D feature maps to 1D vector for fully connected layers', width/2, 55);
+      
+      // Draw the 6 feature maps on the left
+      for (let mapIdx = 0; mapIdx < 6; mapIdx++) {
+        const subCol = Math.floor(mapIdx / 3);
+        const row = mapIdx % 3;
+        
+        const mapX = leftMargin + subCol * (featureMapDim * mapCellSize + mapSpacing);
+        const mapY = mapStartY + row * (featureMapDim * mapCellSize + mapSpacing);
+        
+        // Map label
+        ctx.fillStyle = mapColors[mapIdx];
+        ctx.font = 'bold 12px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(`Map ${mapIdx + 1}`, mapX + (featureMapDim * mapCellSize)/2, mapY - 8);
+        
+        // Draw map cells
+        pooledFeatureMaps[mapIdx].forEach((row, i) => {
+          row.forEach((value, j) => {
+            const x = mapX + j * mapCellSize;
+            const y = mapY + i * mapCellSize;
+            
+            // Highlight cells that have been flattened
+            let isFlattened = false;
+            if (animationStage >= 1) {
+              if (mapIdx < currentMapIndex) {
+                isFlattened = true; // Entire previous maps are flattened
+              } else if (mapIdx === currentMapIndex) {
+                const cellPosition = i * featureMapDim + j;
+                isFlattened = cellPosition < currentCellIndex;
+              }
+            }
+            
+            const intensity = Math.min(255, value * 200);
+            if (isFlattened) {
+              // Dimmed/highlighted for flattened cells
+              ctx.fillStyle = `rgba(${intensity}, ${intensity}, ${intensity}, 0.3)`;
+            } else {
+              ctx.fillStyle = `rgba(${intensity}, ${intensity}, ${intensity}, 0.8)`;
+            }
+            ctx.fillRect(x, y, mapCellSize - 1, mapCellSize - 1);
+            
+            // Border
+            if (isFlattened) {
+              ctx.strokeStyle = mapColors[mapIdx];
+              ctx.lineWidth = 2;
+            } else {
+              ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+              ctx.lineWidth = 0.5;
+            }
+            ctx.strokeRect(x, y, mapCellSize - 1, mapCellSize - 1);
+          });
+        });
+        
+        // Map outline
+        ctx.strokeStyle = mapColors[mapIdx];
+        ctx.lineWidth = 2;
+        ctx.strokeRect(mapX, mapY, featureMapDim * mapCellSize, featureMapDim * mapCellSize);
+      }
+      
+      // Draw column vector on the right
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 14px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('Flattened Vector', vectorX + vectorWidth/2, vectorStartY - 25);
+      ctx.fillText(`(${totalElements} × 1)`, vectorX + vectorWidth/2, vectorStartY - 8);
+      
+      // Vector background
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+      ctx.fillRect(vectorX, vectorStartY, vectorWidth, vectorHeight);
+      
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(vectorX, vectorStartY, vectorWidth, vectorHeight);
+      
+      // Draw flattened elements in the vector
+      const cellHeight = vectorHeight / totalElements;
+      flattenedVector.forEach((element, index) => {
+        const y = vectorStartY + index * cellHeight;
+        const intensity = Math.min(255, element.value * 200);
+        ctx.fillStyle = element.color;
+        ctx.fillRect(vectorX + 2, y, vectorWidth - 4, Math.max(1, cellHeight - 0.5));
+      });
+      
+      // Animation stages
+      if (animationStage === 0) {
+        // Initial display - show all maps
+        setTimeout(() => {
+          animationStage = 1;
+          animateFlattening();
+        }, 800); // Reduced from 2000ms to 800ms for faster start
+        
+      } else if (animationStage === 1) {
+        // Flattening animation
+        if (currentMapIndex < 6) {
+          const currentMap = pooledFeatureMaps[currentMapIndex];
+          const mapSize = featureMapDim * featureMapDim;
+          
+          if (currentCellIndex < mapSize) {
+            // Add current cell to flattened vector
+            const row = Math.floor(currentCellIndex / featureMapDim);
+            const col = currentCellIndex % featureMapDim;
+            const value = currentMap[row][col];
+            
+            flattenedVector.push({
+              value: value,
+              color: mapColors[currentMapIndex],
+              mapIndex: currentMapIndex,
+              cellIndex: currentCellIndex
+            });
+            
+            currentCellIndex++;
+            setTimeout(animateFlattening, 15); // Fast flattening
+          } else {
+            // Move to next map
+            currentMapIndex++;
+            currentCellIndex = 0;
+            setTimeout(animateFlattening, 300); // Brief pause between maps
+          }
+        } else {
+          // All maps flattened
+          animationStage = 2;
+          setTimeout(animateFlattening, 1000);
+        }
+        
+      } else if (animationStage === 2) {
+        // Show complete vector
+        ctx.fillStyle = '#10b981';
+        ctx.font = 'bold 16px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('Flattening Complete!', width/2, height - 40);
+        
+        ctx.fillStyle = '#ffffff';
+        ctx.font = '12px sans-serif';
+        ctx.fillText(`${totalElements} features ready for fully connected layers`, width/2, height - 20);
+        
+        // Show current flattening progress
+        ctx.fillStyle = '#06b6d4';
+        ctx.font = 'bold 12px sans-serif';
+        ctx.textAlign = 'left';
+        if (currentMapIndex < 6) {
+          ctx.fillText(`Flattening Map ${currentMapIndex + 1}...`, leftMargin, height - 60);
+          ctx.fillText(`Progress: ${flattenedVector.length}/${totalElements}`, leftMargin, height - 40);
+        }
+        
+        setTimeout(() => {
+          animationStage = 3;
+          animateFlattening();
+        }, 500); // Reduced from 2000ms for faster transition
+        
+      } else if (animationStage === 3) {
+        // Transition to neural network
+        console.log("Flattening complete, transitioning to neural network");
+        
+        // Update finalFeatureVector with our flattened data
+        finalFeatureVector = flattenedVector.map(element => element.value);
+        
+        setTimeout(() => {
+          predictionStage = 4; // Neural Network stage
+          updateStageIndicators();
+          
+          // Hide CNN wrapper and show NN section
+          cnnWrapper.style.opacity = '0';
+          setTimeout(() => {
+            visualizationWrapper.style.opacity = '1';
+            nnSection.style.opacity = '1';
+            nnSection.style.transform = 'scale(1)';
+            // NEW: Both development and production mode use the sophisticated neural network
+            animateNeuralNetwork();
+          }, 300); // Reduced from 500ms to 300ms  
+        }, 300); // Reduced from 1000ms to 300ms
+      }
+    };
+    
+    animateFlattening();
+  }
+
+  // DEVELOPMENT MODE: Use the existing flattened vector scene  
+  function showDevelopmentFlattening() {
+    console.log("Using existing flattened vector scene");
+    
+    // Create mock pooled feature maps for the existing animation
+    const mockPooledFeatureMaps = Array(6).fill().map((_, mapIdx) => {
+      const dim = 6; // 6x6 feature maps
+      return Array(dim).fill().map(() => 
+        Array(dim).fill().map(() => Math.random() * 0.8 + 0.1)
+      );
+    });
+    
+    // Use the existing flattening animation (it already has the rainbow colors)
+    animateFeatureMapFlattening(mockPooledFeatureMaps);
+  }
+  
+  // REMOVED OLD animateSimplifiedNeuralNetwork function - replaced with sophisticated version
 }); 
