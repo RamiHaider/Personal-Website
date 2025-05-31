@@ -2020,7 +2020,7 @@ document.addEventListener('DOMContentLoaded', function() {
       // Draw ReLU function indicator between columns 1 and 2
       if (animationStage >= 1) {
         const graphX = (col1X + featureMapSize + col2X) / 2 - 40;
-        const graphY = height/2 - 15;
+        const graphY = height/2 - 50; // Moved up to avoid matrices
         
         ctx.fillStyle = '#10b981';
         ctx.font = 'bold 12px sans-serif';
@@ -2033,7 +2033,7 @@ document.addEventListener('DOMContentLoaded', function() {
       // Draw max pooling indicator between columns 2 and 3
       if (animationStage >= 3) {
         const arrowX = (col2X + featureMapSize + col3X) / 2 - 40;
-        const arrowY = height/2 - 15;
+        const arrowY = height/2 - 50; // Moved up to avoid matrices
         
         ctx.fillStyle = '#f59e0b';
         ctx.font = 'bold 12px sans-serif';
@@ -2164,7 +2164,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
       });
       
-      // Draw arrows
+      // Draw arrows (REMOVED - arrows not needed)
+      /*
       if (animationStage >= 1) {
         // Arrow from Original to ReLU'd
         const arrowY = height/2;
@@ -2188,29 +2189,30 @@ document.addEventListener('DOMContentLoaded', function() {
         ctx.stroke();
         drawArrowHead(ctx, col3X - 10, arrowY, 0);
       }
+      */
       
       // Handle animation progression
       if (animationStage === 0) {
         // Stage 1: Show original, then transition to ReLU'd
+        console.log("ReLU Animation Stage 0 → 1");
         setTimeout(() => {
           animationStage = 1;
           animateScene();
         }, 1500);
-        
       } else if (animationStage === 1) {
         // Stage 2: Show ReLU'd, then prepare for pooling
+        console.log("ReLU Animation Stage 1 → 2");
         setTimeout(() => {
           animationStage = 2;
           animateScene();
         }, 1500);
-        
       } else if (animationStage === 2) {
         // Stage 3: Wait a moment, then start pooling animation
+        console.log("ReLU Animation Stage 2 → 3");
         setTimeout(() => {
           animationStage = 3;
           animateScene();
         }, 1000);
-        
       } else if (animationStage === 3) {
         // Stage 4: Animate max pooling
         if (currentPoolPosition < poolPositions.length) {
@@ -3266,7 +3268,8 @@ document.addEventListener('DOMContentLoaded', function() {
         ctx.strokeRect(mapX, mapY, outputMapSize, outputMapSize);
       });
       
-      // Draw arrows between columns
+      // Draw arrows between columns (REMOVED - arrows not needed)
+      /*
       const arrowY = height/2;
       
       // Arrow from Input to Kernels
@@ -3290,6 +3293,7 @@ document.addEventListener('DOMContentLoaded', function() {
       ctx.lineTo(arrow2EndX, arrowY);
       ctx.stroke();
       drawArrowHead(ctx, arrow2EndX, arrowY, 0);
+      */
       
       currentPos++;
       setTimeout(animateConvolution, 25); // Slower animation - increased from 8ms to 25ms
@@ -3540,36 +3544,38 @@ document.addEventListener('DOMContentLoaded', function() {
           }
         }
         
-        // Draw arrows between columns - positioned above matrices to avoid overlap
+        // Draw arrows between columns (REMOVED - arrows not needed)
+        /*
         if (animationStage >= 1) {
           // Arrow from Original to ReLU'd - positioned higher
-          const arrow1Y = height/2 - 40;
-          const arrow1StartX = col1CenterX + mapSize/4 + 15; // Shorter arrow
-          const arrow1EndX = col2CenterX - mapSize/4 - 15; // Shorter arrow
+          const arrowY = height/2 - 50;
+          const arrow1StartX = col1CenterX + mapSize/2 + 20; // Use correct variable names
+          const arrow1EndX = col2CenterX - mapSize/2 - 20; // Use correct variable names
           
           ctx.strokeStyle = '#10b981';
           ctx.lineWidth = 2;
           ctx.beginPath();
-          ctx.moveTo(arrow1StartX, arrow1Y);
-          ctx.lineTo(arrow1EndX, arrow1Y);
+          ctx.moveTo(arrow1StartX, arrowY);
+          ctx.lineTo(arrow1EndX, arrowY);
           ctx.stroke();
-          drawArrowHead(ctx, arrow1EndX, arrow1Y, 0);
+          drawArrowHead(ctx, arrow1EndX, arrowY, 0);
         }
         
         if (animationStage >= 2) {
           // Arrow from ReLU'd to MaxPooled - positioned higher and shorter
-          const arrow2Y = height/2 - 40;
-          const arrow2StartX = col2CenterX + mapSize/4 + 15; // Shorter arrow
-          const arrow2EndX = col3CenterX - pooledMapSize/4 - 15; // Shorter arrow
+          const arrowY = height/2 - 50;
+          const arrow2StartX = col2CenterX + mapSize/2 + 20; // Use correct variable names
+          const arrow2EndX = col3CenterX - pooledMapSize/2 - 20; // Use correct variable names
           
           ctx.strokeStyle = '#f59e0b';
           ctx.lineWidth = 2;
           ctx.beginPath();
-          ctx.moveTo(arrow2StartX, arrow2Y);
-          ctx.lineTo(arrow2EndX, arrow2Y);
+          ctx.moveTo(arrow2StartX, arrowY);
+          ctx.lineTo(arrow2EndX, arrowY);
           ctx.stroke();
-          drawArrowHead(ctx, arrow2EndX, arrow2Y, 0);
+          drawArrowHead(ctx, arrow2EndX, arrowY, 0);
         }
+        */
         
         // Animation progression
         if (animationStage === 0) {
