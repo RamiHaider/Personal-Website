@@ -15,9 +15,9 @@
         .slide-section {
             margin: 40px 0;
             padding: 30px;
-            background: #f8f9fa;
+            background: transparent;
             border-radius: 12px;
-            box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+            box-shadow: none;
         }
         
         .slide-section.map-section {
@@ -37,9 +37,9 @@
         }
 
         .key-point {
-            background: #e9ecef;
+            background: transparent;
             padding: 20px;
-            border-left: 4px solid #495057;
+            border-left: 4px solid #A4A155;
             margin: 20px 0;
             border-radius: 0 8px 8px 0;
         }
@@ -52,10 +52,10 @@
         }
 
         .metric-card {
-            background: white;
+            background: transparent;
             padding: 20px;
             border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             text-align: center;
         }
 
@@ -78,7 +78,8 @@
             padding: 8px;
             border-radius: 4px;
             border: 1px solid #ccc;
-            background-color: white;
+            background-color: rgba(255, 255, 255, 0.9);
+            color: #333;
         }
         
         .loading-overlay {
@@ -130,16 +131,16 @@
         }
         
         .threshold-card, .stats-card {
-            background: white;
+            background: transparent;
             padding: 15px;
             border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             width: 100%;
         }
         
         .threshold-card {
-            background: #f8f9fa;
-            border-left: 4px solid #0d6efd;
+            background: transparent;
+            border-left: 4px solid #A4A155;
         }
         
         .threshold-grid {
@@ -155,13 +156,13 @@
         
         .threshold-item .mineral {
             font-weight: 600;
-            color: #495057;
+            color: white;
             display: block;
         }
         
         .threshold-item .value {
             font-size: 0.9em;
-            color: #6c757d;
+            color: rgba(255, 255, 255, 0.7);
         }
         
         .stats-card {
@@ -171,7 +172,7 @@
         .total-samples {
             margin: 10px 0;
             font-weight: 500;
-            color: #495057;
+            color: white;
         }
         
         .results-table {
@@ -187,19 +188,19 @@
         
         .results-table th {
             font-weight: 500;
-            color: #495057;
+            color: white;
         }
 
         .mineral-card {
-            background: white;
+            background: transparent;
             padding: 15px;
             border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .mineral-card h4 {
             margin: 0 0 10px 0;
-            color: #333;
+            color: white;
         }
 
         .mineral-card img {
@@ -216,10 +217,10 @@
         }
 
         .leaflet-control.leaflet-bar.alert-message {
-            background-color: #f8f9fa;
+            background-color: transparent;
             padding: 10px;
             border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
         .alert-icon {
@@ -227,16 +228,17 @@
         }
 
         .alert-message {
-            background: white;
+            background: transparent;
             padding: 10px 15px;
             border-radius: 4px;
             display: flex;
             align-items: center;
             gap: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             font-size: 14px;
             text-align: center;
             max-width: 600px;
+            color: white;
         }
 
         .alert-icon {
@@ -308,9 +310,9 @@
         .selection-results {
             width: 80%;
             padding: 10px 20px;
-            background: white;
+            background: transparent;
             border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             margin: 20px auto;
             overflow: hidden;
         }
@@ -341,9 +343,10 @@
         }
 
         .model-agreement-card {
-            background: #f8f9fa;
+            background: transparent;
             padding: 10px 15px; /* Reduced padding */
             border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
             margin: 10px 0;
             text-align: center;
             width: 100%;
@@ -356,7 +359,7 @@
 
         .score-section h4 {
             margin: 0 0 5px 0; /* Tighter spacing */
-            color: #4b5563;
+            color: white;
             font-weight: 500;
         }
 
@@ -388,7 +391,7 @@
         }
 
         .signal-count {
-            color: #666;
+            color: rgba(255, 255, 255, 0.7);
         }
 
         .results-table {
@@ -407,7 +410,7 @@
         .results-table th {
             font-weight: 500;
             font-size: 1.1rem;
-            color: #333;
+            color: white;
         }
 
         /* Update probability colors to match score colors */

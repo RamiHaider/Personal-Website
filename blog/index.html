@@ -313,17 +313,21 @@
                         </a>
 
                         <!-- Post 2 -->
-                        <a href="logistic-regression.html" style="text-decoration: none; color: inherit; display: block;">
+                        <a href="visualize-cnn.html" style="text-decoration: none; color: inherit; display: block;">
                             <article class="post-card">
                                 <div class="post-image-container">
-                                    <img src="../assets/images/Logistic-Regression.png" alt="Logistic Regression" class="post-image">
+                                    <div class="cnn-mini-viz" style="width: 100%; height: 100%; background: #1f2937; position: relative; overflow: hidden;">
+                                        <!-- Mini CNN Feature Mapping Visualization -->
+                                        <canvas id="cnn-mini-canvas" width="340" height="200" style="width: 100%; height: 100%;"></canvas>
+                                    </div>
                                 </div>
                                 <div class="post-content">
-                                    <span class="post-date">August 28, 2024</span>
-                                    <h2 class="post-title">Neural networks from Scratch</h2>
-                                    <p class="post-excerpt">The 'Hello World' of Machine Learning. A deep dive into the mathematical and pythonic implementation of simple feed forward neural nets</p>
+                                    <span class="post-date">January 25, 2025</span>
+                                    <h2 class="post-title">How CNNs Actually Work: A Visual Journey</h2>
+                                    <p class="post-excerpt">A dynamic visualization explaining how convolutional neural networks transform pixels into predictions through convolution, ReLU, and max pooling.</p>
                                     <div class="post-tags">
                                         <span class="post-tag machine-learning">Data</span>
+                                        <span class="post-tag development">Development</span>
                                     </div>
                                 </div>
                             </article>
@@ -355,6 +359,208 @@
     <script src="../js/star-effect.js"></script>
     
     <script>
+        // Mini CNN Feature Mapping Visualization
+        document.addEventListener('DOMContentLoaded', function() {
+            const canvas = document.getElementById('cnn-mini-canvas');
+            if (!canvas) return;
+            
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width;
+            const height = canvas.height;
+            
+            // Hard-coded input matrix (6x6)
+            const inputMatrix = [
+                [0.2, 0.8, 0.1, 0.9, 0.3, 0.7],
+                [0.5, 0.4, 0.6, 0.2, 0.8, 0.1],
+                [0.9, 0.1, 0.7, 0.5, 0.3, 0.9],
+                [0.3, 0.6, 0.2, 0.8, 0.4, 0.6],
+                [0.7, 0.9, 0.5, 0.1, 0.7, 0.2],
+                [0.1, 0.3, 0.8, 0.6, 0.9, 0.5]
+            ];
+            
+            // Sobel edge detection filter
+            const filter = [
+                [-1, 0, 1],
+                [-2, 0, 2],
+                [-1, 0, 1]
+            ];
+            
+            // Calculate complete output feature map (6x6 with padding)
+            const outputMatrix = [];
+            for (let i = 0; i < 6; i++) {
+                const row = [];
+                for (let j = 0; j < 6; j++) {
+                    let sum = 0;
+                    
+                    // Check if we can perform convolution at this position
+                    for (let fi = 0; fi < 3; fi++) {
+                        for (let fj = 0; fj < 3; fj++) {
+                            const inputRow = i + fi - 1; // Center filter
+                            const inputCol = j + fj - 1;
+                            
+                            if (inputRow >= 0 && inputRow < 6 && inputCol >= 0 && inputCol < 6) {
+                                sum += inputMatrix[inputRow][inputCol] * filter[fi][fj];
+                            } else {
+                                // Treat out-of-bounds as 0 (zero padding)
+                                sum += 0 * filter[fi][fj];
+                            }
+                        }
+                    }
+                    row.push(Math.max(0, sum)); // Apply ReLU
+                }
+                outputMatrix.push(row);
+            }
+            
+            let animationFrame = 0;
+            let currentRow = 0;
+            let currentCol = 0;
+            let isDelay = false;
+            let delayFrames = 0;
+            const delayDuration = 60; // 1 second delay at 60fps
+            
+            function animate() {
+                ctx.clearRect(0, 0, width, height);
+                
+                // Dark background
+                ctx.fillStyle = '#1f2937';
+                ctx.fillRect(0, 0, width, height);
+                
+                const cellSize = 14;
+                const spacing = 35;
+                
+                // Input matrix position (left)
+                const inputX = 25;
+                const inputY = height/2 - (6 * cellSize)/2;
+                
+                // Static filter position (center)
+                const filterX = inputX + 6 * cellSize + spacing;
+                const filterY = height/2 - (3 * cellSize)/2;
+                
+                // Output position (right)
+                const outputX = filterX + 3 * cellSize + spacing;
+                const outputY = height/2 - (6 * cellSize)/2;
+                
+                // Draw input matrix with sliding highlight
+                for (let i = 0; i < 6; i++) {
+                    for (let j = 0; j < 6; j++) {
+                        const x = inputX + j * cellSize;
+                        const y = inputY + i * cellSize;
+                        const value = inputMatrix[i][j];
+                        
+                        // Highlight 3x3 region being processed
+                        const underFilter = !isDelay &&
+                                          i >= currentRow - 1 && i <= currentRow + 1 &&
+                                          j >= currentCol - 1 && j <= currentCol + 1;
+                        
+                        const intensity = Math.round(value * 255);
+                        ctx.fillStyle = `rgb(${intensity}, ${intensity}, ${intensity})`;
+                        ctx.fillRect(x, y, cellSize - 1, cellSize - 1);
+                        
+                        // Highlight border for cells under filter
+                        if (underFilter) {
+                            ctx.strokeStyle = '#f59e0b';
+                            ctx.lineWidth = 2;
+                        } else {
+                            ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+                            ctx.lineWidth = 0.5;
+                        }
+                        ctx.strokeRect(x, y, cellSize - 1, cellSize - 1);
+                    }
+                }
+                
+                // Draw static Sobel filter in center
+                for (let i = 0; i < 3; i++) {
+                    for (let j = 0; j < 3; j++) {
+                        const x = filterX + j * cellSize;
+                        const y = filterY + i * cellSize;
+                        const value = filter[i][j];
+                        
+                        // Color based on filter value
+                        const color = value >= 0 ? 
+                            `rgba(59, 130, 246, 0.8)` :
+                            `rgba(239, 68, 68, 0.8)`;
+                        
+                        ctx.fillStyle = color;
+                        ctx.fillRect(x, y, cellSize - 1, cellSize - 1);
+                        
+                        ctx.strokeStyle = '#ffffff';
+                        ctx.lineWidth = 2;
+                        ctx.strokeRect(x, y, cellSize - 1, cellSize - 1);
+                        
+                        // Draw filter value
+                        ctx.fillStyle = '#ffffff';
+                        ctx.font = 'bold 10px sans-serif';
+                        ctx.textAlign = 'center';
+                        ctx.fillText(value.toString(), x + cellSize/2, y + cellSize/2 + 3);
+                    }
+                }
+                
+                // Draw output matrix with progressive population
+                for (let i = 0; i < 6; i++) {
+                    for (let j = 0; j < 6; j++) {
+                        const x = outputX + j * cellSize;
+                        const y = outputY + i * cellSize;
+                        
+                        // Only show output for positions we've already processed
+                        const isProcessed = (i < currentRow) || (i === currentRow && j <= currentCol);
+                        
+                        if (isProcessed || isDelay) {
+                            const value = outputMatrix[i][j];
+                            const intensity = Math.min(255, Math.max(0, value * 100 + 50));
+                            ctx.fillStyle = `rgb(${intensity}, ${intensity}, ${intensity})`;
+                        } else {
+                            ctx.fillStyle = '#374151'; // Dark gray for unprocessed
+                        }
+                        
+                        ctx.fillRect(x, y, cellSize - 1, cellSize - 1);
+                        
+                        // Highlight current output cell being computed
+                        if (!isDelay && i === currentRow && j === currentCol) {
+                            ctx.strokeStyle = '#10b981';
+                            ctx.lineWidth = 3;
+                        } else {
+                            ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+                            ctx.lineWidth = 0.5;
+                        }
+                        ctx.strokeRect(x, y, cellSize - 1, cellSize - 1);
+                    }
+                }
+                
+                animationFrame++;
+                
+                // Progress through convolution sequence
+                if (animationFrame % 10 === 0) { // Twice as fast animation
+                    if (isDelay) {
+                        delayFrames++;
+                        if (delayFrames >= delayDuration) {
+                            // Reset animation
+                            isDelay = false;
+                            delayFrames = 0;
+                            currentRow = 0;
+                            currentCol = 0;
+                        }
+                    } else {
+                        currentCol++;
+                        if (currentCol >= 6) {
+                            currentCol = 0;
+                            currentRow++;
+                            if (currentRow >= 6) {
+                                // Start delay before repeating
+                                isDelay = true;
+                                currentRow = 5;
+                                currentCol = 5;
+                            }
+                        }
+                    }
+                }
+                
+                requestAnimationFrame(animate);
+            }
+            
+            // Start animation
+            animate();
+        });
+        
         // Add extra style overrides
         document.addEventListener('DOMContentLoaded', function() {
             // Create a style element

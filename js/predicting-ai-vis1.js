@@ -852,8 +852,8 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Generate realistic feature vector using our actual flattened data
     const featureVector = finalFeatureVector.length > 0 ? 
-      finalFeatureVector.slice(0, 60) : // Use actual CNN flattened data
-      HARDCODED_FEATURE_VECTOR.slice(0, 60); // Fallback to hardcoded if not available
+      finalFeatureVector : // Use ALL 216 values from actual CNN flattened data
+      HARDCODED_FEATURE_VECTOR; // Fallback to hardcoded if not available
     
     function getLayerPositions(layerIndex) {
       const layer = layers[layerIndex];

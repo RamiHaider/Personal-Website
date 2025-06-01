@@ -13,9 +13,9 @@
         .slide-section {
             margin: 40px 0;
             padding: 30px;
-            background: #f8f9fa;
+            background: transparent;
             border-radius: 12px;
-            box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+            box-shadow: none;
         }
         
         .slide-image {
@@ -28,9 +28,9 @@
         }
 
         .key-point {
-            background: #e9ecef;
+            background: transparent;
             padding: 20px;
-            border-left: 4px solid #495057;
+            border-left: 4px solid #A4A155;
             margin: 20px 0;
             border-radius: 0 8px 8px 0;
         }
@@ -43,23 +43,23 @@
         }
 
         .metric-card {
-            background: white;
+            background: transparent;
             padding: 20px;
             border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             text-align: center;
         }
 
         .metric-value {
             font-size: 28px;
             font-weight: 600;
-            color: #212529;
+            color: white;
             margin-bottom: 8px;
         }
 
         .metric-label {
             font-size: 14px;
-            color: #6c757d;
+            color: rgba(255, 255, 255, 0.7);
         }
 
         .bullet-list {
@@ -687,18 +687,18 @@
             uploadArea.addEventListener('dragover', function(e) {
                 e.preventDefault();
                 uploadArea.style.borderColor = '#495057';
-                uploadArea.style.backgroundColor = '#e9ecef';
+                uploadArea.style.backgroundColor = 'rgba(255,255,255,0.05)';
             });
             
             uploadArea.addEventListener('dragleave', function() {
                 uploadArea.style.borderColor = '#adb5bd';
-                uploadArea.style.backgroundColor = '#f1f3f5';
+                uploadArea.style.backgroundColor = 'transparent';
             });
             
             uploadArea.addEventListener('drop', function(e) {
                 e.preventDefault();
                 uploadArea.style.borderColor = '#adb5bd';
-                uploadArea.style.backgroundColor = '#f1f3f5';
+                uploadArea.style.backgroundColor = 'transparent';
                 
                 if (e.dataTransfer.files.length > 0) {
                     fileInput.files = e.dataTransfer.files;
