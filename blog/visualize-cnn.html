@@ -3,1491 +3,240 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>How CNNs Actually Work: A Visual Journey | Rami Haider</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <title>How Computer Vision Works: A Visual Journey Through CNNs</title>
     <link rel="stylesheet" href="../css/styles.css">
-    
-    <!-- PostHog Analytics -->
-    <script src="../js/analytics.js"></script>
-    
     <style>
-        .blog-section {
-            margin: 60px 0;
-            padding: 40px;
-            background: transparent;
-            border-radius: 12px;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .section-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 30px;
-            gap: 15px;
-        }
-        
-        .section-number {
-            background: linear-gradient(135deg, #A4A155, #c5a91c);
-            color: #000;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            font-size: 18px;
-            flex-shrink: 0;
-        }
-        
-        .section-title {
+        .main-content-wrapper {
+            background-color: rgba(0, 0, 0, 0.6) !important;
             color: white;
-            font-size: 28px;
-            font-weight: 600;
-            margin: 0;
         }
         
-        .visualization-container {
-            width: 100%;
-            height: 400px;
-            margin: 30px 0;
-            border-radius: 12px;
-            overflow: hidden;
-            border: 2px solid rgba(164, 161, 85, 0.3);
-            background: #1f2937;
+        .content {
+            background-color: transparent !important;
+            color: white;
         }
         
-        .key-insight {
-            background: rgba(164, 161, 85, 0.1);
-            border-left: 4px solid #A4A155;
-            padding: 20px;
-            margin: 25px 0;
-            border-radius: 0 8px 8px 0;
+        h1, h2, h3, h4, h5, h6 {
+            color: white;
         }
         
-        .key-insight h4 {
-            color: #A4A155;
-            margin: 0 0 10px 0;
-            font-size: 18px;
+        p, li {
+            color: rgba(255, 255, 255, 0.9);
         }
         
-        .intro-quote {
-            font-size: 20px;
-            font-style: italic;
-            color: #A4A155;
-            text-align: center;
-            margin: 40px 0;
-            line-height: 1.6;
+        .date-info {
+            color: rgba(255, 255, 255, 0.7);
         }
         
-        .tech-detail {
-            background: rgba(59, 130, 246, 0.1);
-            border: 1px solid rgba(59, 130, 246, 0.3);
+        .code-block {
+            background-color: rgba(0, 0, 0, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 5px;
             padding: 15px;
-            border-radius: 8px;
+            color: rgba(255, 255, 255, 0.9);
+            font-family: monospace;
+            white-space: pre-wrap;
             margin: 20px 0;
-            font-size: 14px;
-        }
-        
-        .process-flow {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 20px;
-            margin: 30px 0;
-        }
-        
-        .process-step {
-            background: rgba(255, 255, 255, 0.05);
-            padding: 20px;
-            border-radius: 8px;
-            text-align: center;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-        }
-        
-        .process-step h5 {
-            color: #A4A155;
-            margin: 0 0 10px 0;
-            font-size: 16px;
-        }
-        
-        .conclusion-banner {
-            background: linear-gradient(135deg, rgba(164, 161, 85, 0.2), rgba(197, 169, 28, 0.1));
-            border: 2px solid #A4A155;
-            padding: 40px;
-            border-radius: 12px;
-            text-align: center;
-            margin: 50px 0;
-        }
-        
-        .conclusion-banner h3 {
-            color: #A4A155;
-            font-size: 24px;
-            margin: 0 0 15px 0;
-        }
-        
-        .cta-button {
-            display: inline-block;
-            background: linear-gradient(135deg, #A4A155, #c5a91c);
-            color: #000;
-            padding: 12px 30px;
-            border-radius: 25px;
-            text-decoration: none;
-            font-weight: 600;
-            margin-top: 20px;
-            transition: transform 0.3s ease;
-        }
-        
-        .cta-button:hover {
-            transform: translateY(-2px);
-            color: #000;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <div id="header"></div>
+
         <div class="main-content-wrapper">
-            <main>
+            <main role="main">
                 <div class="content">
-                    <h1>How CNNs Actually Work: A Visual Journey</h1>
-                    <div class="date-info">
-                        <p>Published: January 25, 2025</p>
-                        <p>Reading Time: ~8 minutes</p>
+                    <h1>How CNNs work: A Visual Journey</h1>
+                    <div class="date-info" data-upload-date="2023-07-15" data-file-path="portfolio/automation-tasks.html">
+                        <p>Original Upload: 2024-09-09</p>
+                        <p>Last Updated: <span class="update-date"></span></p>
                     </div>
+
+
+                    <div style="height: 20px;"></div>
                     
-                    <div class="intro-quote">
-                        "If you're interested—like me—in how computer vision works, this is for you."
-                    </div>
+                    <h3> Introduction</h3>
+                    <p> Let's demystify how computer vision works. Forgive me to use an example from geosciences. By the way, this is an inferencing visualization. A side note that in ML, you either train a model or you use the trained model to make a prediction. This is the latter. All that means is that we run our input image through the model, we don't update the model. Anywho! If you are familiar with neural nets, you'll be relieved, because CNN's are just an added section before the fully connected layer, just a simple convolution, what is really just a dot product!! It's really that simple as you will see. And if you are unfamiliar with neural nets, well, alls hope is not lost, at all, in fact, it too is just a dot product. lol</p>
+
+                    <p>Hi everyone! If you're interested—like me—in how computer vision works, this is for you.</p>
                     
                     <p>I'm a very visual learner, so I created a dynamic visualization to help me understand how a computer actually recognizes things. At the end of the day, it's all done through math. This visualization operates at a pretty high level, but it's still going to give you a much better grasp of how things work.</p>
                     
-                    <p>We're going to walk through how a common convolutional neural network architecture processes images. This architecture is the backbone of computer vision. To explain it, I'll show you an example from one of the technologies I created: a geospatial mineral deposit targeting software.</p>
+                    <p>We're going to walk through how a common convolutional neural net architecture processes images. This architecture is the backbone of computer vision. To explain it, I'll show you an example from one of the technologies I created: a geospatial mineral deposit targeting software.</p>
+                    <div style="height: 15px;"></div>
 
-                    <!-- Section 1: Introduction & Data Input -->
-                    <div class="blog-section">
-                        <div class="section-header">
-                            <div class="section-number">1</div>
-                            <h2 class="section-title">From Pixels to Patterns</h2>
-                        </div>
-                        
-                        <p>The first thing you're seeing here is airborne geophysical data. This is an <strong>inferencing visualization</strong>—meaning the model has already been trained. The weights and filters have already been determined. We're simply passing new data through this little brain we've built, and it's making predictions based on what it already learned.</p>
-                        
-                        <div class="visualization-container">
-                            <canvas id="region-selection-canvas" width="800" height="400" style="width: 100%; height: 100%;"></canvas>
-                        </div>
-                        
-                        <div class="key-insight">
-                            <h4>🎯 Key Insight</h4>
-                            <p>Watch how the model selects a region of interest. It's important that this input image has the same size and resolution as what the model was trained on—the closer the match, the better the results.</p>
-                        </div>
-                        
-                        <p>In our case, the output is a probability of a mineral occurrence. What we've done is associate geophysical images with mineral potentials. If you've got a keen eye, you'll notice this visualization only shows images. In future posts, I'll show how we integrate geochemical and geological data to make inferences about gold, copper, and silver.</p>
+                     
+                    <div class="technical-note">
+                        <strong>Note:</strong> The first thing you're seeing here is airborne geophysical data. This is an inferencing visualization—meaning the model has already been trained. The weights and filters have already been determined. We're simply passing new data through this little brain we've built, and it's making predictions based on what it already learned.
                     </div>
+                </div>
 
-                    <!-- Section 2: RGB Channel Processing -->
-                    <div class="blog-section">
-                        <div class="section-header">
-                            <div class="section-number">2</div>
-                            <h2 class="section-title">Simplifying Color Channels</h2>
-                        </div>
-                        
-                        <p>The image starts in RGB format—three channels: red, green, and blue. But to keep things simple for visualization, we'll focus on just one channel. In this case, we've randomly picked the red channel.</p>
-                        
-                        <div class="visualization-container">
-                            <canvas id="rgb-breakdown-canvas" width="800" height="400" style="width: 100%; height: 100%;"></canvas>
-                        </div>
-                        
-                        <div class="process-flow">
-                            <div class="process-step">
-                                <h5>Original RGB</h5>
-                                <p>Three color channels combined</p>
-                            </div>
-                            <div class="process-step">
-                                <h5>Red Channel</h5>
-                                <p>Extract single channel data</p>
-                            </div>
-                            <div class="process-step">
-                                <h5>Intensity Matrix</h5>
-                                <p>Convert to grayscale values</p>
-                            </div>
-                        </div>
-                        
-                        <p>Instead of rendering it in red, we convert its values into grayscale intensities. Behind the scenes, it's still red channel data, just visualized in black and white. This conversion transforms color information into numerical intensities that the neural network can process mathematically.</p>
-                        
-                        <div class="tech-detail">
-                            <strong>Technical Note:</strong> Each pixel value is normalized to a range of 0-1, where 0 represents black (no intensity) and 1 represents white (maximum intensity). This normalization helps the neural network train more effectively.
-                        </div>
+                <!-- Step 1: Region Selection -->
+                <div id="step1" class="section">
+                    <h2><span class="step-number">1</span>Selecting a Region of Interest</h2>
+                    <div class="timestamp">Video: 0:49 - 0:52</div>
+                    
+                    <div class="video-container">
+                        <video controls>
+                            <source src="../assets/blog/1-selecting-region.mp4" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
                     </div>
+                    
+                    <p>We start with a geophysical airborne map. We select a region of interest, which becomes the input to our model. It's important that this input image has the same size and resolution as what the model was trained on—the closer the match, the better the results.</p>
+                    
+                    <p>In our case, the output is a probability of a mineral occurrence. What we've done is associate geophysical images with mineral potentials. If you've got a keen eye, you'll notice this visualization only shows images. In future videos, I'll show how we integrate geochemical and geological data to make inferences about gold, copper, and silver.</p>
+                </div>
 
-                    <!-- Section 3: First Convolution Layer -->
-                    <div class="blog-section">
-                        <div class="section-header">
-                            <div class="section-number">3</div>
-                            <h2 class="section-title">The Heart of CNNs: Convolution</h2>
-                        </div>
-                        
-                        <p>Now comes the key step that gives convolutional neural networks their name: <strong>convolution</strong>. During training, the model learns filters—basically, small 3×3 matrices—that slide over the image to extract features.</p>
-                        
-                        <div class="visualization-container">
-                            <canvas id="convolution-canvas" width="800" height="400" style="width: 100%; height: 100%;"></canvas>
-                        </div>
-                        
-                        <div class="key-insight">
-                            <h4>🔍 Pattern Detection</h4>
-                            <p>These filters end up being edge detectors or pattern detectors, and they're common across many use cases—cats, cars, geophysical maps, you name it. At the highest level of abstraction, images are just edges and shapes.</p>
-                        </div>
-                        
-                        <p>We pass each 3×3 filter over the input grid—starting top-left, moving across, then down—and for each step, we:</p>
-                        
-                        <div class="process-flow">
-                            <div class="process-step">
-                                <h5>1. Position Filter</h5>
-                                <p>Place 3×3 filter on image section</p>
-                            </div>
-                            <div class="process-step">
-                                <h5>2. Element-wise Multiply</h5>
-                                <p>Multiply filter × image values</p>
-                            </div>
-                            <div class="process-step">
-                                <h5>3. Sum Results</h5>
-                                <p>Add all products together</p>
-                            </div>
-                            <div class="process-step">
-                                <h5>4. Record Output</h5>
-                                <p>Store result in feature map</p>
-                            </div>
-                        </div>
-                        
-                        <p>We're not downsampling yet—we're just doing convolutions. Each filter gives us one feature map. In this case, we're using three filters, so we get three output maps.</p>
-                        
-                        <p><strong>Next, we apply the ReLU activation function.</strong> It's simple—just replaces any negative value with zero. This introduces non-linearity, which is crucial because otherwise, the network would just be a linear function and wouldn't be able to model complex patterns.</p>
-                        
-                        <div class="visualization-container">
-                            <canvas id="relu-maxpool-canvas" width="800" height="400" style="width: 100%; height: 100%;"></canvas>
-                        </div>
-                        
-                        <p><strong>After ReLU, we apply max pooling</strong>, which is a form of downsampling. We take a 2×2 grid and replace it with its maximum value. This reduces the size of our feature maps, which helps with computation, prevents overfitting, and retains the most important features.</p>
+                <!-- Step 2: RGB Decomposition -->
+                <div id="step2" class="section">
+                    <h2><span class="step-number">2</span>RGB Decomposition to Intensity Values</h2>
+                    <div class="timestamp">Video: 0:52 - 0:58</div>
+                    
+                    <div class="video-container">
+                        <video controls>
+                            <source src="../assets/blog/2-rgb-decomposition.mp4" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
                     </div>
+                    
+                    <p>The image is in RGB format—three channels: red, green, and blue. But to keep things simple for visualization, we'll focus on just one channel. In this case, we've randomly picked the red channel.</p>
+                    
+                    <p>Instead of rendering it in red, we convert its values into grayscale intensities. Behind the scenes, it's still red channel data, just visualized in black and white. This conversion gives us numerical intensity values that the neural network can process mathematically.</p>
+                    
+                    <div class="technical-note">
+                        <strong>Technical Detail:</strong> Each pixel value is normalized to a range between 0 and 1, where 0 represents black (no intensity) and 1 represents white (maximum intensity).
+                    </div>
+                </div>
 
-                    <!-- Section 4: Second Convolution Layer -->
-                    <div class="blog-section">
-                        <div class="section-header">
-                            <div class="section-number">4</div>
-                            <h2 class="section-title">Building Complex Features</h2>
-                        </div>
-                        
-                        <p>That completes the first layer of inference. Now those three downsampled maps become the input for the next layer, which contains six filters. We repeat the same process: convolution with the new filters, apply ReLU, and do max pooling.</p>
-                        
-                        <div class="visualization-container">
-                            <canvas id="second-layer-canvas" width="800" height="400" style="width: 100%; height: 100%;"></canvas>
-                        </div>
-                        
-                        <div class="key-insight">
-                            <h4>🧠 Abstract Pattern Recognition</h4>
-                            <p>The network is now starting to detect more abstract patterns by combining features from the previous layer. While the first layer detected simple edges, the second layer can recognize corners, textures, and more complex shapes.</p>
-                        </div>
-                        
-                        <div class="process-flow">
-                            <div class="process-step">
-                                <h5>Layer 1 Output</h5>
-                                <p>3 feature maps (basic edges)</p>
-                            </div>
-                            <div class="process-step">
-                                <h5>6 New Filters</h5>
-                                <p>More complex pattern detection</p>
-                            </div>
-                            <div class="process-step">
-                                <h5>6 Feature Maps</h5>
-                                <p>Abstract features extracted</p>
-                            </div>
-                            <div class="process-step">
-                                <h5>ReLU + MaxPool</h5>
-                                <p>Downsample and enhance</p>
-                            </div>
-                        </div>
-                        
-                        <p>This hierarchical feature extraction is what makes CNNs so powerful. Each layer builds upon the previous one, creating increasingly sophisticated representations of the input image.</p>
+                <!-- Step 3: First Convolution -->
+                <div id="step3" class="section">
+                    <h2><span class="step-number">3</span>First Layer: Feature Mapping (Convolution)</h2>
+                    <div class="timestamp">Video: 0:59 - 1:08</div>
+                    
+                    <div class="video-container">
+                        <video controls>
+                            <source src="../assets/blog/3-feature-mapping.mp4" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
                     </div>
+                    
+                    <p>Now comes the key step that gives convolutional neural networks their name: <strong>convolution</strong>. During training, the model learns filters—basically, small 3×3 matrices—that slide over the image to extract features. These filters end up being edge detectors or pattern detectors, and they're common across many use cases—cats, cars, geophysical maps, you name it.</p>
+                    
+                    <p>At the highest level of abstraction, images are just edges and shapes. So at the start of the process, the filters are typically detecting edges. We pass each 3×3 filter over the input grid—starting top-left, moving across, then down—and for each step, we multiply the filter values with the image values element-wise. Then we sum them up and record that result in a new matrix, which we call a <strong>feature map</strong>.</p>
+                    
+                    <p>We're not downsampling yet—we're just doing convolutions. Each filter gives us one feature map. In this case, we're using three filters, so we get three output maps.</p>
+                </div>
 
-                    <!-- Section 5: Flattening & Neural Network -->
-                    <div class="blog-section">
-                        <div class="section-header">
-                            <div class="section-number">5</div>
-                            <h2 class="section-title">From Images to Decisions</h2>
-                        </div>
-                        
-                        <p>Once we're done with the second layer, we <strong>flatten the outputs into a column vector</strong>. Say we have six feature maps, each 6×6—that's 216 values total. We reshape them into a 216-length vector. This vector gets passed into the fully connected layers.</p>
-                        
-                        <div class="visualization-container">
-                            <canvas id="flattening-canvas" width="800" height="400" style="width: 100%; height: 100%;"></canvas>
-                        </div>
-                        
-                        <div class="tech-detail">
-                            <strong>Behind the Scenes:</strong> What's actually going on under the hood is that these operations are all vectorized and parallelized—handled efficiently using Python libraries that are really just wrappers over optimized C, C++, or Fortran code.
-                        </div>
-                        
-                        <p>In the fully connected layer, each input node is connected to every node in the next layer. This is where the real "decision-making" happens. From there, we pass the data through a few more hidden layers—again, already trained—and eventually reach the output layer.</p>
-                        
-                        <div class="visualization-container">
-                            <canvas id="neural-network-canvas" width="800" height="400" style="width: 100%; height: 100%;"></canvas>
-                        </div>
-                        
-                        <div class="key-insight">
-                            <h4>⚡ The Magic of Training</h4>
-                            <p>Each weight in the network represents how important a certain part of the image was in making that prediction. That's really what training a model is all about—finding out which pixels or patterns matter.</p>
-                        </div>
+                <!-- Step 4: ReLU + Max Pool -->
+                <div id="step4" class="section">
+                    <h2><span class="step-number">4</span>ReLU Activation & Max Pooling</h2>
+                    <div class="timestamp">Video: 1:09 - 1:16</div>
+                    
+                    <div class="video-container">
+                        <video controls>
+                            <source src="../assets/blog/4-relu-maxpool.mp4" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
                     </div>
+                    
+                    <p>Next, we apply the <strong>ReLU activation function</strong>. It's simple—just replaces any negative value with zero. This introduces non-linearity, which is crucial because otherwise, the network would just be a linear function and wouldn't be able to model complex patterns.</p>
+                    
+                    <p>After ReLU, we apply <strong>max pooling</strong>, which is a form of downsampling. We take a 2×2 grid and replace it with its maximum value. This reduces the size of our feature maps, which helps with computation, prevents overfitting, and retains the most important features.</p>
+                    
+                    <div class="technical-note">
+                        <strong>Why This Matters:</strong> Max pooling introduces translation invariance—meaning the network can recognize features regardless of their exact position in the image.
+                    </div>
+                </div>
 
-                    <!-- Section 6: Final Predictions -->
-                    <div class="blog-section">
-                        <div class="section-header">
-                            <div class="section-number">6</div>
-                            <h2 class="section-title">The Final Prediction</h2>
-                        </div>
-                        
-                        <p>At the end of it all, the model gives us a prediction: a probability that the selected region contains a mineral deposit. In this visualization, you'll see predictions for different minerals like Gold, Copper, and Iron, each with their confidence levels.</p>
-                        
-                        <div class="visualization-container">
-                            <canvas id="final-prediction-canvas" width="800" height="400" style="width: 100%; height: 100%;"></canvas>
-                        </div>
-                        
-                        <div class="process-flow">
-                            <div class="process-step">
-                                <h5>Raw Image Input</h5>
-                                <p>Geophysical survey data</p>
-                            </div>
-                            <div class="process-step">
-                                <h5>Feature Extraction</h5>
-                                <p>Convolutional layers detect patterns</p>
-                            </div>
-                            <div class="process-step">
-                                <h5>Classification</h5>
-                                <p>Fully connected layers make decisions</p>
-                            </div>
-                            <div class="process-step">
-                                <h5>Probability Output</h5>
-                                <p>Confidence in mineral presence</p>
-                            </div>
-                        </div>
-                        
-                        <p>This entire process—from pixel to prediction—happens in milliseconds. The beauty of CNNs lies in their ability to automatically learn hierarchical representations without explicitly programming what features to look for.</p>
+                <!-- Step 5: Second Layer Convolution -->
+                <div id="step5" class="section">
+                    <h2><span class="step-number">5</span>Second Layer: Advanced Feature Detection</h2>
+                    <div class="timestamp">Video: 1:18 - 1:24</div>
+                    
+                    <div class="video-container">
+                        <video controls>
+                            <source src="../assets/blog/5-second-layer-mapping.mp4" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
                     </div>
+                    
+                    <p>That completes the first layer of inference. Now those three downsampled maps become the input for the next layer, which contains six filters. We repeat the same process: convolution with the new filters, apply ReLU, and do max pooling.</p>
+                    
+                    <p>The network is now starting to detect more abstract patterns by combining features from the previous layer. Where the first layer detected simple edges, this layer can detect more complex shapes and textures.</p>
+                </div>
 
-                    <!-- Conclusion -->
-                    <div class="conclusion-banner">
-                        <h3>🎉 Congratulations!</h3>
-                        <p>You've just witnessed how a convolutional neural network transforms raw pixels into meaningful predictions. From simple edge detection to complex pattern recognition, CNNs represent one of the most elegant solutions in artificial intelligence.</p>
-                        <p>This same architecture powers everything from medical image analysis to autonomous vehicles to your phone's camera app.</p>
-                        <a href="../portfolio/quebec-minerals.html" class="cta-button">Explore the Full Project</a>
+                <!-- Step 6: Second ReLU + Max Pool -->
+                <div id="step6" class="section">
+                    <h2><span class="step-number">6</span>Second Layer: ReLU & Max Pooling</h2>
+                    <div class="timestamp">Video: 1:25 - 1:32</div>
+                    
+                    <div class="video-container">
+                        <video controls>
+                            <source src="../assets/blog/6-second-relu-maxpool.mp4" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
                     </div>
+                    
+                    <p>Again, we apply ReLU activation followed by max pooling to our six feature maps from the second convolutional layer. This further reduces the spatial dimensions while preserving the most important features detected by our filters.</p>
+                    
+                    <p>At this point, our network has learned to identify increasingly complex patterns and features that are relevant for mineral deposit detection.</p>
+                </div>
 
-                    <!-- Technical Implementation -->
-                    <div class="blog-section">
-                        <h3>Technical Implementation</h3>
-                        <p>This visualization was built using vanilla JavaScript and HTML5 Canvas, demonstrating CNN operations in real-time. The interactive elements help bridge the gap between theoretical understanding and practical implementation.</p>
-                        
-                        <div class="key-insight">
-                            <h4>🚀 Want to Learn More?</h4>
-                            <p>Check out my other projects where I apply similar deep learning techniques to solve real-world problems in geoscience, HR analytics, and time series analysis.</p>
-                        </div>
+                <!-- Step 7: Flattening -->
+                <div id="step7" class="section">
+                    <h2><span class="step-number">7</span>Flattening: From Images to Vector</h2>
+                    <div class="timestamp">Video: 1:34 - 1:41</div>
+                    
+                    <div class="video-container">
+                        <video controls>
+                            <source src="../assets/blog/7-flattening.mp4" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
                     </div>
+                    
+                    <p>Once we're done with the second layer, we <strong>flatten</strong> the outputs into a column vector. Say we have six feature maps, each 6×6—that's 216 values total. We reshape them into a 216-length vector.</p>
+                    
+                    <p>This vector gets passed into the fully connected layers. This step is crucial as it transforms our 2D feature maps into a 1D format that traditional neural network layers can process.</p>
+                </div>
+
+                <!-- Step 8: Fully Connected Layers -->
+                <div id="step8" class="section">
+                    <h2><span class="step-number">8</span>Fully Connected Layers & Prediction</h2>
+                    <div class="timestamp">Video: 0:39 - 0:45</div>
+                    
+                    <div class="video-container">
+                        <video controls>
+                            <source src="../assets/blog/8-fully-connected-prediction.mp4" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                    </div>
+                    
+                    <p>In the fully connected layer, each input node is connected to every node in the next layer. This is where the real "decision-making" happens. What's actually going on under the hood is that these operations are all vectorized and parallelized—handled efficiently using Python libraries that are really just wrappers over optimized C, C++, or Fortran code.</p>
+                    
+                    <p>From there, we pass the data through a few more hidden layers—again, already trained—and eventually reach the output layer.</p>
+                    
+                    <p><strong>At the end of it all, the model gives us a prediction: a probability that the selected region contains a mineral deposit.</strong> Each weight in the network represents how important a certain part of the image was in making that prediction. That's really what training a model is all about—finding out which pixels or patterns matter.</p>
+                    
+                    <div class="technical-note">
+                        <strong>The Math Behind It:</strong> The fully connected layers perform matrix multiplication followed by activation functions, essentially learning complex non-linear relationships between the extracted features and the final predictions.
+                    </div>
+                </div>
+
+                <!-- Conclusion -->
+                <div id="conclusion" class="conclusion">
+                    <h2>Putting It All Together</h2>
+                    <p>This visualization demonstrates how a CNN transforms raw geophysical data into meaningful predictions through a series of mathematical operations. From simple edge detection to complex pattern recognition, each layer builds upon the previous one to create increasingly sophisticated understanding.</p>
+                    
+                    <p>The power of CNNs lies in their ability to automatically learn relevant features from data, making them incredibly effective for computer vision tasks across many domains—from medical imaging to autonomous vehicles to geological exploration.</p>
 
                 </div>
             </main>
         </div>
     </div>
-    
-    <!-- === BLOG DATA ACCESS PANEL (for development) === -->
-    <div id="blogDataPanel" style="
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        background: rgba(17, 24, 39, 0.95);
-        border: 2px solid #A4A155;
-        border-radius: 8px;
-        padding: 15px;
-        max-width: 300px;
-        z-index: 1000;
-        font-family: monospace;
-        font-size: 12px;
-        color: #ffffff;
-        display: none;
-    ">
-        <h4 style="margin: 0 0 10px 0; color: #A4A155;">Blog Data Capture</h4>
-        <div style="margin-bottom: 10px;">
-            <button onclick="toggleDataPanel()" style="
-                background: #A4A155;
-                color: #000;
-                border: none;
-                padding: 5px 10px;
-                border-radius: 4px;
-                cursor: pointer;
-                margin-right: 5px;
-            ">Toggle</button>
-            <button onclick="downloadAllData()" style="
-                background: #22c55e;
-                color: #000;
-                border: none;
-                padding: 5px 10px;
-                border-radius: 4px;
-                cursor: pointer;
-            ">Download All</button>
-        </div>
-        <div id="dataStatus" style="
-            background: rgba(0, 0, 0, 0.3);
-            padding: 8px;
-            border-radius: 4px;
-            margin-bottom: 10px;
-        ">
-            <div>Status: <span id="captureStatus">Waiting...</span></div>
-            <div>Steps: <span id="stepCount">0/7</span></div>
-        </div>
-        <div style="max-height: 200px; overflow-y: auto;">
-            <div id="stepsList"></div>
-        </div>
-    </div>
-    
+
     <script src="../js/main.js"></script>
-    <script src="../js/predicting-ai-vis1-data-extraction.js"></script>
-    <script>
-        // === BLOG DATA ACCESS FUNCTIONS ===
-        let dataPanelVisible = false;
-        
-        function toggleDataPanel() {
-            const panel = document.getElementById('blogDataPanel');
-            dataPanelVisible = !dataPanelVisible;
-            panel.style.display = dataPanelVisible ? 'block' : 'none';
-        }
-        
-        function downloadAllData() {
-            if (window.blogDataCapture) {
-                const dataStr = JSON.stringify(window.blogDataCapture, null, 2);
-                const blob = new Blob([dataStr], { type: 'application/json' });
-                const url = URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `cnn_blog_data_complete_${Date.now()}.json`;
-                document.body.appendChild(a);
-                a.click();
-                document.body.removeChild(a);
-                URL.revokeObjectURL(url);
-                
-                updateDataStatus('Downloaded complete dataset!');
-            } else {
-                updateDataStatus('No data captured yet');
-            }
-        }
-        
-        function updateDataStatus(message) {
-            const statusEl = document.getElementById('captureStatus');
-            if (statusEl) {
-                statusEl.textContent = message;
-                statusEl.style.color = '#22c55e';
-                setTimeout(() => {
-                    statusEl.style.color = '#ffffff';
-                }, 2000);
-            }
-        }
-        
-        function updateStepCount() {
-            const stepCountEl = document.getElementById('stepCount');
-            const stepsListEl = document.getElementById('stepsList');
-            
-            if (window.blogDataCapture && stepCountEl && stepsListEl) {
-                const completedSteps = Object.keys(window.blogDataCapture).filter(key => 
-                    key.startsWith('step') && window.blogDataCapture[key] !== null
-                ).length;
-                
-                stepCountEl.textContent = `${completedSteps}/7`;
-                
-                // Update steps list
-                stepsListEl.innerHTML = '';
-                const stepNames = [
-                    'step1_region',
-                    'step2_rgbDecomposition', 
-                    'step3_convolution',
-                    'step4_relu',
-                    'step5_maxpool',
-                    'step6_secondConv',
-                    'step7_finalFeatures'
-                ];
-                
-                stepNames.forEach((stepName, index) => {
-                    const div = document.createElement('div');
-                    const completed = window.blogDataCapture[stepName] !== null;
-                    div.innerHTML = `
-                        <span style="color: ${completed ? '#22c55e' : '#666'};">
-                            ${completed ? '✓' : '○'} Step ${index + 1}: ${stepName.replace('step' + (index + 1) + '_', '')}
-                        </span>
-                    `;
-                    div.style.fontSize = '10px';
-                    div.style.marginBottom = '2px';
-                    stepsListEl.appendChild(div);
-                });
-            }
-        }
-        
-        // Show data panel in development mode
-        document.addEventListener('DOMContentLoaded', function() {
-            // Show the panel automatically for development
-            setTimeout(() => {
-                toggleDataPanel();
-            }, 1000);
-            
-            // Update step count every 2 seconds
-            setInterval(updateStepCount, 2000);
-            
-            // Listen for data capture events
-            window.addEventListener('blogDataCaptured', function(event) {
-                updateDataStatus(`Captured: ${event.detail.stepName}`);
-                updateStepCount();
-            });
-        });
-        
-        // CNN Mini-Visualizations - 8 Interactive Components
-        document.addEventListener('DOMContentLoaded', function() {
-            
-            // Shared constants and data
-            const FIXED_REGION = { x: 240, y: 120, width: 160, height: 160 };
-            const GEOPHYSICAL_MAP_SIZE = 800;
-            
-            // Generate consistent geophysical map background
-            function generateGeophysicalBackground() {
-                const canvas = document.createElement('canvas');
-                canvas.width = GEOPHYSICAL_MAP_SIZE;
-                canvas.height = GEOPHYSICAL_MAP_SIZE * 0.6;
-                const ctx = canvas.getContext('2d');
-                
-                // Create realistic geophysical data pattern
-                const imageData = ctx.createImageData(canvas.width, canvas.height);
-                const data = imageData.data;
-                
-                for (let y = 0; y < canvas.height; y++) {
-                    for (let x = 0; x < canvas.width; x++) {
-                        const i = (y * canvas.width + x) * 4;
-                        
-                        // Create complex geophysical pattern
-                        const noise1 = Math.sin(x * 0.01) * Math.cos(y * 0.008);
-                        const noise2 = Math.sin(x * 0.02 + y * 0.01) * 0.5;
-                        const noise3 = Math.sin(x * 0.005 + y * 0.03) * 0.3;
-                        
-                        const value = (noise1 + noise2 + noise3 + 1) * 0.25;
-                        const intensity = Math.floor(value * 255);
-                        
-                        data[i] = intensity * 0.8 + 50;     // R
-                        data[i + 1] = intensity * 0.6 + 80; // G
-                        data[i + 2] = intensity * 0.9 + 30; // B
-                        data[i + 3] = 255;                  // A
-                    }
-                }
-                
-                ctx.putImageData(imageData, 0, 0);
-                return canvas;
-            }
-            
-            const geoBackground = generateGeophysicalBackground();
-            
-            // Extract consistent region data for all visualizations
-            function extractRegionData() {
-                const tempCanvas = document.createElement('canvas');
-                const tempCtx = tempCanvas.getContext('2d');
-                tempCanvas.width = FIXED_REGION.width;
-                tempCanvas.height = FIXED_REGION.height;
-                
-                tempCtx.drawImage(geoBackground, 
-                    FIXED_REGION.x, FIXED_REGION.y, FIXED_REGION.width, FIXED_REGION.height,
-                    0, 0, FIXED_REGION.width, FIXED_REGION.height);
-                
-                const imageData = tempCtx.getImageData(0, 0, FIXED_REGION.width, FIXED_REGION.height);
-                return imageData.data;
-            }
-            
-            const regionPixels = extractRegionData();
-            
-            // 1. REGION SELECTION VISUALIZATION
-            function initRegionSelection() {
-                const canvas = document.getElementById('region-selection-canvas');
-                if (!canvas) return;
-                
-                const ctx = canvas.getContext('2d');
-                let animFrame = 0;
-                let stage = 0; // 0: show map, 1: highlight region, 2: zoom
-                
-                function animate() {
-                    ctx.clearRect(0, 0, canvas.width, canvas.height);
-                    
-                    // Scale to fit canvas
-                    const scale = Math.min(canvas.width / geoBackground.width, canvas.height / geoBackground.height);
-                    const offsetX = (canvas.width - geoBackground.width * scale) / 2;
-                    const offsetY = (canvas.height - geoBackground.height * scale) / 2;
-                    
-                    // Draw background map
-                    ctx.save();
-                    ctx.translate(offsetX, offsetY);
-                    ctx.scale(scale, scale);
-                    ctx.drawImage(geoBackground, 0, 0);
-                    ctx.restore();
-                    
-                    if (stage >= 1) {
-                        // Highlight selection region
-                        const regionX = offsetX + FIXED_REGION.x * scale;
-                        const regionY = offsetY + FIXED_REGION.y * scale;
-                        const regionW = FIXED_REGION.width * scale;
-                        const regionH = FIXED_REGION.height * scale;
-                        
-                        // Animated selection box
-                        const pulseIntensity = 0.7 + 0.3 * Math.sin(animFrame * 0.1);
-                        ctx.strokeStyle = `rgba(255, 193, 7, ${pulseIntensity})`;
-                        ctx.lineWidth = 3;
-                        ctx.strokeRect(regionX, regionY, regionW, regionH);
-                        
-                        // Selection label
-                        ctx.fillStyle = '#ffc107';
-                        ctx.font = 'bold 16px sans-serif';
-                        ctx.fillText('Selected Region', regionX, regionY - 10);
-                    }
-                    
-                    animFrame++;
-                    
-                    // Progress through stages
-                    if (animFrame % 120 === 0) {
-                        stage = (stage + 1) % 3;
-                    }
-                    
-                    requestAnimationFrame(animate);
-                }
-                
-                animate();
-            }
-            
-            // 2. RGB BREAKDOWN VISUALIZATION
-            function initRGBBreakdown() {
-                const canvas = document.getElementById('rgb-breakdown-canvas');
-                if (!canvas) return;
-                
-                const ctx = canvas.getContext('2d');
-                let animFrame = 0;
-                let currentChannel = 0; // 0: RGB, 1: R, 2: G, 3: B
-                
-                function animate() {
-                    ctx.clearRect(0, 0, canvas.width, canvas.height);
-                    
-                    const regionSize = 120;
-                    const spacing = 40;
-                    const startX = (canvas.width - (regionSize * 4 + spacing * 3)) / 2;
-                    const startY = (canvas.height - regionSize) / 2;
-                    
-                    // Labels
-                    const labels = ['Original RGB', 'Red Channel', 'Green Channel', 'Blue Channel'];
-                    const colors = ['#ffffff', '#ef4444', '#22c55e', '#3b82f6'];
-                    
-                    for (let i = 0; i < 4; i++) {
-                        const x = startX + i * (regionSize + spacing);
-                        const y = startY;
-                        
-                        // Create channel visualization
-                        const tempCanvas = document.createElement('canvas');
-                        tempCanvas.width = FIXED_REGION.width;
-                        tempCanvas.height = FIXED_REGION.height;
-                        const tempCtx = tempCanvas.getContext('2d');
-                        
-                        for (let py = 0; py < FIXED_REGION.height; py++) {
-                            for (let px = 0; px < FIXED_REGION.width; px++) {
-                                const idx = (py * FIXED_REGION.width + px) * 4;
-                                const r = regionPixels[idx];
-                                const g = regionPixels[idx + 1];
-                                const b = regionPixels[idx + 2];
-                                
-                                if (i === 0) { // RGB
-                                    tempCtx.fillStyle = `rgb(${r}, ${g}, ${b})`;
-                                } else if (i === 1) { // Red
-                                    tempCtx.fillStyle = `rgb(${r}, 0, 0)`;
-                                } else if (i === 2) { // Green
-                                    tempCtx.fillStyle = `rgb(0, ${g}, 0)`;
-                                } else { // Blue
-                                    tempCtx.fillStyle = `rgb(0, 0, ${b})`;
-                                }
-                                
-                                tempCtx.fillRect(px, py, 1, 1);
-                            }
-                        }
-                        
-                        // Draw scaled version
-                        ctx.drawImage(tempCanvas, x, y, regionSize, regionSize);
-                        
-                        // Highlight current channel
-                        if (i === currentChannel) {
-                            ctx.strokeStyle = colors[i];
-                            ctx.lineWidth = 4;
-                            ctx.strokeRect(x - 2, y - 2, regionSize + 4, regionSize + 4);
-                        } else {
-                            ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
-                            ctx.lineWidth = 1;
-                            ctx.strokeRect(x, y, regionSize, regionSize);
-                        }
-                        
-                        // Labels
-                        ctx.fillStyle = colors[i];
-                        ctx.font = 'bold 14px sans-serif';
-                        ctx.textAlign = 'center';
-                        ctx.fillText(labels[i], x + regionSize/2, y + regionSize + 25);
-                    }
-                    
-                    animFrame++;
-                    
-                    // Progress through channels
-                    if (animFrame % 80 === 0) {
-                        currentChannel = (currentChannel + 1) % 4;
-                    }
-                    
-                    requestAnimationFrame(animate);
-                }
-                
-                animate();
-            }
-            
-            // 3. CONVOLUTION VISUALIZATION  
-            function initConvolution() {
-                const canvas = document.getElementById('convolution-canvas');
-                if (!canvas) return;
-                
-                const ctx = canvas.getContext('2d');
-                let animFrame = 0;
-                let currentRow = 0;
-                let currentCol = 0;
-                let currentFilter = 0;
-                
-                // Sobel filters
-                const filters = [
-                    { name: 'Horizontal Sobel', values: [[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]], color: '#ef4444' },
-                    { name: 'Vertical Sobel', values: [[-1, -2, -1], [0, 0, 0], [1, 2, 1]], color: '#22c55e' },
-                    { name: 'Edge Detection', values: [[0, -1, 0], [-1, 4, -1], [0, -1, 0]], color: '#3b82f6' }
-                ];
-                
-                // Convert region to grayscale matrix
-                const matrix = [];
-                for (let y = 0; y < 32; y++) {
-                    const row = [];
-                    for (let x = 0; x < 32; x++) {
-                        const idx = (y * 5 * 32 * 5 + x * 5) * 4; // Scale down
-                        const r = regionPixels[idx] || 0;
-                        const g = regionPixels[idx + 1] || 0;
-                        const b = regionPixels[idx + 2] || 0;
-                        const gray = (r + g + b) / 3 / 255;
-                        row.push(gray);
-                    }
-                    matrix.push(row);
-                }
-                
-                function animate() {
-                    ctx.clearRect(0, 0, canvas.width, canvas.height);
-                    
-                    const cellSize = 8;
-                    const filterSize = 40;
-                    const spacing = 60;
-                    
-                    // Input position
-                    const inputX = 50;
-                    const inputY = 50;
-                    
-                    // Filter position  
-                    const filterX = inputX + 32 * cellSize + spacing;
-                    const filterY = inputY + 100;
-                    
-                    // Output position
-                    const outputX = filterX + filterSize * 3 + spacing;
-                    const outputY = inputY;
-                    
-                    // Draw input matrix
-                    ctx.fillStyle = '#ffffff';
-                    ctx.font = 'bold 12px sans-serif';
-                    ctx.fillText('Input Matrix', inputX, inputY - 10);
-                    
-                    for (let y = 0; y < 32; y++) {
-                        for (let x = 0; x < 32; x++) {
-                            const px = inputX + x * cellSize;
-                            const py = inputY + y * cellSize;
-                            
-                            // Highlight convolution window
-                            const inWindow = x >= currentCol - 1 && x <= currentCol + 1 &&
-                                           y >= currentRow - 1 && y <= currentRow + 1;
-                            
-                            const intensity = Math.floor(matrix[y][x] * 255);
-                            ctx.fillStyle = `rgb(${intensity}, ${intensity}, ${intensity})`;
-                            ctx.fillRect(px, py, cellSize - 1, cellSize - 1);
-                            
-                            if (inWindow) {
-                                ctx.strokeStyle = '#ffc107';
-                                ctx.lineWidth = 2;
-                                ctx.strokeRect(px, py, cellSize - 1, cellSize - 1);
-                            }
-                        }
-                    }
-                    
-                    // Draw current filter
-                    const filter = filters[currentFilter];
-                    ctx.fillStyle = filter.color;
-                    ctx.fillText(filter.name, filterX, filterY - 10);
-                    
-                    for (let y = 0; y < 3; y++) {
-                        for (let x = 0; x < 3; x++) {
-                            const px = filterX + x * filterSize;
-                            const py = filterY + y * filterSize;
-                            const value = filter.values[y][x];
-                            
-                            ctx.fillStyle = value >= 0 ? 'rgba(59, 130, 246, 0.8)' : 'rgba(239, 68, 68, 0.8)';
-                            ctx.fillRect(px, py, filterSize - 2, filterSize - 2);
-                            
-                            ctx.strokeStyle = '#ffffff';
-                            ctx.lineWidth = 2;
-                            ctx.strokeRect(px, py, filterSize - 2, filterSize - 2);
-                            
-                            ctx.fillStyle = '#ffffff';
-                            ctx.font = 'bold 12px sans-serif';
-                            ctx.textAlign = 'center';
-                            ctx.fillText(value.toString(), px + filterSize/2, py + filterSize/2 + 4);
-                        }
-                    }
-                    
-                    // Draw partial output
-                    ctx.fillStyle = '#ffffff';
-                    ctx.font = 'bold 12px sans-serif';
-                    ctx.textAlign = 'left';
-                    ctx.fillText('Feature Map Output', outputX, outputY - 10);
-                    
-                    for (let y = 0; y < 30; y++) {
-                        for (let x = 0; x < 30; x++) {
-                            const px = outputX + x * cellSize;
-                            const py = outputY + y * cellSize;
-                            
-                            const isProcessed = (y < currentRow) || (y === currentRow && x <= currentCol);
-                            
-                            if (isProcessed) {
-                                // Simulate convolution result
-                                let sum = 0;
-                                for (let fy = 0; fy < 3; fy++) {
-                                    for (let fx = 0; fx < 3; fx++) {
-                                        const my = y + fy;
-                                        const mx = x + fx;
-                                        if (my < 32 && mx < 32) {
-                                            sum += matrix[my][mx] * filter.values[fy][fx];
-                                        }
-                                    }
-                                }
-                                const relu = Math.max(0, sum);
-                                const intensity = Math.min(255, Math.abs(relu) * 100 + 50);
-                                ctx.fillStyle = `rgb(${intensity}, ${intensity}, ${intensity})`;
-                            } else {
-                                ctx.fillStyle = '#374151';
-                            }
-                            
-                            ctx.fillRect(px, py, cellSize - 1, cellSize - 1);
-                            
-                            if (y === currentRow && x === currentCol) {
-                                ctx.strokeStyle = '#10b981';
-                                ctx.lineWidth = 2;
-                                ctx.strokeRect(px, py, cellSize - 1, cellSize - 1);
-                            }
-                        }
-                    }
-                    
-                    animFrame++;
-                    
-                    // Progress animation
-                    if (animFrame % 8 === 0) {
-                        currentCol++;
-                        if (currentCol >= 30) {
-                            currentCol = 0;
-                            currentRow++;
-                            if (currentRow >= 30) {
-                                currentRow = 0;
-                                currentFilter = (currentFilter + 1) % filters.length;
-                            }
-                        }
-                    }
-                    
-                    requestAnimationFrame(animate);
-                }
-                
-                animate();
-            }
-            
-            // 4. RELU + MAX POOLING VISUALIZATION
-            function initReLUMaxPool() {
-                const canvas = document.getElementById('relu-maxpool-canvas');
-                if (!canvas) return;
-                
-                const ctx = canvas.getContext('2d');
-                let animFrame = 0;
-                let stage = 0; // 0: original, 1: relu, 2: maxpool
-                
-                function animate() {
-                    ctx.clearRect(0, 0, canvas.width, canvas.height);
-                    
-                    const cellSize = 10;
-                    const mapSize = 20;
-                    const spacing = 80;
-                    
-                    // Generate sample feature map with negative values
-                    const sampleMap = [];
-                    for (let y = 0; y < mapSize; y++) {
-                        const row = [];
-                        for (let x = 0; x < mapSize; x++) {
-                            const value = Math.sin(x * 0.3) * Math.cos(y * 0.3) * 2 - 0.5;
-                            row.push(value);
-                        }
-                        sampleMap.push(row);
-                    }
-                    
-                    // Original feature map
-                    const originalX = 50;
-                    const originalY = 50;
-                    
-                    ctx.fillStyle = '#ffffff';
-                    ctx.font = 'bold 14px sans-serif';
-                    ctx.fillText('Original Feature Map', originalX, originalY - 10);
-                    
-                    for (let y = 0; y < mapSize; y++) {
-                        for (let x = 0; x < mapSize; x++) {
-                            const px = originalX + x * cellSize;
-                            const py = originalY + y * cellSize;
-                            const value = sampleMap[y][x];
-                            
-                            if (value >= 0) {
-                                const intensity = Math.floor(value * 255);
-                                ctx.fillStyle = `rgb(${intensity}, ${intensity}, ${intensity})`;
-                            } else {
-                                const intensity = Math.floor(Math.abs(value) * 255);
-                                ctx.fillStyle = `rgb(${intensity}, 0, 0)`;
-                            }
-                            
-                            ctx.fillRect(px, py, cellSize - 1, cellSize - 1);
-                        }
-                    }
-                    
-                    if (stage >= 1) {
-                        // ReLU applied
-                        const reluX = originalX + mapSize * cellSize + spacing;
-                        const reluY = originalY;
-                        
-                        ctx.fillStyle = '#22c55e';
-                        ctx.fillText('After ReLU', reluX, reluY - 10);
-                        
-                        for (let y = 0; y < mapSize; y++) {
-                            for (let x = 0; x < mapSize; x++) {
-                                const px = reluX + x * cellSize;
-                                const py = reluY + y * cellSize;
-                                const value = Math.max(0, sampleMap[y][x]);
-                                
-                                const intensity = Math.floor(value * 255);
-                                ctx.fillStyle = `rgb(${intensity}, ${intensity}, ${intensity})`;
-                                ctx.fillRect(px, py, cellSize - 1, cellSize - 1);
-                            }
-                        }
-                    }
-                    
-                    if (stage >= 2) {
-                        // Max pooling (2x2)
-                        const poolX = originalX + mapSize * cellSize * 2 + spacing * 2;
-                        const poolY = originalY;
-                        const poolSize = mapSize / 2;
-                        
-                        ctx.fillStyle = '#3b82f6';
-                        ctx.fillText('After Max Pooling (2x2)', poolX, poolY - 10);
-                        
-                        for (let y = 0; y < poolSize; y++) {
-                            for (let x = 0; x < poolSize; x++) {
-                                const px = poolX + x * cellSize * 2;
-                                const py = poolY + y * cellSize * 2;
-                                
-                                // Find max in 2x2 window
-                                let maxVal = -Infinity;
-                                for (let dy = 0; dy < 2; dy++) {
-                                    for (let dx = 0; dx < 2; dx++) {
-                                        const my = y * 2 + dy;
-                                        const mx = x * 2 + dx;
-                                        if (my < mapSize && mx < mapSize) {
-                                            maxVal = Math.max(maxVal, Math.max(0, sampleMap[my][mx]));
-                                        }
-                                    }
-                                }
-                                
-                                const intensity = Math.floor(maxVal * 255);
-                                ctx.fillStyle = `rgb(${intensity}, ${intensity}, ${intensity})`;
-                                ctx.fillRect(px, py, cellSize * 2 - 1, cellSize * 2 - 1);
-                            }
-                        }
-                    }
-                    
-                    animFrame++;
-                    
-                    // Progress through stages
-                    if (animFrame % 100 === 0) {
-                        stage = (stage + 1) % 3;
-                    }
-                    
-                    requestAnimationFrame(animate);
-                }
-                
-                animate();
-            }
-            
-            // 5. SECOND LAYER VISUALIZATION
-            function initSecondLayer() {
-                const canvas = document.getElementById('second-layer-canvas');
-                if (!canvas) return;
-                
-                const ctx = canvas.getContext('2d');
-                let animFrame = 0;
-                let currentFilter = 0;
-                
-                const filters = [
-                    { name: 'Filter 1', color: '#ef4444' },
-                    { name: 'Filter 2', color: '#22c55e' },
-                    { name: 'Filter 3', color: '#3b82f6' },
-                    { name: 'Filter 4', color: '#a855f7' },
-                    { name: 'Filter 5', color: '#f59e0b' },
-                    { name: 'Filter 6', color: '#ec4899' }
-                ];
-                
-                function animate() {
-                    ctx.clearRect(0, 0, canvas.width, canvas.height);
-                    
-                    const mapSize = 60;
-                    const cellSize = 3;
-                    const spacing = 40;
-                    
-                    // Show 3 input feature maps from layer 1
-                    ctx.fillStyle = '#ffffff';
-                    ctx.font = 'bold 14px sans-serif';
-                    ctx.fillText('Layer 1 Output (3 maps)', 20, 30);
-                    
-                    for (let m = 0; m < 3; m++) {
-                        const mapX = 20 + m * (mapSize * cellSize + 20);
-                        const mapY = 50;
-                        
-                        // Generate random feature map
-                        for (let y = 0; y < mapSize; y++) {
-                            for (let x = 0; x < mapSize; x++) {
-                                const px = mapX + x * cellSize;
-                                const py = mapY + y * cellSize;
-                                
-                                const intensity = Math.floor((Math.sin(x * 0.1 + m) * Math.cos(y * 0.1 + m) + 1) * 127);
-                                ctx.fillStyle = `rgb(${intensity}, ${intensity}, ${intensity})`;
-                                ctx.fillRect(px, py, cellSize - 1, cellSize - 1);
-                            }
-                        }
-                        
-                        ctx.strokeStyle = ['#ef4444', '#22c55e', '#3b82f6'][m];
-                        ctx.lineWidth = 2;
-                        ctx.strokeRect(mapX, mapY, mapSize * cellSize, mapSize * cellSize);
-                    }
-                    
-                    // Show current filter being applied
-                    const filterY = 50 + mapSize * cellSize + 40;
-                    ctx.fillStyle = filters[currentFilter].color;
-                    ctx.fillText(`Applying ${filters[currentFilter].name}`, 20, filterY);
-                    
-                    // Show resulting 6 feature maps
-                    const resultY = filterY + 40;
-                    ctx.fillStyle = '#ffffff';
-                    ctx.fillText('Layer 2 Output (6 maps)', 20, resultY);
-                    
-                    for (let m = 0; m < 6; m++) {
-                        const mapX = 20 + m * (mapSize * cellSize + 10);
-                        const mapStartY = resultY + 20;
-                        
-                        // Highlight current filter
-                        const isActive = m === currentFilter;
-                        
-                        for (let y = 0; y < mapSize; y++) {
-                            for (let x = 0; x < mapSize; x++) {
-                                const px = mapX + x * cellSize;
-                                const py = mapStartY + y * cellSize;
-                                
-                                if (isActive) {
-                                    const intensity = Math.floor((Math.sin(x * 0.15 + m) * Math.cos(y * 0.15 + m) + 1) * 127);
-                                    ctx.fillStyle = `rgb(${intensity}, ${intensity}, ${intensity})`;
-                                } else {
-                                    ctx.fillStyle = m < currentFilter ? '#555555' : '#333333';
-                                }
-                                
-                                ctx.fillRect(px, py, cellSize - 1, cellSize - 1);
-                            }
-                        }
-                        
-                        if (isActive) {
-                            ctx.strokeStyle = filters[m].color;
-                            ctx.lineWidth = 3;
-                            ctx.strokeRect(mapX, mapStartY, mapSize * cellSize, mapSize * cellSize);
-                        }
-                    }
-                    
-                    animFrame++;
-                    
-                    // Progress through filters
-                    if (animFrame % 80 === 0) {
-                        currentFilter = (currentFilter + 1) % 6;
-                    }
-                    
-                    requestAnimationFrame(animate);
-                }
-                
-                animate();
-            }
-            
-            // 6. FLATTENING VISUALIZATION
-            function initFlattening() {
-                const canvas = document.getElementById('flattening-canvas');
-                if (!canvas) return;
-                
-                const ctx = canvas.getContext('2d');
-                let animFrame = 0;
-                let flattenProgress = 0;
-                
-                function animate() {
-                    ctx.clearRect(0, 0, canvas.width, canvas.height);
-                    
-                    const mapSize = 6;
-                    const cellSize = 15;
-                    const vectorWidth = 8;
-                    const vectorHeight = 4;
-                    
-                    // Show 6 feature maps
-                    ctx.fillStyle = '#ffffff';
-                    ctx.font = 'bold 14px sans-serif';
-                    ctx.fillText('6 Feature Maps (6×6 each)', 20, 30);
-                    
-                    const maps = [];
-                    for (let m = 0; m < 6; m++) {
-                        const mapX = 20 + (m % 3) * (mapSize * cellSize + 20);
-                        const mapY = 50 + Math.floor(m / 3) * (mapSize * cellSize + 20);
-                        
-                        const mapData = [];
-                        for (let y = 0; y < mapSize; y++) {
-                            const row = [];
-                            for (let x = 0; x < mapSize; x++) {
-                                const px = mapX + x * cellSize;
-                                const py = mapY + y * cellSize;
-                                
-                                const value = (Math.sin(x * 0.5 + m) * Math.cos(y * 0.5 + m) + 1) * 0.5;
-                                const intensity = Math.floor(value * 255);
-                                ctx.fillStyle = `rgb(${intensity}, ${intensity}, ${intensity})`;
-                                ctx.fillRect(px, py, cellSize - 1, cellSize - 1);
-                                
-                                row.push(value);
-                            }
-                            mapData.push(row);
-                        }
-                        maps.push(mapData);
-                        
-                        ctx.strokeStyle = '#666666';
-                        ctx.lineWidth = 1;
-                        ctx.strokeRect(mapX, mapY, mapSize * cellSize, mapSize * cellSize);
-                    }
-                    
-                    // Show flattening arrow
-                    const arrowX = 350;
-                    const arrowY = 130;
-                    
-                    ctx.strokeStyle = '#ffc107';
-                    ctx.lineWidth = 3;
-                    ctx.beginPath();
-                    ctx.moveTo(arrowX, arrowY);
-                    ctx.lineTo(arrowX + 60, arrowY);
-                    ctx.stroke();
-                    
-                    // Arrow head
-                    ctx.beginPath();
-                    ctx.moveTo(arrowX + 60, arrowY);
-                    ctx.lineTo(arrowX + 50, arrowY - 5);
-                    ctx.lineTo(arrowX + 50, arrowY + 5);
-                    ctx.closePath();
-                    ctx.fillStyle = '#ffc107';
-                    ctx.fill();
-                    
-                    ctx.fillStyle = '#ffc107';
-                    ctx.font = 'bold 12px sans-serif';
-                    ctx.fillText('Flatten', arrowX + 10, arrowY - 10);
-                    
-                    // Show flattened vector
-                    const vectorX = 450;
-                    const vectorY = 50;
-                    
-                    ctx.fillStyle = '#ffffff';
-                    ctx.font = 'bold 14px sans-serif';
-                    ctx.fillText('Flattened Vector (216 values)', vectorX, 30);
-                    
-                    let flatIndex = 0;
-                    for (let m = 0; m < 6; m++) {
-                        for (let y = 0; y < mapSize; y++) {
-                            for (let x = 0; x < mapSize; x++) {
-                                const vx = vectorX + (flatIndex % 18) * vectorWidth;
-                                const vy = vectorY + Math.floor(flatIndex / 18) * vectorHeight;
-                                
-                                if (flatIndex <= flattenProgress) {
-                                    const value = maps[m][y][x];
-                                    const intensity = Math.floor(value * 255);
-                                    ctx.fillStyle = `rgb(${intensity}, ${intensity}, ${intensity})`;
-                                } else {
-                                    ctx.fillStyle = '#333333';
-                                }
-                                
-                                ctx.fillRect(vx, vy, vectorWidth - 1, vectorHeight - 1);
-                                flatIndex++;
-                            }
-                        }
-                    }
-                    
-                    animFrame++;
-                    
-                    // Animate flattening progress
-                    if (animFrame % 2 === 0) {
-                        flattenProgress++;
-                        if (flattenProgress > 216) {
-                            flattenProgress = 0;
-                        }
-                    }
-                    
-                    requestAnimationFrame(animate);
-                }
-                
-                animate();
-            }
-            
-            // 7. NEURAL NETWORK VISUALIZATION
-            function initNeuralNetwork() {
-                const canvas = document.getElementById('neural-network-canvas');
-                if (!canvas) return;
-                
-                const ctx = canvas.getContext('2d');
-                let animFrame = 0;
-                let activeConnection = 0;
-                
-                function animate() {
-                    ctx.clearRect(0, 0, canvas.width, canvas.height);
-                    
-                    // Layer definitions
-                    const layers = [
-                        { neurons: 8, x: 50, label: 'Input\n(216→8)' },
-                        { neurons: 6, x: 200, label: 'Hidden 1' },
-                        { neurons: 4, x: 350, label: 'Hidden 2' },
-                        { neurons: 3, x: 500, label: 'Output' }
-                    ];
-                    
-                    const neuronRadius = 12;
-                    const centerY = canvas.height / 2;
-                    
-                    // Draw connections
-                    for (let l = 0; l < layers.length - 1; l++) {
-                        const currentLayer = layers[l];
-                        const nextLayer = layers[l + 1];
-                        
-                        for (let i = 0; i < currentLayer.neurons; i++) {
-                            for (let j = 0; j < nextLayer.neurons; j++) {
-                                const y1 = centerY + (i - (currentLayer.neurons - 1) / 2) * 40;
-                                const y2 = centerY + (j - (nextLayer.neurons - 1) / 2) * 40;
-                                
-                                const connectionIndex = l * 100 + i * 10 + j;
-                                const isActive = connectionIndex === activeConnection % 300;
-                                
-                                ctx.strokeStyle = isActive ? '#ffc107' : 'rgba(255, 255, 255, 0.2)';
-                                ctx.lineWidth = isActive ? 3 : 1;
-                                
-                                ctx.beginPath();
-                                ctx.moveTo(currentLayer.x + neuronRadius, y1);
-                                ctx.lineTo(nextLayer.x - neuronRadius, y2);
-                                ctx.stroke();
-                            }
-                        }
-                    }
-                    
-                    // Draw neurons
-                    layers.forEach((layer, layerIndex) => {
-                        for (let i = 0; i < layer.neurons; i++) {
-                            const x = layer.x;
-                            const y = centerY + (i - (layer.neurons - 1) / 2) * 40;
-                            
-                            // Neuron activation based on animation frame
-                            const activation = (Math.sin(animFrame * 0.1 + i * 0.5 + layerIndex) + 1) / 2;
-                            const intensity = Math.floor(activation * 255);
-                            
-                            ctx.fillStyle = `rgb(${intensity}, ${intensity}, ${intensity})`;
-                            ctx.beginPath();
-                            ctx.arc(x, y, neuronRadius, 0, Math.PI * 2);
-                            ctx.fill();
-                            
-                            ctx.strokeStyle = '#ffffff';
-                            ctx.lineWidth = 2;
-                            ctx.stroke();
-                        }
-                        
-                        // Layer labels
-                        ctx.fillStyle = '#ffffff';
-                        ctx.font = 'bold 12px sans-serif';
-                        ctx.textAlign = 'center';
-                        const lines = layer.label.split('\n');
-                        lines.forEach((line, lineIndex) => {
-                            ctx.fillText(line, layer.x, centerY + (layer.neurons - 1) / 2 * 40 + 40 + lineIndex * 15);
-                        });
-                    });
-                    
-                    animFrame++;
-                    
-                    // Animate connections
-                    if (animFrame % 5 === 0) {
-                        activeConnection++;
-                    }
-                    
-                    requestAnimationFrame(animate);
-                }
-                
-                animate();
-            }
-            
-            // 8. FINAL PREDICTION VISUALIZATION
-            function initFinalPrediction() {
-                const canvas = document.getElementById('final-prediction-canvas');
-                if (!canvas) return;
-                
-                const ctx = canvas.getContext('2d');
-                let animFrame = 0;
-                let predictionPhase = 0; // 0: processing, 1: showing results
-                
-                const minerals = [
-                    { name: 'Gold (Au)', probability: 0.73, color: '#ffd700' },
-                    { name: 'Copper (Cu)', probability: 0.45, color: '#cd7f32' },
-                    { name: 'Iron (Fe)', probability: 0.28, color: '#808080' },
-                    { name: 'Silver (Ag)', probability: 0.15, color: '#c0c0c0' }
-                ];
-                
-                function animate() {
-                    ctx.clearRect(0, 0, canvas.width, canvas.height);
-                    
-                    if (predictionPhase === 0) {
-                        // Processing phase
-                        ctx.fillStyle = '#ffffff';
-                        ctx.font = 'bold 18px sans-serif';
-                        ctx.textAlign = 'center';
-                        ctx.fillText('Processing Neural Network...', canvas.width / 2, canvas.height / 2 - 50);
-                        
-                        // Animated processing indicator
-                        const dots = Math.floor(animFrame / 20) % 4;
-                        ctx.fillText('.'.repeat(dots), canvas.width / 2, canvas.height / 2 - 20);
-                        
-                        // Progress bar
-                        const progress = (animFrame % 100) / 100;
-                        const barWidth = 300;
-                        const barHeight = 20;
-                        const barX = (canvas.width - barWidth) / 2;
-                        const barY = canvas.height / 2 + 20;
-                        
-                        ctx.strokeStyle = '#ffffff';
-                        ctx.lineWidth = 2;
-                        ctx.strokeRect(barX, barY, barWidth, barHeight);
-                        
-                        ctx.fillStyle = '#22c55e';
-                        ctx.fillRect(barX + 2, barY + 2, (barWidth - 4) * progress, barHeight - 4);
-                        
-                    } else {
-                        // Results phase
-                        ctx.fillStyle = '#ffffff';
-                        ctx.font = 'bold 24px sans-serif';
-                        ctx.textAlign = 'center';
-                        ctx.fillText('Mineral Deposit Predictions', canvas.width / 2, 50);
-                        
-                        // Show region being analyzed
-                        const regionSize = 80;
-                        const regionX = 50;
-                        const regionY = 80;
-                        
-                        ctx.fillStyle = '#666666';
-                        ctx.fillRect(regionX, regionY, regionSize, regionSize);
-                        ctx.strokeStyle = '#ffc107';
-                        ctx.lineWidth = 3;
-                        ctx.strokeRect(regionX, regionY, regionSize, regionSize);
-                        
-                        ctx.fillStyle = '#ffffff';
-                        ctx.font = 'bold 14px sans-serif';
-                        ctx.textAlign = 'left';
-                        ctx.fillText('Selected Region', regionX, regionY + regionSize + 20);
-                        
-                        // Show predictions
-                        const predX = 200;
-                        const predY = 90;
-                        const barHeight = 25;
-                        const barSpacing = 40;
-                        const maxBarWidth = 300;
-                        
-                        minerals.forEach((mineral, index) => {
-                            const y = predY + index * barSpacing;
-                            
-                            // Mineral name
-                            ctx.fillStyle = '#ffffff';
-                            ctx.font = 'bold 16px sans-serif';
-                            ctx.textAlign = 'left';
-                            ctx.fillText(mineral.name, predX, y + barHeight / 2 + 5);
-                            
-                            // Probability bar
-                            const barWidth = maxBarWidth * mineral.probability;
-                            const pulse = 1 + 0.1 * Math.sin(animFrame * 0.1 + index);
-                            
-                            ctx.fillStyle = mineral.color;
-                            ctx.fillRect(predX + 120, y, barWidth * pulse, barHeight);
-                            
-                            ctx.strokeStyle = mineral.color;
-                            ctx.lineWidth = 2;
-                            ctx.strokeRect(predX + 120, y, maxBarWidth, barHeight);
-                            
-                            // Percentage
-                            ctx.fillStyle = '#ffffff';
-                            ctx.font = 'bold 14px sans-serif';
-                            ctx.textAlign = 'right';
-                            ctx.fillText(`${(mineral.probability * 100).toFixed(1)}%`, predX + 120 + maxBarWidth + 40, y + barHeight / 2 + 5);
-                        });
-                        
-                        // Confidence indicator
-                        const confidence = minerals[0].probability;
-                        ctx.fillStyle = confidence > 0.7 ? '#22c55e' : confidence > 0.4 ? '#ffc107' : '#ef4444';
-                        ctx.font = 'bold 18px sans-serif';
-                        ctx.textAlign = 'center';
-                        ctx.fillText(`Confidence: ${confidence > 0.7 ? 'HIGH' : confidence > 0.4 ? 'MEDIUM' : 'LOW'}`, canvas.width / 2, canvas.height - 30);
-                    }
-                    
-                    animFrame++;
-                    
-                    // Switch between phases
-                    if (animFrame % 200 === 0) {
-                        predictionPhase = (predictionPhase + 1) % 2;
-                    }
-                    
-                    requestAnimationFrame(animate);
-                }
-                
-                animate();
-            }
-            
-            // Initialize all visualizations
-            initRegionSelection();
-            initRGBBreakdown();
-            initConvolution();
-            initReLUMaxPool();
-            initSecondLayer();
-            initFlattening();
-            initNeuralNetwork();
-            initFinalPrediction();
-        });
-        
-        // Add smooth scrolling for better UX
-        document.addEventListener('DOMContentLoaded', function() {
-            // Auto-start visualization after a brief delay
-            setTimeout(() => {
-                const container = document.querySelector('.geomineral-container');
-                if (container) {
-                    container.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                }
-            }, 2000);
-        });
-    </script>
+    <script src="../js/dates.js"></script>
 </body>
-</html> 
+</html>
