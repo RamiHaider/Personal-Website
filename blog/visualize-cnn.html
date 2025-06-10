@@ -49,6 +49,21 @@
             white-space: pre-wrap;
             margin: 20px 0;
         }
+        
+        .video-container {
+            width: 100%;
+            max-width: 100%;
+            margin: 20px 0;
+            box-sizing: border-box;
+        }
+        
+        .video-container video {
+            width: 100%;
+            height: auto;
+            max-width: 100%;
+            display: block;
+            border-radius: 5px;
+        }
     </style>
 </head>
 <body>
@@ -69,15 +84,12 @@
                     
                     <h3> Introduction</h3>
 
-                        <p>In a previous section, we learned about neural networks. Convolutional neural networks, the backbone of computer vision, are simply just adding a convolutional part before the fully connected layer - It really is just that simple. Let's learn how a forward pass through a trained CNN works, using an example of a geophysical image</p>
+                        <p>In a previous section, we learned about neural networks. Convolutional neural networks, the backbone of computer vision, are simply just adding a convolutional part before the fully connected layer - It really is just that simple. Let's learn how a forward pass through a trained CNN works, within a geophysical context.</p>
 
 
                     <div style="height: 15px;"></div>
 
-
-                </div>
-
-                <!-- Step 1: Region Selection -->
+                    <!-- Step 1: Region Selection -->
                 <div id="step1" class="section">
                     <h2>Model input</h2>
                     <p>Say we trained a model to classify geophysical images as containing mineralization or not. Now, we want to input an image to know if it contains mineralization or not. </p>
@@ -236,6 +248,7 @@
                     
                     <p>The power of CNNs lies in their ability to automatically learn relevant features from data, making them incredibly effective for computer vision tasks across many domains—from medical imaging to autonomous vehicles to geological exploration.</p>
 
+                </div>
                 </div>
             </main>
         </div>
