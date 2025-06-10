@@ -24,7 +24,7 @@ document.addEventListener('DOMContentLoaded', function() {
   container.style.position = 'relative';
   container.style.height = '300px'; // Reverted back to the original 300px height
   container.style.overflow = 'hidden';
-  container.style.backgroundColor = '#1f2937'; // gray-800
+  container.style.backgroundColor = '#ffffff'; // white background
   container.style.borderRadius = '0.5rem';
   
   // Append canvases to container
@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const cnnWrapper = document.createElement('div');
   cnnWrapper.style.position = 'absolute';
   cnnWrapper.style.inset = '0';
-  cnnWrapper.style.backgroundColor = '#111827'; // gray-900
+  cnnWrapper.style.backgroundColor = '#ffffff'; // white background
   cnnWrapper.style.display = 'flex';
   cnnWrapper.style.alignItems = 'center';
   cnnWrapper.style.justifyContent = 'center';
@@ -68,7 +68,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // Create vector, neural network, and prediction sections
   const vectorSection = document.createElement('div');
   vectorSection.style.width = '25%'; // Increased from 20% to 25%
-  vectorSection.style.backgroundColor = '#111827'; // gray-900
+  vectorSection.style.backgroundColor = '#ffffff'; // white background
   vectorSection.style.borderRadius = '0.5rem 0 0 0.5rem';
   vectorSection.style.padding = '0.5rem';
   vectorSection.style.transform = 'translateX(-100%)';
@@ -78,7 +78,7 @@ document.addEventListener('DOMContentLoaded', function() {
   
   const nnSection = document.createElement('div');
   nnSection.style.width = '50%'; // Stay at 50%
-  nnSection.style.backgroundColor = '#111827'; // gray-900
+  nnSection.style.backgroundColor = '#ffffff'; // white background
   nnSection.style.padding = '1rem';
   nnSection.style.display = 'flex';
   nnSection.style.flexDirection = 'column';
@@ -92,7 +92,7 @@ document.addEventListener('DOMContentLoaded', function() {
   
   const predictionSection = document.createElement('div');
   predictionSection.style.width = '25%'; // Increased from 20% to 25%
-  predictionSection.style.backgroundColor = '#111827'; // gray-900
+  predictionSection.style.backgroundColor = '#ffffff'; // white background
   predictionSection.style.borderRadius = '0 0.5rem 0.5rem 0';
   predictionSection.style.padding = '1rem';
   predictionSection.style.transform = 'translateX(100%)';
@@ -117,8 +117,8 @@ document.addEventListener('DOMContentLoaded', function() {
     indicator.style.padding = '0.25rem 0.75rem';
     indicator.style.borderRadius = '9999px';
     indicator.style.fontSize = '0.75rem';
-    indicator.style.backgroundColor = '#374151'; // gray-700
-    indicator.style.color = '#9ca3af'; // gray-400
+    indicator.style.backgroundColor = '#f3f4f6'; // light gray background
+    indicator.style.color = '#374151'; // dark gray text
     indicator.style.transition = 'all 0.3s ease-in-out';
     stageIndicatorContainer.appendChild(indicator);
     return indicator;
@@ -563,8 +563,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // Single stage: Show complete decomposition with all 4 matrices
     ctx.clearRect(0, 0, width, height);
     
-    // Dark blue background (consistent)
-    ctx.fillStyle = '#0f172a';
+    // White background (consistent)
+    ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, width, height);
     
     const cellSize = 8; // Size for original matrix
@@ -579,7 +579,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const channelsStartY = height / 2 - (3 * matrixRows * smallCellSize + 2 * channelSpacing) / 2;
     
     // Draw original matrix with black strokes
-    ctx.fillStyle = '#ffffff';
+    ctx.fillStyle = '#000000';
     ctx.font = 'bold 16px sans-serif';
     ctx.textAlign = 'center';
     ctx.fillText('Original RGB', originalX + (matrixCols * cellSize)/2, originalY - 25);
@@ -663,7 +663,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Stage: Show Red Channel and Intensity Matrix side by side
     ctx.clearRect(0, 0, width, height);
-    ctx.fillStyle = '#0f172a';
+    ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, width, height);
     
     // Header
@@ -684,7 +684,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const rightY = height / 2 - (matrixRows * cellSize) / 2;
     
     // Draw Red Channel matrix on the left
-    ctx.fillStyle = '#ff4444';
+    ctx.fillStyle = '#000000';
     ctx.font = 'bold 16px sans-serif';
     ctx.textAlign = 'center';
     ctx.fillText('Red Channel', leftX + (matrixCols * cellSize)/2, leftY - 25);
@@ -703,7 +703,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     // Draw Intensity Matrix on the right
-    ctx.fillStyle = '#ffffff';
+    ctx.fillStyle = '#000000';
     ctx.font = 'bold 16px sans-serif';
     ctx.textAlign = 'center';
     ctx.fillText('Intensity Matrix (0-255)', rightX + (matrixCols * cellSize)/2, rightY - 25);
@@ -748,7 +748,7 @@ document.addEventListener('DOMContentLoaded', function() {
                   matrixCols * cellSize + 6, matrixRows * cellSize + 6);
     
     // Conversion text in the middle (no arrow)
-    ctx.fillStyle = '#ffffff';
+    ctx.fillStyle = '#000000';
     ctx.font = '14px sans-serif';
     ctx.textAlign = 'center';
     const middleX = leftX + (matrixCols * cellSize) + matrixSpacing/2;
@@ -948,11 +948,11 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function drawBackground() {
-      ctx.fillStyle = '#0f172a';
+      ctx.fillStyle = '#ffffff';
       ctx.fillRect(0, 0, width, height);
       
       // Subtle grid
-      ctx.strokeStyle = 'rgba(255, 255, 255, 0.02)';
+      ctx.strokeStyle = 'rgba(0, 0, 0, 0.05)';
       ctx.lineWidth = 1;
       for (let x = 0; x < width; x += 50) {
         ctx.beginPath();
@@ -1031,13 +1031,13 @@ document.addEventListener('DOMContentLoaded', function() {
             if (isActive) {
               ctx.fillStyle = layer.color;
             } else {
-              ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+              ctx.fillStyle = 'rgba(200, 200, 200, 0.8)';
             }
             
             ctx.fill();
             
             // Border
-            ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+            ctx.strokeStyle = 'rgba(100, 100, 100, 0.8)';
             ctx.lineWidth = 1;
             ctx.stroke();
           });
@@ -1156,7 +1156,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Create header with matching styling
     const headerBg = document.createElement('div');
-    headerBg.style.backgroundColor = 'rgba(17, 24, 39, 0.8)';
+    headerBg.style.backgroundColor = 'rgba(243, 244, 246, 0.9)';
     headerBg.style.padding = '0.5rem 1rem';
     headerBg.style.marginBottom = '1rem';
     
@@ -1205,7 +1205,7 @@ document.addEventListener('DOMContentLoaded', function() {
       const progressBar = document.createElement('div');
       progressBar.style.width = '100%';
       progressBar.style.height = '0.75rem';
-      progressBar.style.backgroundColor = '#374151'; // gray-700
+      progressBar.style.backgroundColor = '#e5e7eb'; // gray-200 for better contrast on white
       progressBar.style.borderRadius = '9999px';
       progressBar.style.overflow = 'hidden';
       
@@ -1225,7 +1225,7 @@ document.addEventListener('DOMContentLoaded', function() {
       percentLabel.textContent = `${Math.round(mineral.probability * 100)}%`;
       percentLabel.style.fontSize = '0.75rem';
       percentLabel.style.fontWeight = '500';
-      percentLabel.style.color = '#d1d5db'; // gray-300
+      percentLabel.style.color = '#374151'; // gray-700 for better contrast on white
       percentLabel.style.display = 'block';
       percentLabel.style.textAlign = 'right';
       percentLabel.style.marginTop = '0.25rem';
@@ -1241,11 +1241,11 @@ document.addEventListener('DOMContentLoaded', function() {
   function updateStageIndicators() {
     stageIndicators.forEach((indicator, i) => {
       if (i === predictionStage) {
-        indicator.style.backgroundColor = '#155e75'; // cyan-800
+        indicator.style.backgroundColor = '#0891b2'; // cyan-600 for better contrast on white
         indicator.style.color = 'white';
       } else {
-        indicator.style.backgroundColor = '#374151'; // gray-700
-        indicator.style.color = '#9ca3af'; // gray-400
+        indicator.style.backgroundColor = '#f3f4f6'; // gray-100 for better contrast on white
+        indicator.style.color = '#374151'; // gray-700 for better contrast
       }
     });
   }
@@ -1657,7 +1657,7 @@ document.addEventListener('DOMContentLoaded', function() {
     ctx.clearRect(0, 0, width, height);
     
     // Draw dark blue background (consistent with other scenes)
-    ctx.fillStyle = '#0f172a'; // Changed from '#1e3a8a' to '#0f172a' for consistency
+    ctx.fillStyle = '#ffffff'; // White background for consistency
     ctx.fillRect(0, 0, width, height);
     
     // Draw stage headers at the top
@@ -1859,7 +1859,7 @@ document.addEventListener('DOMContentLoaded', function() {
       
       // Redraw the base scene
       ctx.clearRect(0, 0, width, height);
-      ctx.fillStyle = '#0f172a';
+      ctx.fillStyle = '#ffffff';
       ctx.fillRect(0, 0, width, height);
       
       // Draw stage headers at the top
@@ -1869,20 +1869,20 @@ document.addEventListener('DOMContentLoaded', function() {
       const headerY = 25;
       const stageSpacing = width / 3;
       
-      // Convolution stage (active - fully white)
-      ctx.fillStyle = '#ffffff';
+      // Convolution stage (active - fully black)
+      ctx.fillStyle = '#000000';
       ctx.fillText('Convolution', stageSpacing * 0.5, headerY);
       
       // ReLU stage (inactive - dimmed)
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
       ctx.fillText('ReLU', stageSpacing * 1.5, headerY);
       
       // MaxPooling stage (inactive - dimmed)
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
       ctx.fillText('MaxPooling', stageSpacing * 2.5, headerY);
       
       // Draw input matrix with current kernel position highlighted (removed subtitle)
-      ctx.fillStyle = '#ffffff';
+      ctx.fillStyle = '#000000';
       ctx.font = '14px sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText(`Input Matrix`, inputX + (matrixWidth * cellSize)/2, inputY - 15);
@@ -1942,7 +1942,7 @@ document.addEventListener('DOMContentLoaded', function() {
             ctx.lineWidth = 1;
             ctx.strokeRect(x, y, kernelSize - 2, kernelSize - 2);
             
-            ctx.fillStyle = '#ffffff';
+            ctx.fillStyle = '#000000';
             ctx.font = '8px sans-serif';
             ctx.textAlign = 'center';
             ctx.fillText(value.toFixed(1), x + kernelSize/2, y + kernelSize/2 + 2);
@@ -2013,7 +2013,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Show current calculation result to the RIGHT of feature maps
         const resultY = fMapY + (featureMapSize / 2);
-        ctx.fillStyle = '#ffffff';
+        ctx.fillStyle = '#000000';
         ctx.font = '12px sans-serif';
         ctx.textAlign = 'left'; // Left align for right-side positioning
         ctx.fillText(`Result: ${reluResult.toFixed(2)}`, resultsX, resultY);
@@ -2082,7 +2082,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const animateScene = () => {
       // Clear and setup scene
       ctx.clearRect(0, 0, width, height);
-      ctx.fillStyle = '#0f172a';
+      ctx.fillStyle = '#ffffff';
       ctx.fillRect(0, 0, width, height);
       
       // Draw stage headers
@@ -2093,15 +2093,15 @@ document.addEventListener('DOMContentLoaded', function() {
       const stageSpacing = width / 3;
       
       // Convolution stage (completed - dimmed)
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
       ctx.fillText('Convolution', stageSpacing * 0.5, headerY);
       
-      // ReLU and MaxPooling stages (active - fully white)
-      ctx.fillStyle = '#ffffff';
+      // ReLU and MaxPooling stages (active - fully black)
+      ctx.fillStyle = '#000000';
       ctx.fillText('ReLU + MaxPooling', stageSpacing * 1.5, headerY);
       
       // Clear third header
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
       ctx.fillText('', stageSpacing * 2.5, headerY);
       
       // Layout for 3 columns
@@ -2117,7 +2117,7 @@ document.addEventListener('DOMContentLoaded', function() {
       const startY = height/2 - (featureMapSize * 1.5);
       
       // Column titles
-      ctx.fillStyle = '#ffffff';
+      ctx.fillStyle = '#000000';
       ctx.font = 'bold 14px sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText('Original', col1X + featureMapSize/2, startY - 30);
@@ -2405,7 +2405,7 @@ document.addEventListener('DOMContentLoaded', function() {
       if (reluStage === 0) {
         // Stage 1: Move feature maps to the left
         ctx.clearRect(0, 0, width, height);
-        ctx.fillStyle = '#0f172a'; // Consistent dark background
+        ctx.fillStyle = '#ffffff'; // Consistent white background
         ctx.fillRect(0, 0, width, height);
         
         // Draw stage headers with ReLU highlighted
@@ -2416,15 +2416,15 @@ document.addEventListener('DOMContentLoaded', function() {
         const stageSpacing = width / 3;
         
         // Convolution stage (inactive - dimmed)
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
         ctx.fillText('Convolution', stageSpacing * 0.5, headerY);
         
-        // ReLU stage (active - fully white)
-        ctx.fillStyle = '#ffffff';
+        // ReLU stage (active - fully black)
+        ctx.fillStyle = '#000000';
         ctx.fillText('ReLU', stageSpacing * 1.5, headerY);
         
         // MaxPooling stage (inactive - dimmed)
-        ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+        ctx.fillStyle = 'rgba(0, 0, 0, 0.4)';
         ctx.fillText('MaxPooling', stageSpacing * 2.5, headerY);
         
         // Subtitle
@@ -2505,7 +2505,7 @@ document.addEventListener('DOMContentLoaded', function() {
         ctx.font = 'bold 16px sans-serif';
         ctx.textAlign = 'center';
         ctx.fillText('ReLU', arrowX + 40, arrowY - 10);
-        ctx.fillStyle = '#ffffff';
+        ctx.fillStyle = '#000000';
         ctx.font = '12px sans-serif';
         ctx.fillText('max(0, x)', arrowX + 40, arrowY + 15);
         
@@ -2515,7 +2515,7 @@ document.addEventListener('DOMContentLoaded', function() {
       } else if (reluStage === 1) {
         // Stage 2: Show ReLU operation in action
         ctx.clearRect(0, 0, width, height);
-        ctx.fillStyle = '#0f172a'; // Consistent dark background
+        ctx.fillStyle = '#ffffff'; // Consistent white background
         ctx.fillRect(0, 0, width, height);
         
         // Draw stage headers with ReLU highlighted
@@ -2642,7 +2642,7 @@ document.addEventListener('DOMContentLoaded', function() {
       } else if (reluStage === 2) {
         // Stage 3: Show final output and transition to max pooling
         ctx.clearRect(0, 0, width, height);
-        ctx.fillStyle = '#0f172a'; // Consistent dark background
+        ctx.fillStyle = '#ffffff'; // Consistent white background
         ctx.fillRect(0, 0, width, height);
         
         // Draw stage headers with ReLU highlighted
@@ -2724,7 +2724,7 @@ document.addEventListener('DOMContentLoaded', function() {
         ctx.font = 'bold 16px sans-serif';
         ctx.textAlign = 'center';
         ctx.fillText('Max Pooling', arrowX + 40, arrowY - 10);
-        ctx.fillStyle = '#ffffff';
+        ctx.fillStyle = '#000000';
         ctx.font = '12px sans-serif';
         ctx.fillText('2×2 Downsampling', arrowX + 40, arrowY + 15);
         
@@ -2775,7 +2775,7 @@ document.addEventListener('DOMContentLoaded', function() {
       if (poolStage === 0) {
         // Stage 1: Setup - show ReLU outputs and explain max pooling
         ctx.clearRect(0, 0, width, height);
-        ctx.fillStyle = '#0f172a'; // Consistent dark background
+        ctx.fillStyle = '#ffffff'; // Consistent white background
         ctx.fillRect(0, 0, width, height);
         
         // Draw stage headers with MaxPooling highlighted
@@ -2903,7 +2903,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Redraw scene
         ctx.clearRect(0, 0, width, height);
-        ctx.fillStyle = '#111827';
+        ctx.fillStyle = '#ffffff';
         ctx.fillRect(0, 0, width, height);
         
         // Header
@@ -2927,7 +2927,7 @@ document.addEventListener('DOMContentLoaded', function() {
           ctx.font = 'bold 12px sans-serif';
           ctx.textAlign = 'center';
           ctx.fillText(`Input ${kernelIndex + 1}`, leftX + (featureMapDim * cellSize)/2, mapY - 15);
-          ctx.fillStyle = '#ffffff';
+          ctx.fillStyle = '#000000';
           ctx.font = '10px sans-serif';
           ctx.fillText(`${featureMapDim}×${featureMapDim}`, leftX + (featureMapDim * cellSize)/2, mapY - 3);
           
@@ -2957,7 +2957,7 @@ document.addEventListener('DOMContentLoaded', function() {
               
               // Show values in the current window
               if (inWindow && cellSize > 15) {
-                ctx.fillStyle = '#ffffff';
+                ctx.fillStyle = '#000000';
                 ctx.font = '8px sans-serif';
                 ctx.textAlign = 'center';
                 ctx.fillText(value.toFixed(2), x + cellSize/2, y + cellSize/2 + 2);
@@ -2987,7 +2987,7 @@ document.addEventListener('DOMContentLoaded', function() {
           ctx.font = 'bold 12px sans-serif';
           ctx.textAlign = 'center';
           ctx.fillText(`Pooled ${kernelIndex + 1}`, rightX + (pooledDim * pooledCellSize)/2, outputMapY - 15);
-          ctx.fillStyle = '#ffffff';
+          ctx.fillStyle = '#000000';
           ctx.font = '10px sans-serif';
           ctx.fillText(`${pooledDim}×${pooledDim}`, rightX + (pooledDim * pooledCellSize)/2, outputMapY - 3);
           
@@ -3009,7 +3009,7 @@ document.addEventListener('DOMContentLoaded', function() {
                   ctx.strokeRect(x - 1, y - 1, pooledCellSize + 1, pooledCellSize + 1);
                   
                   // Show max value
-                  ctx.fillStyle = '#ffffff';
+                  ctx.fillStyle = '#000000';
                   ctx.font = 'bold 10px sans-serif';
                   ctx.textAlign = 'center';
                   ctx.fillText(maxValue.toFixed(2), x + pooledCellSize/2, y + pooledCellSize/2 + 3);
@@ -3059,7 +3059,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     const showFinalPooledResults = () => {
       ctx.clearRect(0, 0, width, height);
-      ctx.fillStyle = '#111827';
+      ctx.fillStyle = '#ffffff';
       ctx.fillRect(0, 0, width, height);
       
       // Header
@@ -3069,7 +3069,7 @@ document.addEventListener('DOMContentLoaded', function() {
       ctx.fillText('Max Pooling Complete', width / 2, 40);
       
       // Subtitle
-      ctx.fillStyle = '#ffffff';
+      ctx.fillStyle = '#000000';
       ctx.font = '14px sans-serif';
       ctx.fillText(`Downsampled from ${featureMapDim}×${featureMapDim} to ${pooledDim}×${pooledDim}`, width / 2, 65);
       
@@ -3087,7 +3087,7 @@ document.addEventListener('DOMContentLoaded', function() {
         ctx.font = 'bold 16px sans-serif';
         ctx.textAlign = 'center';
         ctx.fillText(`Pooled Map ${kernelIndex + 1}`, mapX + (pooledDim * cellSize)/2, centerY - 25);
-        ctx.fillStyle = '#ffffff';
+        ctx.fillStyle = '#000000';
         ctx.font = '12px sans-serif';
         ctx.fillText(`${pooledDim}×${pooledDim}`, mapX + (pooledDim * cellSize)/2, centerY - 8);
         
@@ -3182,11 +3182,11 @@ document.addEventListener('DOMContentLoaded', function() {
       
       // Clear and redraw scene
       ctx.clearRect(0, 0, width, height);
-      ctx.fillStyle = '#0f172a';
+      ctx.fillStyle = '#ffffff';
       ctx.fillRect(0, 0, width, height);
       
       // Header
-      ctx.fillStyle = '#ffffff';
+      ctx.fillStyle = '#000000';
       ctx.font = 'bold 18px sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText('Second Convolution Layer', width/2, 25);
@@ -3213,7 +3213,7 @@ document.addEventListener('DOMContentLoaded', function() {
       const rowSpacing = (height - startY - 40) / 3; // Space for 3 rows
       
       // Column titles
-      ctx.fillStyle = '#ffffff';
+      ctx.fillStyle = '#000000';
       ctx.font = 'bold 14px sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText('Input (3 maps)', col1CenterX, startY - 30);
@@ -3302,7 +3302,7 @@ document.addEventListener('DOMContentLoaded', function() {
             ctx.strokeRect(x, y, kernelSize - 2, kernelSize - 2);
             
             // Show value
-            ctx.fillStyle = '#ffffff';
+            ctx.fillStyle = '#000000';
             ctx.font = 'bold 8px sans-serif';
             ctx.textAlign = 'center';
             ctx.fillText(value.toFixed(1), x + kernelSize/2, y + kernelSize/2 + 2);
@@ -3467,11 +3467,11 @@ document.addEventListener('DOMContentLoaded', function() {
       const animateScene = () => {
         // Clear and setup
         ctx.clearRect(0, 0, width, height);
-        ctx.fillStyle = '#0f172a';
+        ctx.fillStyle = '#ffffff';
         ctx.fillRect(0, 0, width, height);
         
         // Header
-        ctx.fillStyle = '#ffffff';
+        ctx.fillStyle = '#000000';
         ctx.font = 'bold 18px sans-serif';
         ctx.textAlign = 'center';
         ctx.fillText('Second Layer: ReLU + MaxPooling', width/2, 25);
@@ -3491,7 +3491,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const rowSpacing = (height - startY - 40) / 3; // Space for 3 rows
         
         // Column titles
-        ctx.fillStyle = '#ffffff';
+        ctx.fillStyle = '#000000';
         ctx.font = 'bold 14px sans-serif';
         ctx.textAlign = 'center';
         ctx.fillText('Original (6 maps)', col1CenterX, startY - 30);
@@ -3817,11 +3817,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const animateFlattening = () => {
       // Clear canvas
       ctx.clearRect(0, 0, width, height);
-      ctx.fillStyle = '#0f172a';
+      ctx.fillStyle = '#ffffff';
       ctx.fillRect(0, 0, width, height);
       
       // Header
-      ctx.fillStyle = '#ffffff';
+      ctx.fillStyle = '#000000';
       ctx.font = 'bold 18px sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText('Flattening Feature Maps', width/2, 30);
@@ -3889,17 +3889,17 @@ document.addEventListener('DOMContentLoaded', function() {
       }
       
       // Draw column vector on the right
-      ctx.fillStyle = '#ffffff';
+      ctx.fillStyle = '#000000';
       ctx.font = 'bold 14px sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText('Flattened Vector', vectorX + vectorWidth/2, vectorStartY - 25);
       ctx.fillText(`(${totalElements} × 1)`, vectorX + vectorWidth/2, vectorStartY - 8);
       
       // Vector background
-      ctx.fillStyle = 'rgba(255, 255, 255, 0.1)';
+      ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
       ctx.fillRect(vectorX, vectorStartY, vectorWidth, vectorHeight);
       
-      ctx.strokeStyle = '#ffffff';
+      ctx.strokeStyle = '#000000';
       ctx.lineWidth = 2;
       ctx.strokeRect(vectorX, vectorStartY, vectorWidth, vectorHeight);
       
@@ -3962,7 +3962,7 @@ document.addEventListener('DOMContentLoaded', function() {
         ctx.textAlign = 'center';
         ctx.fillText('Flattening Complete!', width/2, height - 40);
         
-        ctx.fillStyle = '#ffffff';
+        ctx.fillStyle = '#000000';
         ctx.font = '12px sans-serif';
         ctx.fillText(`${totalElements} features ready for fully connected layers`, width/2, height - 20);
         
