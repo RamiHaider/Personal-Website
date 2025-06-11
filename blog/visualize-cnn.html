@@ -313,7 +313,7 @@
                         <img src="../assets/images/Illustrated-CNN/CN-Layer.jpg" alt="CNN Overview" style="max-width: 600px; width: 100%; height: auto">
                     </div>
 
-                    <h3> Convolution </h3>
+                    <h3 style="color: #e04613; font-weight: bold;"> Convolution </h3>
                     <p> The first convolution inputs our matrix, and outputs feature maps It does this by applying a filter, known as a kernel, to the input matrix. </p>
 
                     
@@ -360,7 +360,7 @@
 
                     <p> Perfect, so this is the output of the Convolution, we now use this as input to the Relu</p>
                 <div id="step4" class="section">
-                    <h3>ReLU</h3>
+                    <h3 style="color: #e04613; font-weight: bold;">ReLU</h3>
 
                     
                     <p>Next, we apply the <strong>ReLU activation function</strong>. It's simple—just replaces any negative value with zero. </p>
@@ -371,7 +371,7 @@
 
                     <p>This introduces non-linearity, which is crucial because otherwise, the network would just be a linear function and wouldn't be able to model complex patterns.</p>
                     
-                    <h3>Pooling</h3>
+                    <h3 style="color: #e04613; font-weight: bold;">Pooling</h3>
 
                     <p>Pooling a way to attentuate the activations in the feature maps</p>
 
@@ -414,7 +414,7 @@
                     
                 <p>That concludes the first convolutional layer. </p>
                 
-                <h3>The Second layer</h3>
+                <h3 style="color: #e04613; font-weight: bold;">The Second layer</h3>
 
                 <p> The output from the first layer is now the input to the second. </p>
                 <div style="text-align: center; margin: 30px 0;">
@@ -436,8 +436,8 @@
                     </ul>
                 
 
-
-                <h2>Fully-connected layer</h2>
+                <div style="height: 15px;"></div>
+                <h2 style="color: #b211b2; font-weight: bold;">Fully-connected layer</h2>
                 
                 <p>The output of the convolution is flattened into a column vector, and then passed into the fully connected layer. </p>
 
@@ -446,9 +446,9 @@
 
                 <!-- Step 7: Flattening -->
                 <div id="step7" class="section">
-                    <h3>Flattening</h3>
+                    <h3  style="color: #b211b2; font-weight: bold;">Flattening</h3>
                     
-                    <p>Once we're done with the second layer, we <strong>flatten</strong> the outputs into a column vector. We take our six feature maps and reshape them into a single long vector.</p>
+                    <p>We now flatten the outputs into a column vector</p>
                     
                     <div class="flattening-container" style="margin: 30px 0; text-align: center;">
                         <canvas id="flatteningCanvas" width="800" height="600" style="border-radius: 5px; background: white;"></canvas>
@@ -456,7 +456,7 @@
                     
                     <p>This vector gets passed into the fully connected layers. This step is crucial as it transforms our 2D feature maps into a 1D format that traditional neural network layers can process.</p>
 
-                    <h3>Fully Connected Neural Network</h3>
+                    <h3  style="color: #b211b2; font-weight: bold;">Connecting</h3>
                     
                     <p>In the fully connected layer, each input node is connected to every node in the next layer. This is where the real "decision-making" happens. All connections between layers are processed in parallel for efficiency.</p>
                     
@@ -464,17 +464,31 @@
                         <canvas id="neuralNetworkCanvas" width="900" height="400" style="border-radius: 5px; background: white;"></canvas>
                     </div>
 
+                    <div style="height: 15px;"></div>
+                    <h2 style="color: #ce1616; font-weight: bold;">Output</h2>
+
+                    <p> The output neurons correspond to minerals, and the score associated with each is interpreted as the probability of a mineral occurance</p>
                     
+                    <div class="output-prediction-container" style="margin: 30px 0; text-align: center;">
+                        <canvas id="outputPredictionCanvas" width="600" height="250" style="border-radius: 5px; background: white;"></canvas>
+                    </div>
+
 
                 <!-- Conclusion -->
-                <div id="conclusion" class="conclusion">
-                    <h2>Putting It All Together</h2>
-                    <p>This visualization demonstrates how a CNN transforms raw geophysical data into meaningful predictions through a series of mathematical operations. From simple edge detection to complex pattern recognition, each layer builds upon the previous one to create increasingly sophisticated understanding.</p>
-                    
-                    <p>The power of CNNs lies in their ability to automatically learn relevant features from data, making them incredibly effective for computer vision tasks across many domains—from medical imaging to autonomous vehicles to geological exploration.</p>
 
-                </div>
-                </div>
+                    <h2>Putting It All Together</h2>
+
+
+                    <p> We had a model that was trained to classify geophysical images as containing mineralization or not. It went through a convolutional component with successive feature mappings that took what were edges and lines, and used higher order features, the combination of earlier features, to generate new features maps. Finally, this was converted to a column vector and fed to a neural net for prediction</p>
+
+
+                    <div style="text-align: center; margin: 30px 0;">
+                        <img src="../assets/images/Illustrated-CNN/All-Togethor.jpg" alt="CNN Overview" style="max-width: 900px; width: 100%; height: auto">
+                    </div>
+
+                    <p>Perhaps what was before an unknown box, has been made more clear</p>
+
+
             </main>
         </div>
     </div>
@@ -490,6 +504,7 @@
     <script src="../js/second-layer-static.js"></script>
     <script src="../js/flattening-animation.js"></script>
     <script src="../js/neural-network-parallel.js"></script>
+    <script src="../js/output-prediction-static.js"></script>
     <script src="../js/convolution-animation.js"></script>
     
     <!-- Prism.js for syntax highlighting -->

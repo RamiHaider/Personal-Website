@@ -113,16 +113,6 @@ function drawParallelNeuralNetwork() {
     function drawBackground() {
         ctx.fillStyle = '#ffffff';
         ctx.fillRect(0, 0, width, height);
-        
-        // Header
-        ctx.fillStyle = '#000000';
-        ctx.font = 'bold 18px Arial';
-        ctx.textAlign = 'center';
-        ctx.fillText('Fully Connected Neural Network', width/2, 30);
-        
-        ctx.fillStyle = '#666666';
-        ctx.font = '12px Arial';
-        ctx.fillText('Processing flattened features through parallel connections', width/2, 50);
     }
     
     function drawLayers() {
@@ -160,19 +150,11 @@ function drawParallelNeuralNetwork() {
             } else {
                 // Hidden/Output layers - circular neurons
                 positions.forEach((pos, i) => {
-                    const pair = layerPairs[currentLayerPair];
-                    const isTargetLayer = pair && pair.to === layerIdx;
-                    const isActive = isTargetLayer && animationStep < 30; // Show activation briefly
-                    
                     ctx.beginPath();
                     ctx.arc(pos.x, pos.y + pos.height/2, pos.width/2, 0, Math.PI * 2);
                     
-                    if (isActive) {
-                        ctx.fillStyle = layer.color;
-                    } else {
-                        ctx.fillStyle = 'rgba(200, 200, 200, 0.8)';
-                    }
-                    
+                    // Always use neutral gray color
+                    ctx.fillStyle = 'rgba(200, 200, 200, 0.8)';
                     ctx.fill();
                     
                     // Border
@@ -191,21 +173,17 @@ function drawParallelNeuralNetwork() {
     
     function drawConnections() {
         connections.forEach(conn => {
-            const alpha = Math.max(0.1, 1 - (conn.age / 90)); // Fade over 1.5 seconds
-            
-            ctx.strokeStyle = `rgba(100, 100, 100, ${alpha * 0.6})`;
+            // Persistent connections - no fading
+            ctx.strokeStyle = 'rgba(100, 100, 100, 0.4)';
             ctx.lineWidth = 0.8;
             
             ctx.beginPath();
             ctx.moveTo(conn.fromX, conn.fromY);
             ctx.lineTo(conn.toX, conn.toY);
             ctx.stroke();
-            
-            conn.age++;
         });
         
-        // Remove old connections
-        connections = connections.filter(conn => conn.age < 90);
+        // Keep all connections (no removal)
     }
     
     function createAllConnections(fromLayerIdx, toLayerIdx) {
