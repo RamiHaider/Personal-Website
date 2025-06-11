@@ -224,12 +224,19 @@
 
                     <div style="height: 20px;"></div>
                     
-                    <h3> Introduction</h3>
+                    <h2> Introduction</h2>
 
-                        <p>In a previous section, we learned about neural networks. Convolutional neural networks, the backbone of computer vision, are simply just adding a convolutional part before the fully connected layer - It really is just that simple. Let's learn how a forward pass through a trained CNN works, within a geophysical context.</p>
+                        <p>In a previous section, we learned about neural networks. Convolutional neural networks, the backbone of computer vision, are simply just adding a convolutional part before the fully connected layer - It really is just that simple.</p>
+                            
+                        <p>Let's go through a forward pass through a trained CNN, within a geophysical context.</p>
 
+                    
 
                     <div style="height: 15px;"></div>
+
+                    <h2> A high level understanding</h2>
+
+
 
                     <!-- Step 1: Region Selection -->
                 <div id="step1" class="section">
@@ -248,15 +255,11 @@
 
                     
                     <div class="rgb-decomposition-container" style="margin: 20px 0; text-align: center;">
-                        <canvas id="rgbDecompositionCanvas" width="800" height="500" style="border-radius: 5px; background: white;"></canvas>
+                        <canvas id="rgbDecompositionCanvas" width="800" height="350" style="border-radius: 5px; background: white;"></canvas>
                     </div>
 
                     <p>You must be cognizant, the actual input is never colors or images, it's always numbers. This is what the actual input is</p>
                     
-                    <div class="matrix-visualization-container" style="margin: 20px 0; text-align: center;">
-                        <canvas id="matrixCanvas" width="400" height="200" style="border-radius: 5px; background: white;"></canvas>
-                    </div>
-                                        
                     <pre><code class="language-python">
     #36 x 36 matrix
     
@@ -269,26 +272,54 @@
 </code></pre>
                 </div>
 
+                <p>Where 0 represents white or an absense of color, and 255 represents black or the presence of color.</p>
+
                 <!-- Step 3: First Convolution -->
                 <div id="step3" class="section">
-                    <h2><span class="step-number">3</span>First Layer: Feature Mapping (Convolution)</h2>
-                    <div class="timestamp">Video: 0:59 - 1:08</div>
+                    <div style="height: 15px;"></div>
+                    <h2>Convolution</h2>
+
+                    <p>Next, we use our learned filters, otherwise known as kernels, to convolve over the input matrix to get the output, called a feature map. </p>
+                
                     
-                    <div class="video-container">
-                        <video controls>
-                            <source src="../assets/blog/3-feature-mapping.mp4" type="video/mp4">
-                            Your browser does not support the video tag.
-                        </video>
+                    <div class="simple-convolution-container" style="margin: 20px 0; text-align: center;">
+                        <canvas id="simpleConvolutionCanvas" width="800" height="300" style="border-radius: 5px; background: white;"></canvas>
                     </div>
                     
-                    <p>Now comes the key step that gives convolutional neural networks their name: <strong>convolution</strong>. During training, the model learns filters—basically, small 3×3 matrices—that slide over the image to extract features. These filters end up being edge detectors or pattern detectors, and they're common across many use cases—cats, cars, geophysical maps, you name it.</p>
-                    
-                    <p>At the highest level of abstraction, images are just edges and shapes. So at the start of the process, the filters are typically detecting edges. We pass each 3×3 filter over the input grid—starting top-left, moving across, then down—and for each step, we multiply the filter values with the image values element-wise. Then we sum them up and record that result in a new matrix, which we call a <strong>feature map</strong>.</p>
-                    
-                    <p>We're not downsampling yet—we're just doing convolutions. Each filter gives us one feature map. In this case, we're using three filters, so we get three output maps.</p>
-                </div>
+                    <p> It's literally just the dot product, i.e., piecewise matrix multiplication</p>
 
-                <!-- Step 4: ReLU + Max Pool -->
+                    <p>Let's take a 4x4 input matrix, and a 2x2 filter, and see how the convolution works.</p>
+                    </p>
+
+                    <pre><code class="language-python">
+    #4x4 matrix input matrix
+    
+    [[222, 205, 214, 176],
+    [136, 164, 174, 173], 
+    [111, 107, 105, 199],
+    [182, 140,  94, 170]]
+
+    #2x2 filter
+
+    [[1, 0],
+    [0, 1]]
+
+    #Convolution output
+    #The top left corner in the input matrix, flattened is [222, 205, 136, 164] 
+    #The filter flattened is [1, 0, 0, 1]
+    #Input X filter is: 222*1 + 205*0 + 136*0 + 164*1 = 388
+    #So the top left corner of the feature map is 388
+                    </code></pre>
+                    <p> You must see, that this operation is entirely parallelizable. That is to say that the output of each operation is independent of others. In fact, what PyTorch or TensorFlow does is take the flattened input matrix and matrix multiple of the filter, producing the output matrix. Since GPUs assign a single thread to each dot product, this is a very efficient operation.</p>
+                    
+                                        <p>In practise, the first convolutional layer has 32 filters, lets just look at 3</p>
+
+                    <div class="three-filters-container" style="margin: 20px 0; text-align: center;">
+                        <canvas id="threeFiltersCanvas" width="900" height="400" style="border-radius: 5px; background: white;"></canvas>
+                    </div>
+
+                    <p>These 3 filters, which are learned during training, are almost universal. They emerge as a consequence of training in almost every situation, cat recognition, human faces, objects, etc</p>
+                 <!-- Step 4: ReLU + Max Pool -->
                 <div id="step4" class="section">
                     <h2><span class="step-number">4</span>ReLU Activation & Max Pooling</h2>
                     <div class="timestamp">Video: 1:09 - 1:16</div>
@@ -400,6 +431,9 @@
     <script src="../js/dates.js"></script>
     <script src="../js/blog-region-selector.js"></script>
     <script src="../js/rgb-decomposition-static.js"></script>
+    <script src="../js/simple-convolution.js"></script>
+    <script src="../js/three-filters-static.js"></script>
+    <script src="../js/convolution-animation.js"></script>
     
     <!-- Prism.js for syntax highlighting -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>

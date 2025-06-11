@@ -3,8 +3,6 @@ class RGBDecompositionStatic {
     constructor() {
         this.canvas = null;
         this.ctx = null;
-        this.matrixCanvas = null;
-        this.matrixCtx = null;
         this.imageData = null;
         this.csvData = null;
         this.init();
@@ -21,20 +19,13 @@ class RGBDecompositionStatic {
 
     setupCanvas() {
         this.canvas = document.getElementById('rgbDecompositionCanvas');
-        this.matrixCanvas = document.getElementById('matrixCanvas');
         
         if (!this.canvas) {
             console.error('RGB decomposition canvas not found');
             return;
         }
         
-        if (!this.matrixCanvas) {
-            console.error('Matrix canvas not found');
-            return;
-        }
-        
         this.ctx = this.canvas.getContext('2d');
-        this.matrixCtx = this.matrixCanvas.getContext('2d');
         
         // Load CSV data
         this.loadCSVData();
@@ -47,14 +38,12 @@ class RGBDecompositionStatic {
             this.parseCSVData(csvText);
             this.convertToImageMatrix();
             this.drawVisualization();
-            this.drawMatrixVisualization();
             this.logRGBMatrix();
         } catch (error) {
             console.error('Failed to load CSV data:', error);
             // Fallback to synthetic data
             this.generateSampleImage();
             this.drawVisualization();
-            this.drawMatrixVisualization();
         }
     }
 
@@ -203,16 +192,16 @@ class RGBDecompositionStatic {
         ctx.fillRect(0, 0, width, height);
         
         const imageSize = this.imageData.length; // Will be 36x36
-        const cellSize = 8; // Larger cell size since we have more space
+        const cellSize = 6; // Reduced cell size to make images smaller
         const displaySize = imageSize * cellSize;
         
-        // Positions - center both images
+        // Positions - center both images with minimal padding
         const spacing = 120;
         const totalWidth = displaySize * 2 + spacing;
         const startX = (width - totalWidth) / 2;
         
         const originalX = startX;
-        const originalY = height / 2 - displaySize / 2;
+        const originalY = (height - displaySize) / 2; // Center vertically with minimal padding
         
         const grayscaleX = startX + displaySize + spacing;
         const grayscaleY = originalY;
@@ -223,10 +212,10 @@ class RGBDecompositionStatic {
         ctx.textAlign = 'center';
         
         // Original image title
-        ctx.fillText('Original', originalX + displaySize/2, originalY - 15);
+        ctx.fillText('Original', originalX + displaySize/2, originalY - 10);
         
         // Grayscale title
-        ctx.fillText('Grayscale', grayscaleX + displaySize/2, grayscaleY - 15);
+        ctx.fillText('Grayscale', grayscaleX + displaySize/2, grayscaleY - 10);
         
         // Draw original image
         this.drawImageMatrix(ctx, this.imageData, originalX, originalY, cellSize, 'original');
@@ -241,20 +230,6 @@ class RGBDecompositionStatic {
             grayscaleX - 10, 
             grayscaleY + displaySize/2
         );
-    }
-
-    drawMatrixVisualization() {
-        if (!this.imageData) return;
-        
-        const ctx = this.matrixCtx;
-        const width = this.matrixCanvas.width;
-        const height = this.matrixCanvas.height;
-        
-        // Clear canvas
-        ctx.fillStyle = 'white';
-        ctx.fillRect(0, 0, width, height);
-        
-        this.drawMatrixRepresentation(ctx, width/2, height/2);
     }
 
     drawImageMatrix(ctx, imageData, x, y, cellSize, type) {
@@ -317,79 +292,6 @@ class RGBDecompositionStatic {
         ctx.lineTo(x2 - headLength * Math.cos(angle + Math.PI/6), y2 - headLength * Math.sin(angle + Math.PI/6));
         ctx.closePath();
         ctx.fill();
-    }
-
-    drawMatrixRepresentation(ctx, centerX, centerY) {
-        // Get some sample values from the actual data
-        const sampleValues = [];
-        for (let i = 0; i < 5; i++) {
-            const row = [];
-            for (let j = 0; j < 5; j++) {
-                if (i < this.imageData.length && j < this.imageData[0].length) {
-                    row.push(this.imageData[i][j].r); // Use red channel values
-                } else {
-                    row.push(128); // fallback
-                }
-            }
-            sampleValues.push(row);
-        }
-        
-        // Draw matrix content
-        ctx.fillStyle = '#333';
-        ctx.font = '12px monospace';
-        ctx.textAlign = 'left';
-        
-        const lineHeight = 16;
-        const matrixHeight = lineHeight * 6; // 6 lines total
-        let currentY = centerY - matrixHeight/2;
-        
-        // Draw opening bracket
-        ctx.fillText('[', centerX - 100, currentY);
-        
-        // Draw sample rows
-        for (let i = 0; i < 3; i++) {
-            let rowText = '  [';
-            for (let j = 0; j < 3; j++) {
-                rowText += sampleValues[i][j].toString().padStart(3, ' ');
-                if (j < 2) rowText += ',';
-            }
-            rowText += ', ..., ' + sampleValues[i][4].toString().padStart(3, ' ') + ']';
-            if (i < 2) rowText += ',';
-            
-            ctx.fillText(rowText, centerX - 95, currentY);
-            currentY += lineHeight;
-        }
-        
-        // Draw ellipsis for middle rows
-        ctx.fillText('  ...', centerX - 95, currentY);
-        currentY += lineHeight;
-        
-        // Draw last row
-        let lastRowText = '  [';
-        for (let j = 0; j < 3; j++) {
-            lastRowText += sampleValues[4][j].toString().padStart(3, ' ');
-            if (j < 2) lastRowText += ',';
-        }
-        lastRowText += ', ..., ' + sampleValues[4][4].toString().padStart(3, ' ') + ']';
-        
-        ctx.fillText(lastRowText, centerX - 95, currentY);
-        currentY += lineHeight;
-        
-        // Draw closing bracket
-        ctx.fillText(']', centerX - 100, currentY);
-        
-        // Add dimension labels
-        ctx.font = '11px Arial';
-        ctx.textAlign = 'center';
-        ctx.fillStyle = '#666';
-        ctx.fillText('36 columns', centerX, centerY + matrixHeight/2 + 25);
-        
-        // Vertical dimension label
-        ctx.save();
-        ctx.translate(centerX - 130, centerY);
-        ctx.rotate(-Math.PI/2);
-        ctx.fillText('36 rows', 0, 0);
-        ctx.restore();
     }
 }
 
