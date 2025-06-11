@@ -441,19 +441,18 @@
                 
                 <p>The output of the convolution is flattened into a column vector, and then passed into the fully connected layer. </p>
 
+                    
+
+
                 <!-- Step 7: Flattening -->
                 <div id="step7" class="section">
-                    <h2><span class="step-number">7</span>Flattening: From Images to Vector</h2>
-                    <div class="timestamp">Video: 1:34 - 1:41</div>
+                    <h3>Flattening</h3>
                     
-                    <div class="video-container">
-                        <video controls>
-                            <source src="../assets/blog/7-flattening.mp4" type="video/mp4">
-                            Your browser does not support the video tag.
-                        </video>
+                    <p>Once we're done with the second layer, we <strong>flatten</strong> the outputs into a column vector. We take our six feature maps and reshape them into a single long vector.</p>
+                    
+                    <div class="flattening-container" style="margin: 30px 0; text-align: center;">
+                        <canvas id="flatteningCanvas" width="800" height="500" style="border-radius: 5px; background: white;"></canvas>
                     </div>
-                    
-                    <p>Once we're done with the second layer, we <strong>flatten</strong> the outputs into a column vector. Say we have six feature maps, each 6×6—that's 216 values total. We reshape them into a 216-length vector.</p>
                     
                     <p>This vector gets passed into the fully connected layers. This step is crucial as it transforms our 2D feature maps into a 1D format that traditional neural network layers can process.</p>
                 </div>
@@ -503,6 +502,7 @@
     <script src="../js/relu-visualization.js"></script>
     <script src="../js/max-pooling-animation.js"></script>
     <script src="../js/second-layer-static.js"></script>
+    <script src="../js/flattening-animation.js"></script>
     <script src="../js/convolution-animation.js"></script>
     
     <!-- Prism.js for syntax highlighting -->
