@@ -371,46 +371,75 @@
 
                     <p>This introduces non-linearity, which is crucial because otherwise, the network would just be a linear function and wouldn't be able to model complex patterns.</p>
                     
-                    <p>After ReLU, we apply <strong>max pooling</strong>, which is a form of downsampling. We take a 2×2 grid and replace it with its maximum value. This reduces the size of our feature maps, which helps with computation, prevents overfitting, and retains the most important features.</p>
-                    
-                    <div class="technical-note">
-                        <strong>Why This Matters:</strong> Max pooling introduces translation invariance—meaning the network can recognize features regardless of their exact position in the image.
-                    </div>
+                    <h3>Pooling</h3>
+
+                    <p>Pooling a way to attentuate the activations in the feature maps</p>
+
+                    <p>Max pooling, is the most common type of pooling. This method, slides a square over the matrix and keeps only the largest number in each square </p>
+                    <p>This mapping shrinks the matrix size a tiny bit. Let's see how this is done</p>
+
+                    <pre><code class="language-python">
+        #4x4 matrix input matrix
+        
+        input = [[1, 2, 3, 4],
+                [5, 6, 7, 8], 
+                [9, 10, 11, 12],
+                [13, 14, 15, 16]]
+    
+    
+        #If we take a 2x2 window, with a stride of 1, this is the outputs:
+
+        #Top left:
+        max([[1,2],[5,6]]) = 6
+
+
+        #Top middle:
+        max([[2,3],[6,7]]) = 7
+
+        #etc.. this is the output matrix:
+
+        output =    [[ 6,  7,  8],
+                    [10, 11, 12],
+                    [14, 15, 16]]
+
+                                        </code></pre>
+
+                <p> and a visualization of this, again, for visualization purposes we slide the window across, in practise, since this is a parallel operation, the entire output matrix is calculated simultaneously.</p>
+
+                <div class="max-pooling-container" style="margin: 20px 0; text-align: center;">
+                    <canvas id="maxPoolingCanvas" width="500" height="420" style="border-radius: 5px; background: white;"></canvas>
                 </div>
 
-                <!-- Step 5: Second Layer Convolution -->
-                <div id="step5" class="section">
-                    <h2><span class="step-number">5</span>Second Layer: Advanced Feature Detection</h2>
-                    <div class="timestamp">Video: 1:18 - 1:24</div>
+                
                     
-                    <div class="video-container">
-                        <video controls>
-                            <source src="../assets/blog/5-second-layer-mapping.mp4" type="video/mp4">
-                            Your browser does not support the video tag.
-                        </video>
-                    </div>
-                    
-                    <p>That completes the first layer of inference. Now those three downsampled maps become the input for the next layer, which contains six filters. We repeat the same process: convolution with the new filters, apply ReLU, and do max pooling.</p>
-                    
-                    <p>The network is now starting to detect more abstract patterns by combining features from the previous layer. Where the first layer detected simple edges, this layer can detect more complex shapes and textures.</p>
+                <p>That concludes the first convolutional layer. </p>
+                
+                <h3>The Second layer</h3>
+
+                <p> The output from the first layer is now the input to the second. </p>
+                <div style="text-align: center; margin: 30px 0;">
+                    <img src="../assets/images/Illustrated-CNN/In-depth-view.jpg" alt="CNN Overview" style="max-width: 600px; width: 100%; height: auto">
                 </div>
 
-                <!-- Step 6: Second ReLU + Max Pool -->
-                <div id="step6" class="section">
-                    <h2><span class="step-number">6</span>Second Layer: ReLU & Max Pooling</h2>
-                    <div class="timestamp">Video: 1:25 - 1:32</div>
-                    
-                    <div class="video-container">
-                        <video controls>
-                            <source src="../assets/blog/6-second-relu-maxpool.mp4" type="video/mp4">
-                            Your browser does not support the video tag.
-                        </video>
-                    </div>
-                    
-                    <p>Again, we apply ReLU activation followed by max pooling to our six feature maps from the second convolutional layer. This further reduces the spatial dimensions while preserving the most important features detected by our filters.</p>
-                    
-                    <p>At this point, our network has learned to identify increasingly complex patterns and features that are relevant for mineral deposit detection.</p>
+                
+                <p>Since, we now know the steps of convoluting, relu, followed by pooling, we show it all here in one step</p>
+
+                <div class="second-layer-container" style="margin: 30px 0; text-align: center;">
+                    <canvas id="secondLayerCanvas" width="800" height="250" style="border-radius: 5px; background: white;"></canvas>
                 </div>
+
+                <p>observe three notable things. 
+                    <ul> 
+                        <li>The number of filters doubles, producing double the output maps</li>
+                        <li>A convolved feature map, produces a heirarchy of features, with decreasing level of abstraction</li>
+                        <li>With successive maxpooling, the output matrices become smaller and smaller.</li>
+                    </ul>
+                
+
+
+                <h2>Fully-connected layer</h2>
+                
+                <p>The output of the convolution is flattened into a column vector, and then passed into the fully connected layer. </p>
 
                 <!-- Step 7: Flattening -->
                 <div id="step7" class="section">
@@ -472,6 +501,8 @@
     <script src="../js/simple-convolution.js"></script>
     <script src="../js/three-filters-static.js"></script>
     <script src="../js/relu-visualization.js"></script>
+    <script src="../js/max-pooling-animation.js"></script>
+    <script src="../js/second-layer-static.js"></script>
     <script src="../js/convolution-animation.js"></script>
     
     <!-- Prism.js for syntax highlighting -->
