@@ -34,13 +34,18 @@ class RGBDecompositionStatic {
     async loadCSVData() {
         try {
             const response = await fetch('../assets/RGB_Values_per_Cell.csv');
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
             const csvText = await response.text();
+            console.log('CSV loaded successfully, first 200 chars:', csvText.substring(0, 200));
             this.parseCSVData(csvText);
             this.convertToImageMatrix();
             this.drawVisualization();
             this.logRGBMatrix();
         } catch (error) {
             console.error('Failed to load CSV data:', error);
+            console.log('Falling back to sample data generation...');
             // Fallback to synthetic data
             this.generateSampleImage();
             this.drawVisualization();
@@ -50,6 +55,7 @@ class RGBDecompositionStatic {
     parseCSVData(csvText) {
         const lines = csvText.trim().split('\n');
         const header = lines[0].split(',');
+        console.log('CSV header:', header);
         
         this.csvData = [];
         
@@ -65,6 +71,8 @@ class RGBDecompositionStatic {
         }
         
         console.log(`Loaded ${this.csvData.length} RGB values from CSV`);
+        console.log('First few data points:', this.csvData.slice(0, 5));
+        console.log('Last few data points:', this.csvData.slice(-5));
     }
 
     convertToImageMatrix() {

@@ -228,21 +228,29 @@
                     
                     <h2> Introduction</h2>
 
-                        <p>In a previous section, we learned about neural networks. Convolutional neural networks, the backbone of computer vision, are simply just adding a convolutional part before the fully connected layer - It really is just that simple.</p>
-                            
-                        <p>Let's go through a forward pass through a trained CNN, within a geophysical context.</p>
+                        <p>In a previous section, we learned about neural networks. This time, we learn about Convolutional neural networks, the backbone of computer vision</p>
+                        
 
                     
 
                     <div style="height: 15px;"></div>
 
                     <h2> A high level understanding</h2>
+                    <p>Input an image, goes through this mysterious box, and outputs a prediction. </p>
+
+
+                     <div style="text-align: center; margin: 30px 0;">
+                         <img src="../assets/images/Illustrated-CNN/Overview.jpg" alt="CNN Overview" style="max-width: 600px; width: 100%; height: auto">
+                     </div>
 
 
 
-                    <!-- Step 1: Region Selection -->
+
+                     <p>Before we unpack what this convolutional component, a very brief understanding in the input </p>
+                     <!-- Step 1: Region Selection -->
                 <div id="step1" class="section">
-                    <h2>Model input</h2>
+                    <div style="height: 15px;"></div>
+                                         <h2 style="color: #4ab52c; font-weight: bold;">Input</h2>
                     <p>Say we trained a model to classify geophysical images as containing mineralization or not. Now, we want to input an image to this model to know if it contains mineralization or not. </p>
                     
                     <div class="region-selector-container" style="margin: 20px 0;"></div>
@@ -276,13 +284,38 @@
 
                 <p>Where 0 represents white or an absense of color, and 255 represents black or the presence of color.</p>
 
+                <p style="color: #4ab52c;"> Perfect, so the input to the CNN is a matrix of numbers representing the intensity of the each pixel in the image. </p>
                 <!-- Step 3: First Convolution -->
                 <div id="step3" class="section">
                     <div style="height: 15px;"></div>
-                    <h2>Convolution</h2>
+                    <h2 style="color: #0073B6; font-weight: bold;">Convolution Neural Net</h2>
 
-                    <p>Next, we use our learned filters, otherwise known as kernels, to convolve over the input matrix to get the output, called a feature map. </p>
-                
+                    <p>Taking a closer, we see that the CNN is just adding a convolutional component before the fully connected layer - It really is just that simple.</p>
+
+
+                    <div style="text-align: center; margin: 30px 0;">
+                       <img src="../assets/images/Illustrated-CNN/CNN.jpg" alt="CNN Overview" style="max-width: 600px; width: 100%; height: auto">
+                   </div>
+
+                    <p>This 'stack' is just two convolutional layers, whose processing is the same. The output of the first is the input of the second. </p>
+
+
+                    <div style="text-align: center; margin: 30px 0;">
+                        <img src="../assets/images/Illustrated-CNN/CN-Stack.jpg" alt="CNN Overview" style="max-width: 600px; width: 100%; height: auto">
+                    </div>
+
+                    <p>Each layer is comprised of 3 steps in sequence, let's begin with the convolution </p>
+                    
+                    
+
+
+                    <div style="text-align: center; margin: 30px 0;">
+                        <img src="../assets/images/Illustrated-CNN/CN-Layer.jpg" alt="CNN Overview" style="max-width: 600px; width: 100%; height: auto">
+                    </div>
+
+                    <h3> Convolution </h3>
+                    <p> The first convolution inputs our matrix, and outputs feature maps It does this by applying a filter, known as a kernel, to the input matrix. </p>
+
                     
                     <div class="simple-convolution-container" style="margin: 20px 0; text-align: center;">
                         <canvas id="simpleConvolutionCanvas" width="800" height="300" style="border-radius: 5px; background: white;"></canvas>
@@ -316,24 +349,27 @@
                     
                                         <p>In practise, the first convolutional layer has 32 filters, lets just look at 3</p>
 
+
+                                        <p>Please, understand that for visualization purposes we slid the kernel across, in practise, since this is a parallel operation, the entire output matrix is calculated simultaneously.</p>
                     <div class="three-filters-container" style="margin: 20px 0; text-align: center;">
                         <canvas id="threeFiltersCanvas" width="900" height="400" style="border-radius: 5px; background: white;"></canvas>
                     </div>
 
                     <p>These 3 filters, which are learned during training, are almost universal. They emerge as a consequence of training in almost every situation, cat recognition, human faces, objects, etc</p>
-                 <!-- Step 4: ReLU + Max Pool -->
+
+
+                    <p> Perfect, so this is the output of the Convolution, we now use this as input to the Relu</p>
                 <div id="step4" class="section">
-                    <h2><span class="step-number">4</span>ReLU Activation & Max Pooling</h2>
-                    <div class="timestamp">Video: 1:09 - 1:16</div>
+                    <h3>ReLU</h3>
+
                     
-                    <div class="video-container">
-                        <video controls>
-                            <source src="../assets/blog/4-relu-maxpool.mp4" type="video/mp4">
-                            Your browser does not support the video tag.
-                        </video>
+                    <p>Next, we apply the <strong>ReLU activation function</strong>. It's simple—just replaces any negative value with zero. </p>
+                    
+                    <div class="relu-visualization-container" style="margin: 20px 0; text-align: center;">
+                        <canvas id="reluCanvas" width="600" height="470" style="border-radius: 5px; background: white;"></canvas>
                     </div>
-                    
-                    <p>Next, we apply the <strong>ReLU activation function</strong>. It's simple—just replaces any negative value with zero. This introduces non-linearity, which is crucial because otherwise, the network would just be a linear function and wouldn't be able to model complex patterns.</p>
+
+                    <p>This introduces non-linearity, which is crucial because otherwise, the network would just be a linear function and wouldn't be able to model complex patterns.</p>
                     
                     <p>After ReLU, we apply <strong>max pooling</strong>, which is a form of downsampling. We take a 2×2 grid and replace it with its maximum value. This reduces the size of our feature maps, which helps with computation, prevents overfitting, and retains the most important features.</p>
                     
@@ -435,6 +471,7 @@
     <script src="../js/rgb-decomposition-static.js"></script>
     <script src="../js/simple-convolution.js"></script>
     <script src="../js/three-filters-static.js"></script>
+    <script src="../js/relu-visualization.js"></script>
     <script src="../js/convolution-animation.js"></script>
     
     <!-- Prism.js for syntax highlighting -->
