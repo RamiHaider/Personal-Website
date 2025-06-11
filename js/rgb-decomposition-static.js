@@ -27,25 +27,60 @@ class RGBDecompositionStatic {
         
         this.ctx = this.canvas.getContext('2d');
         
-        // Load CSV data
-        this.loadCSVData();
+        // Use embedded real data if available, otherwise load CSV
+        if (typeof REAL_RGB_DATA !== 'undefined') {
+            console.log('✅ Using embedded REAL RGB data from CSV file!');
+            this.imageData = REAL_RGB_DATA;
+            this.drawVisualization();
+            this.logRGBMatrix();
+        } else {
+            console.log('❌ Embedded data not found, trying to load CSV...');
+            this.loadCSVData();
+        }
     }
 
     async loadCSVData() {
         try {
+            console.log('Attempting to load CSV from:', '../assets/RGB_Values_per_Cell.csv');
             const response = await fetch('../assets/RGB_Values_per_Cell.csv');
+            console.log('Response status:', response.status, response.statusText);
+            
             if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+                throw new Error(`HTTP error! status: ${response.status} - ${response.statusText}`);
             }
             const csvText = await response.text();
-            console.log('CSV loaded successfully, first 200 chars:', csvText.substring(0, 200));
+            console.log('CSV loaded successfully! Length:', csvText.length);
+            console.log('First 200 chars:', csvText.substring(0, 200));
+            
             this.parseCSVData(csvText);
             this.convertToImageMatrix();
             this.drawVisualization();
             this.logRGBMatrix();
         } catch (error) {
-            console.error('Failed to load CSV data:', error);
-            console.log('Falling back to sample data generation...');
+            console.error('FAILED TO LOAD CSV DATA:', error);
+            console.error('Error details:', error.message);
+            console.error('This means the visualization is using FAKE random data instead of real data!');
+            
+            // Try different path variations
+            console.log('Trying alternative paths...');
+            
+            try {
+                console.log('Trying: assets/RGB_Values_per_Cell.csv');
+                const response2 = await fetch('assets/RGB_Values_per_Cell.csv');
+                if (response2.ok) {
+                    const csvText = await response2.text();
+                    console.log('SUCCESS with alternative path!');
+                    this.parseCSVData(csvText);
+                    this.convertToImageMatrix();
+                    this.drawVisualization();
+                    this.logRGBMatrix();
+                    return;
+                }
+            } catch (e2) {
+                console.log('Alternative path also failed:', e2.message);
+            }
+            
+            console.log('ALL CSV LOADING ATTEMPTS FAILED - FALLING BACK TO RANDOM DATA!');
             // Fallback to synthetic data
             this.generateSampleImage();
             this.drawVisualization();
@@ -165,6 +200,9 @@ class RGBDecompositionStatic {
 
     generateSampleImage() {
         // Fallback: Generate a 36x36 sample image to match CSV dimensions
+        console.warn('⚠️ USING FAKE RANDOM DATA - REAL CSV DATA FAILED TO LOAD!');
+        this.usingFakeData = true; // Flag for drawing warning
+        
         const size = 36;
         this.imageData = [];
         
@@ -238,6 +276,14 @@ class RGBDecompositionStatic {
             grayscaleX - 10, 
             grayscaleY + displaySize/2
         );
+        
+        // Draw warning if using fake data
+        if (this.usingFakeData) {
+            ctx.fillStyle = 'red';
+            ctx.font = 'bold 14px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('⚠️ WARNING: USING FAKE DATA - CSV FAILED TO LOAD!', width/2, height - 20);
+        }
     }
 
     drawImageMatrix(ctx, imageData, x, y, cellSize, type) {

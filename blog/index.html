@@ -385,25 +385,19 @@
                 [-1, 0, 1]
             ];
             
-            // Calculate complete output feature map (6x6 with padding)
+            // Calculate output feature map (4x4 without padding)
             const outputMatrix = [];
-            for (let i = 0; i < 6; i++) {
+            for (let i = 0; i < 4; i++) {
                 const row = [];
-                for (let j = 0; j < 6; j++) {
+                for (let j = 0; j < 4; j++) {
                     let sum = 0;
                     
-                    // Check if we can perform convolution at this position
+                    // Convolution without padding - filter fits entirely in input
                     for (let fi = 0; fi < 3; fi++) {
                         for (let fj = 0; fj < 3; fj++) {
-                            const inputRow = i + fi - 1; // Center filter
-                            const inputCol = j + fj - 1;
-                            
-                            if (inputRow >= 0 && inputRow < 6 && inputCol >= 0 && inputCol < 6) {
-                                sum += inputMatrix[inputRow][inputCol] * filter[fi][fj];
-                            } else {
-                                // Treat out-of-bounds as 0 (zero padding)
-                                sum += 0 * filter[fi][fj];
-                            }
+                            const inputRow = i + fi;
+                            const inputCol = j + fj;
+                            sum += inputMatrix[inputRow][inputCol] * filter[fi][fj];
                         }
                     }
                     row.push(Math.max(0, sum)); // Apply ReLU
@@ -416,7 +410,7 @@
             let currentCol = 0;
             let isDelay = false;
             let delayFrames = 0;
-            const delayDuration = 60; // 1 second delay at 60fps
+            const delayDuration = 20; // Short delay at 60fps
             
             function animate() {
                 ctx.clearRect(0, 0, width, height);
@@ -436,9 +430,9 @@
                 const filterX = inputX + 6 * cellSize + spacing;
                 const filterY = height/2 - (3 * cellSize)/2;
                 
-                // Output position (right)
+                // Output position (right) - 4x4 output
                 const outputX = filterX + 3 * cellSize + spacing;
-                const outputY = height/2 - (6 * cellSize)/2;
+                const outputY = height/2 - (4 * cellSize)/2;
                 
                 // Draw input matrix with sliding highlight
                 for (let i = 0; i < 6; i++) {
@@ -447,10 +441,10 @@
                         const y = inputY + i * cellSize;
                         const value = inputMatrix[i][j];
                         
-                        // Highlight 3x3 region being processed
+                        // Highlight 3x3 region being processed (filter positioned at top-left)
                         const underFilter = !isDelay &&
-                                          i >= currentRow - 1 && i <= currentRow + 1 &&
-                                          j >= currentCol - 1 && j <= currentCol + 1;
+                                          i >= currentRow && i <= currentRow + 2 &&
+                                          j >= currentCol && j <= currentCol + 2;
                         
                         const intensity = Math.round(value * 255);
                         ctx.fillStyle = `rgb(${intensity}, ${intensity}, ${intensity})`;
@@ -495,9 +489,9 @@
                     }
                 }
                 
-                // Draw output matrix with progressive population
-                for (let i = 0; i < 6; i++) {
-                    for (let j = 0; j < 6; j++) {
+                // Draw output matrix with progressive population (4x4)
+                for (let i = 0; i < 4; i++) {
+                    for (let j = 0; j < 4; j++) {
                         const x = outputX + j * cellSize;
                         const y = outputY + i * cellSize;
                         
@@ -541,10 +535,10 @@
                         }
                     } else {
                         currentCol++;
-                        if (currentCol >= 6) {
+                        if (currentCol >= 4) {
                             currentCol = 0;
                             currentRow++;
-                            if (currentRow >= 6) {
+                            if (currentRow >= 4) {
                                 // Start delay before repeating
                                 isDelay = true;
                                 currentRow = 5;

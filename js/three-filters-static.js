@@ -1,7 +1,12 @@
 // Three Filters Static Visualization
 function drawThreeFiltersStatic() {
+    console.log('🚀 Starting three-filters visualization...');
+    
     const canvas = document.getElementById('threeFiltersCanvas');
-    if (!canvas) return;
+    if (!canvas) {
+        console.error('❌ threeFiltersCanvas not found');
+        return;
+    }
     
     const ctx = canvas.getContext('2d');
     const canvasWidth = canvas.width;
@@ -11,17 +16,36 @@ function drawThreeFiltersStatic() {
     ctx.fillStyle = 'white';
     ctx.fillRect(0, 0, canvasWidth, canvasHeight);
     
-    // Get input data (36x36 grayscale values from 0-1)
-    const cnnData = window.cnnInputData;
-    if (!cnnData) {
-        console.error('CNN input data not available yet');
+    // Try to get input data
+    let inputData = null;
+    
+    // First, try to get data from global CNN data
+    if (window.cnnInputData && window.cnnInputData.normalizedRed) {
+        console.log('✅ Using window.cnnInputData for three-filters');
+        inputData = window.cnnInputData.normalizedRed;
+    } 
+    // Fallback to embedded data
+    else if (typeof REAL_RGB_DATA !== 'undefined') {
+        console.log('✅ Using embedded REAL_RGB_DATA directly in three-filters');
+        // Convert to normalized red channel (grayscale)
+        inputData = REAL_RGB_DATA.map(row => 
+            row.map(pixel => pixel.r / 255)
+        );
+    }
+    
+    if (!inputData) {
+        console.error('❌ No data available for three-filters visualization');
+        // Draw error message
+        ctx.fillStyle = 'red';
+        ctx.font = 'bold 16px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('ERROR: No data available', canvasWidth/2, canvasHeight/2);
         return;
     }
     
-    // Use the normalized red channel as grayscale input
-    const inputData = cnnData.normalizedRed;
+    console.log('🎨 Drawing three filters with input data:', inputData.length + 'x' + inputData[0].length);
     
-    // Define 3 filters
+    // Define the same 3 filters as used in ReLU visualization
     const filters = [
         {
             name: "Horizontal Edge",
@@ -49,42 +73,42 @@ function drawThreeFiltersStatic() {
         }
     ];
     
-    // Calculate output feature maps
+    // Calculate the same feature maps as used in ReLU "Before" section
     const featureMaps = filters.map(filter => {
         return convolve2D(inputData, filter.kernel);
     });
     
-    // Layout parameters - adjusted to fit properly
-    const inputSize = 200;
-    const filterSize = 45;
-    const outputSize = 100;
-    const spacing = 60;
-    const startY = 120; // Moved down even further to give more room at the top
+    // Layout parameters
+    const inputSize = 180;
+    const filterSize = 60;
+    const outputSize = 120;
+    const spacing = 70;
+    const startY = 50;
     
-    // Calculate positions
-    const inputX = 30;
+    // Calculate positions for horizontal layout: Input | Filter1 | Output1
+    //                                              | Filter2 | Output2  
+    //                                              | Filter3 | Output3
+    const inputX = 20;
     const filtersStartX = inputX + inputSize + spacing;
     const outputsStartX = filtersStartX + filterSize + spacing;
     
-    // Calculate filter starting Y to center them relative to input
-    const inputCenterY = startY + inputSize / 2;
-    const verticalSpacing = 90; // Increased spacing to prevent overlap
-    const totalFiltersHeight = 3 * filterSize + 2 * verticalSpacing;
-    const filtersStartY = inputCenterY - totalFiltersHeight / 2;
+    // Calculate filter starting Y to space them out vertically
+    const verticalSpacing = 80;
+    const filtersStartY = startY + 20;
     
-    // Draw input matrix
-    drawMatrix(ctx, inputData, inputX, startY, inputSize, 'Input');
+    // Draw input matrix (grayscale)
+    drawMatrix(ctx, inputData, inputX, startY, inputSize, 'Input (36x36)');
     
-    // Draw filters and outputs
+    // Draw filters and outputs without any arrows
     for (let i = 0; i < 3; i++) {
         const filterY = filtersStartY + i * (filterSize + verticalSpacing);
-        const outputY = filterY - (outputSize - filterSize) / 2; // Center output with filter
+        const outputY = filterY + (filterSize - outputSize) / 2; // Align with filter
         
         // Draw filter
         drawFilter(ctx, filters[i].kernel, filtersStartX, filterY, filterSize, filters[i].name);
         
-        // Draw output feature map
-        drawMatrix(ctx, featureMaps[i], outputsStartX, outputY, outputSize, `Feature Map #${i+1}`);
+        // Draw output feature map (using the same data as ReLU "Before" section)
+        drawMatrix(ctx, featureMaps[i], outputsStartX, outputY, outputSize, `Output ${i+1} (34x34)`);
     }
 }
 
@@ -142,20 +166,20 @@ function drawMatrix(ctx, matrix, x, y, size, label) {
             
             const grayValue = Math.max(0, Math.min(255, normalizedValue));
             ctx.fillStyle = `rgb(${grayValue}, ${grayValue}, ${grayValue})`;
-            ctx.fillRect(x + j * cellSize, y + i * cellSize, cellSize, cellSize);
-            
-            // Light border for visibility
-            ctx.strokeStyle = '#ddd';
-            ctx.lineWidth = 0.5;
-            ctx.strokeRect(x + j * cellSize, y + i * cellSize, cellSize, cellSize);
+            ctx.fillRect(x + j * cellSize, y + i * cellSize, cellSize - 0.5, cellSize - 0.5);
         }
     }
     
+    // Draw border around the matrix
+    ctx.strokeStyle = '#333';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(x - 1, y - 1, cols * cellSize + 2, rows * cellSize + 2);
+    
     // Draw label
     ctx.fillStyle = 'black';
-    ctx.font = '12px Arial';
+    ctx.font = 'bold 12px Arial';
     ctx.textAlign = 'center';
-    ctx.fillText(label, x + size/2, y - 10);
+    ctx.fillText(label, x + (cols * cellSize)/2, y - 8);
 }
 
 function drawFilter(ctx, kernel, x, y, size, label) {
@@ -167,16 +191,16 @@ function drawFilter(ctx, kernel, x, y, size, label) {
         for (let j = 0; j < kernelSize; j++) {
             const value = kernel[i][j];
             
-            // Color coding: red for positive, blue for negative, gray for zero
+            // Color coding: red for positive, blue for negative, light gray for zero
             if (value > 0) {
-                ctx.fillStyle = `rgba(255, 0, 0, ${Math.abs(value) / 4})`;
+                ctx.fillStyle = `rgba(255, 100, 100, ${Math.min(1, Math.abs(value) / 2)})`;
             } else if (value < 0) {
-                ctx.fillStyle = `rgba(0, 0, 255, ${Math.abs(value) / 4})`;
+                ctx.fillStyle = `rgba(100, 100, 255, ${Math.min(1, Math.abs(value) / 2)})`;
             } else {
-                ctx.fillStyle = '#f0f0f0';
+                ctx.fillStyle = '#f8f8f8';
             }
             
-            ctx.fillRect(x + j * cellSize, y + i * cellSize, cellSize, cellSize);
+            ctx.fillRect(x + j * cellSize, y + i * cellSize, cellSize - 1, cellSize - 1);
             
             // Border
             ctx.strokeStyle = '#333';
@@ -185,31 +209,37 @@ function drawFilter(ctx, kernel, x, y, size, label) {
             
             // Value text
             ctx.fillStyle = 'black';
-            ctx.font = '10px Arial';
+            ctx.font = 'bold 12px Arial';
             ctx.textAlign = 'center';
             ctx.fillText(value.toString(), 
                 x + j * cellSize + cellSize/2, 
-                y + i * cellSize + cellSize/2 + 3);
+                y + i * cellSize + cellSize/2 + 4);
         }
     }
     
     // Draw label
     ctx.fillStyle = 'black';
-    ctx.font = '12px Arial';
+    ctx.font = 'bold 12px Arial';
     ctx.textAlign = 'center';
-    ctx.fillText(label, x + size/2, y - 10);
+    ctx.fillText(label, x + size/2, y - 8);
 }
-
-
 
 // Initialize when page loads
 document.addEventListener('DOMContentLoaded', function() {
-    // Wait for CSV data to be loaded by the RGB decomposition component
+    console.log('🔄 DOM loaded, attempting to draw three-filters...');
+    
+    // Try immediately first
+    setTimeout(() => {
+        drawThreeFiltersStatic();
+    }, 100);
+    
+    // Then keep trying until we have data
     const checkDataAndDraw = () => {
-        if (window.cnnInputData) {
+        if (window.cnnInputData || typeof REAL_RGB_DATA !== 'undefined') {
             drawThreeFiltersStatic();
         } else {
-            setTimeout(checkDataAndDraw, 200);
+            console.log('⏳ Still waiting for data in three-filters...');
+            setTimeout(checkDataAndDraw, 300);
         }
     };
     
