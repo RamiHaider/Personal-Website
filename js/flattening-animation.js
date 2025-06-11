@@ -122,12 +122,8 @@ function drawFlatteningAnimation() {
                         ctx.font = 'bold 10px Arial';
                         ctx.textAlign = 'center';
                         ctx.fillText('→', x + mapCellSize/2, y + mapCellSize/2 + 3);
-                    } else if (isFlattened) {
-                        // Dimmed for flattened cells
-                        ctx.fillStyle = `rgba(${intensity}, ${intensity}, ${intensity}, 0.4)`;
-                        ctx.fillRect(x, y, mapCellSize - 1, mapCellSize - 1);
                     } else {
-                        // Normal cells
+                        // All cells keep normal appearance
                         ctx.fillStyle = `rgba(${intensity}, ${intensity}, ${intensity}, 0.9)`;
                         ctx.fillRect(x, y, mapCellSize - 1, mapCellSize - 1);
                     }
@@ -136,9 +132,6 @@ function drawFlatteningAnimation() {
                     if (isCurrentCell) {
                         ctx.strokeStyle = '#000000';
                         ctx.lineWidth = 3;
-                    } else if (isFlattened) {
-                        ctx.strokeStyle = '#999999';
-                        ctx.lineWidth = 1;
                     } else {
                         ctx.strokeStyle = 'rgba(200, 200, 200, 0.6)';
                         ctx.lineWidth = 0.5;
@@ -221,29 +214,15 @@ function drawFlatteningAnimation() {
             }
             
         } else if (animationStage === 2) {
-            // Show complete vector
-            ctx.fillStyle = '#10b981';
-            ctx.font = 'bold 18px Arial';
-            ctx.textAlign = 'center';
-            ctx.fillText('✓ Flattening Complete!', width/2, height - 50);
-            
-            ctx.fillStyle = '#333333';
-            ctx.font = '13px Arial';
-            ctx.fillText(`${totalElements} features ready for fully connected layers`, width/2, height - 25);
-            
+            // Pause to show complete vector, then reset
             setTimeout(() => {
-                animationStage = 3;
+                console.log("Restarting flattening animation");
+                currentMapIndex = 0;
+                currentCellIndex = 0;
+                flattenedVector = [];
+                animationStage = 0;
                 animateFlattening();
-            }, 2500);
-            
-        } else if (animationStage === 3) {
-            // Reset and restart
-            console.log("Restarting flattening animation");
-            currentMapIndex = 0;
-            currentCellIndex = 0;
-            flattenedVector = [];
-            animationStage = 0;
-            setTimeout(animateFlattening, 1000);
+            }, 2000);
         }
     };
     

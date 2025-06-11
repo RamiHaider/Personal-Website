@@ -451,34 +451,20 @@
                     <p>Once we're done with the second layer, we <strong>flatten</strong> the outputs into a column vector. We take our six feature maps and reshape them into a single long vector.</p>
                     
                     <div class="flattening-container" style="margin: 30px 0; text-align: center;">
-                        <canvas id="flatteningCanvas" width="800" height="500" style="border-radius: 5px; background: white;"></canvas>
+                        <canvas id="flatteningCanvas" width="800" height="600" style="border-radius: 5px; background: white;"></canvas>
                     </div>
                     
                     <p>This vector gets passed into the fully connected layers. This step is crucial as it transforms our 2D feature maps into a 1D format that traditional neural network layers can process.</p>
-                </div>
 
-                <!-- Step 8: Fully Connected Layers -->
-                <div id="step8" class="section">
-                    <h2><span class="step-number">8</span>Fully Connected Layers & Prediction</h2>
-                    <div class="timestamp">Video: 0:39 - 0:45</div>
+                    <h3>Fully Connected Neural Network</h3>
                     
-                    <div class="video-container">
-                        <video controls>
-                            <source src="../assets/blog/8-fully-connected-prediction.mp4" type="video/mp4">
-                            Your browser does not support the video tag.
-                        </video>
+                    <p>In the fully connected layer, each input node is connected to every node in the next layer. This is where the real "decision-making" happens. All connections between layers are processed in parallel for efficiency.</p>
+                    
+                    <div class="neural-network-container" style="margin: 30px 0; text-align: center;">
+                        <canvas id="neuralNetworkCanvas" width="900" height="400" style="border-radius: 5px; background: white;"></canvas>
                     </div>
+
                     
-                    <p>In the fully connected layer, each input node is connected to every node in the next layer. This is where the real "decision-making" happens. What's actually going on under the hood is that these operations are all vectorized and parallelized—handled efficiently using Python libraries that are really just wrappers over optimized C, C++, or Fortran code.</p>
-                    
-                    <p>From there, we pass the data through a few more hidden layers—again, already trained—and eventually reach the output layer.</p>
-                    
-                    <p><strong>At the end of it all, the model gives us a prediction: a probability that the selected region contains a mineral deposit.</strong> Each weight in the network represents how important a certain part of the image was in making that prediction. That's really what training a model is all about—finding out which pixels or patterns matter.</p>
-                    
-                    <div class="technical-note">
-                        <strong>The Math Behind It:</strong> The fully connected layers perform matrix multiplication followed by activation functions, essentially learning complex non-linear relationships between the extracted features and the final predictions.
-                    </div>
-                </div>
 
                 <!-- Conclusion -->
                 <div id="conclusion" class="conclusion">
@@ -503,6 +489,7 @@
     <script src="../js/max-pooling-animation.js"></script>
     <script src="../js/second-layer-static.js"></script>
     <script src="../js/flattening-animation.js"></script>
+    <script src="../js/neural-network-parallel.js"></script>
     <script src="../js/convolution-animation.js"></script>
     
     <!-- Prism.js for syntax highlighting -->
