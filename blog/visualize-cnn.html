@@ -3,8 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>How Computer Vision Works: A Visual Journey Through CNNs</title>
+    <title>The Illustrated CNN</title>
     <link rel="stylesheet" href="../css/styles.css">
+    
+    <!-- Prism.js for syntax highlighting -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism.min.css" rel="stylesheet" />
+    
     <style>
         .main-content-wrapper {
             background-color: white !important;
@@ -52,6 +56,144 @@
             margin: 20px 0;
         }
         
+        /* Enhanced styling for Prism code blocks */
+        pre[class*="language-"] {
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            line-height: 1.5;
+            overflow-x: auto;
+            background: #f5f5f5 !important; /* Gray background */
+            border: 1px solid #ddd;
+        }
+        
+        code[class*="language-"] {
+            font-family: 'Fira Code', 'Consolas', 'Monaco', 'Courier New', monospace;
+            text-shadow: none !important; /* Remove 3D effect */
+            background: transparent !important;
+        }
+        
+        /* Override Prism Tomorrow theme colors for gray background */
+        .token.comment,
+        .token.prolog,
+        .token.doctype,
+        .token.cdata {
+            color: #6a737d !important;
+            text-shadow: none !important;
+        }
+        
+        .token.punctuation {
+            color: #24292e !important;
+            text-shadow: none !important;
+        }
+        
+        .token.property,
+        .token.tag,
+        .token.boolean,
+        .token.number,
+        .token.constant,
+        .token.symbol,
+        .token.deleted {
+            color: #005cc5 !important;
+            text-shadow: none !important;
+        }
+        
+        .token.selector,
+        .token.attr-name,
+        .token.string,
+        .token.char,
+        .token.builtin,
+        .token.inserted {
+            color: #032f62 !important;
+            text-shadow: none !important;
+        }
+        
+        .token.operator,
+        .token.entity,
+        .token.url,
+        .language-css .token.string,
+        .style .token.string {
+            color: #24292e !important;
+            text-shadow: none !important;
+        }
+        
+        .token.atrule,
+        .token.attr-value,
+        .token.keyword {
+            color: #d73a49 !important;
+            text-shadow: none !important;
+        }
+        
+        .token.function,
+        .token.class-name {
+            color: #6f42c1 !important;
+            text-shadow: none !important;
+        }
+        
+        /* Make variables and general text darker and more readable */
+        .token.plain,
+        .token.variable,
+        .token.parameter,
+        pre[class*="language-"] {
+            color: #24292e !important;
+            text-shadow: none !important;
+        }
+        
+        /* Override any remaining light-colored tokens */
+        code[class*="language-"] * {
+            color: #24292e !important;
+            text-shadow: none !important;
+        }
+        
+        /* Make sure these specific elements are dark */
+        .token.namespace,
+        .token.module,
+        .token.plain-text,
+        .token.script,
+        .token.punctuation {
+            color: #24292e !important;
+            text-shadow: none !important;
+        }
+        
+        /* Re-apply specific colors for syntax elements (this overrides the above) */
+        .token.comment,
+        .token.prolog,
+        .token.doctype,
+        .token.cdata {
+            color: #6a737d !important;
+        }
+        
+        .token.atrule,
+        .token.attr-value,
+        .token.keyword {
+            color: #d73a49 !important;
+        }
+        
+        .token.selector,
+        .token.attr-name,
+        .token.string,
+        .token.char,
+        .token.builtin,
+        .token.inserted {
+            color: #032f62 !important;
+        }
+        
+        .token.property,
+        .token.tag,
+        .token.boolean,
+        .token.number,
+        .token.constant,
+        .token.symbol,
+        .token.deleted {
+            color: #005cc5 !important;
+        }
+        
+        .token.function,
+        .token.class-name {
+            color: #6f42c1 !important;
+        }
+        
         .video-container {
             width: 100%;
             max-width: 100%;
@@ -82,9 +224,21 @@
                     </div>
 
 
-                    <h3> Introduction</h3>
+                    <div style="height: 20px;"></div>
+                    
+                    <h2> Introduction</h2>
 
-                    <p>In a previous section, we learned about neural networks. Convolutional neural networks, the backbone of computer vision, are simply just adding a convolutional part before the fully connected layer - It really is just that simple. Let's learn how a forward pass through a trained CNN works, within a geophysical context.</p>
+                        <p>In a previous section, we learned about neural networks. Convolutional neural networks, the backbone of computer vision, are simply just adding a convolutional part before the fully connected layer - It really is just that simple.</p>
+                            
+                        <p>Let's go through a forward pass through a trained CNN, within a geophysical context.</p>
+
+                    
+
+                    <div style="height: 15px;"></div>
+
+                    <h2> A high level understanding</h2>
+
+
 
                     <!-- Step 1: Region Selection -->
                 <div id="step1" class="section">
@@ -99,46 +253,75 @@
 
                 <!-- Step 2: RGB Decomposition -->
                 <div id="step2" class="section">
-                    <h2>RGB Decomposition</h2>
-                    <p>Using color positively affects the model results, but for visualization purposes, we will only process the Red channel. However, in practise for RGB images, we decompose the image in its 3 channels, and a 3D tensor, each dimension representing a channel gets fed to the model.</p>
+                    <p>Using color could positively affect model results if it helps to add context, in this case it does, but for demonstration purposes we will use black and white.  For colored images, we would have 3 channels, RGB, instead of just one. We will get to how that changes things later. </p>
 
-                    <p> let's choose the red channel for visualization purposes. </p>
                     
-                    
-                    
-                    <div class="video-container">
-                        <video controls>
-                            <source src="../assets/blog/2-rgb-decomposition.mp4" type="video/mp4">
-                            Your browser does not support the video tag.
-                        </video>
+                    <div class="rgb-decomposition-container" style="margin: 20px 0; text-align: center;">
+                        <canvas id="rgbDecompositionCanvas" width="800" height="350" style="border-radius: 5px; background: white;"></canvas>
                     </div>
 
-                    <p>Next, normalize intensity values from 0-255 to 0-1</p>
+                    <p>You must be cognizant, the actual input is never colors or images, it's always numbers. This is what the actual input is</p>
                     
+                    <pre><code class="language-python">
+    #36 x 36 matrix
+    
+    [[222, 205, 214, ..., 176],
+    [136, 164, 174, ..., 173], 
+    [111, 107, 105, ..., 199],
+    #  ...
+    [182, 140,  94, ..., 170]]
 
-                    
+</code></pre>
                 </div>
+
+                <p>Where 0 represents white or an absense of color, and 255 represents black or the presence of color.</p>
 
                 <!-- Step 3: First Convolution -->
                 <div id="step3" class="section">
-                    <h2><span class="step-number">3</span>First Layer: Feature Mapping (Convolution)</h2>
-                    <div class="timestamp">Video: 0:59 - 1:08</div>
+                    <div style="height: 15px;"></div>
+                    <h2>Convolution</h2>
+
+                    <p>Next, we use our learned filters, otherwise known as kernels, to convolve over the input matrix to get the output, called a feature map. </p>
+                
                     
-                    <div class="video-container">
-                        <video controls>
-                            <source src="../assets/blog/3-feature-mapping.mp4" type="video/mp4">
-                            Your browser does not support the video tag.
-                        </video>
+                    <div class="simple-convolution-container" style="margin: 20px 0; text-align: center;">
+                        <canvas id="simpleConvolutionCanvas" width="800" height="300" style="border-radius: 5px; background: white;"></canvas>
                     </div>
                     
-                    <p>Now comes the key step that gives convolutional neural networks their name: <strong>convolution</strong>. During training, the model learns filters—basically, small 3×3 matrices—that slide over the image to extract features. These filters end up being edge detectors or pattern detectors, and they're common across many use cases—cats, cars, geophysical maps, you name it.</p>
-                    
-                    <p>At the highest level of abstraction, images are just edges and shapes. So at the start of the process, the filters are typically detecting edges. We pass each 3×3 filter over the input grid—starting top-left, moving across, then down—and for each step, we multiply the filter values with the image values element-wise. Then we sum them up and record that result in a new matrix, which we call a <strong>feature map</strong>.</p>
-                    
-                    <p>We're not downsampling yet—we're just doing convolutions. Each filter gives us one feature map. In this case, we're using three filters, so we get three output maps.</p>
-                </div>
+                    <p> It's literally just the dot product, i.e., piecewise matrix multiplication</p>
 
-                <!-- Step 4: ReLU + Max Pool -->
+                    <p>Let's take a 4x4 input matrix, and a 2x2 filter, and see how the convolution works.</p>
+                    </p>
+
+                    <pre><code class="language-python">
+    #4x4 matrix input matrix
+    
+    [[222, 205, 214, 176],
+    [136, 164, 174, 173], 
+    [111, 107, 105, 199],
+    [182, 140,  94, 170]]
+
+    #2x2 filter
+
+    [[1, 0],
+    [0, 1]]
+
+    #Convolution output
+    #The top left corner in the input matrix, flattened is [222, 205, 136, 164] 
+    #The filter flattened is [1, 0, 0, 1]
+    #Input X filter is: 222*1 + 205*0 + 136*0 + 164*1 = 388
+    #So the top left corner of the feature map is 388
+                    </code></pre>
+                    <p> You must see, that this operation is entirely parallelizable. That is to say that the output of each operation is independent of others. In fact, what PyTorch or TensorFlow does is take the flattened input matrix and matrix multiple of the filter, producing the output matrix. Since GPUs assign a single thread to each dot product, this is a very efficient operation.</p>
+                    
+                                        <p>In practise, the first convolutional layer has 32 filters, lets just look at 3</p>
+
+                    <div class="three-filters-container" style="margin: 20px 0; text-align: center;">
+                        <canvas id="threeFiltersCanvas" width="900" height="400" style="border-radius: 5px; background: white;"></canvas>
+                    </div>
+
+                    <p>These 3 filters, which are learned during training, are almost universal. They emerge as a consequence of training in almost every situation, cat recognition, human faces, objects, etc</p>
+                 <!-- Step 4: ReLU + Max Pool -->
                 <div id="step4" class="section">
                     <h2><span class="step-number">4</span>ReLU Activation & Max Pooling</h2>
                     <div class="timestamp">Video: 1:09 - 1:16</div>
@@ -249,5 +432,14 @@
     <script src="../js/main.js"></script>
     <script src="../js/dates.js"></script>
     <script src="../js/blog-region-selector.js"></script>
+    <script src="../js/rgb-decomposition-static.js"></script>
+    <script src="../js/simple-convolution.js"></script>
+    <script src="../js/three-filters-static.js"></script>
+    <script src="../js/convolution-animation.js"></script>
+    
+    <!-- Prism.js for syntax highlighting -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-python.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-javascript.min.js"></script>
 </body>
 </html>
