@@ -1,0 +1,2931 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+ <meta charset="UTF-8">
+ <meta name="viewport" content="width=device-width, initial-scale=1.0">
+ <title>Interactive Gradient Descent Tutorial</title>
+ <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+ <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+ <style>
+ body {
+ margin: 0;
+ padding: 0;
+ background: #000000;
+ font-family: 'Arial', sans-serif;
+ color: white;
+ overflow-x: hidden;
+ }
+ 
+ #container {
+ width: 100%;
+ min-height: 100vh;
+ display: flex;
+ flex-direction: column;
+ }
+ 
+ #info {
+ width: calc(100% - 40px);
+ margin: 20px;
+ background: rgba(0, 0, 0, 0.9);
+ padding: 20px;
+ border-radius: 15px;
+ backdrop-filter: blur(10px);
+ box-sizing: border-box;
+ }
+ 
+ h1 {
+ margin: 0 0 15px 0;
+ font-size: 28px;
+ background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+ -webkit-background-clip: text;
+ -webkit-text-fill-color: transparent;
+ background-clip: text;
+ text-align: center;
+ }
+ 
+ #canvas-container {
+ width: 100%;
+ height: 60vh;
+ min-height: 400px;
+ position: relative;
+ margin: 20px 0;
+ overflow: hidden;
+ }
+ 
+ #canvas {
+ width: 100%;
+ height: 100%;
+ display: block;
+ }
+ 
+ #step-controls {
+ width: calc(100% - 40px);
+ margin: 0 20px 20px 20px;
+ background: rgba(0, 0, 0, 0.9);
+ padding: 20px;
+ border-radius: 10px;
+ border: 1px solid rgba(255, 255, 255, 0.2);
+ backdrop-filter: blur(10px);
+ box-sizing: border-box;
+ text-align: center;
+ }
+ 
+ #step-title {
+ font-size: 24px;
+ margin-bottom: 15px;
+ color: #4ecdc4;
+ font-weight: bold;
+ }
+ 
+ #step-description {
+ font-size: 18px;
+ margin-bottom: 20px;
+ line-height: 1.5;
+ }
+ 
+ #next-button {
+ padding: 15px 30px;
+ font-size: 18px;
+ background: #4ecdc4;
+ color: black;
+ border: none;
+ border-radius: 10px;
+ cursor: pointer;
+ font-weight: bold;
+ transition: all 0.3s ease;
+ }
+ 
+ #next-button:hover {
+ background: #3db8b0;
+ transform: scale(1.05);
+ }
+ 
+ #next-button:disabled {
+ background: #666;
+ cursor: not-allowed;
+ transform: none;
+ }
+ 
+
+ 
+ #current-values {
+ background: rgba(255, 255, 255, 0.1);
+ padding: 15px;
+ border-radius: 10px;
+ margin: 15px 0;
+ font-family: 'Courier New', monospace;
+ font-size: 16px;
+ }
+ 
+ .value-highlight {
+ color: #4ecdc4;
+ font-weight: bold;
+ }
+ 
+ #step-controls-inline {
+ background: rgba(255, 255, 255, 0.1);
+ padding: 20px;
+ border-radius: 10px;
+ margin: 15px 0;
+ text-align: center;
+ }
+ 
+ #step-controls-inline #step-title {
+ font-size: 20px;
+ margin-bottom: 10px;
+ color: #4ecdc4;
+ font-weight: bold;
+ }
+ 
+ #step-controls-inline #step-description {
+ font-size: 16px;
+ margin-bottom: 15px;
+ line-height: 1.4;
+ min-height: 44px;
+ }
+ 
+ #step-controls-inline #next-button {
+ padding: 12px 25px;
+ font-size: 16px;
+ background: #4ecdc4;
+ color: black;
+ border: none;
+ border-radius: 8px;
+ cursor: pointer;
+ font-weight: bold;
+ transition: all 0.3s ease;
+ }
+ 
+ #step-controls-inline #next-button:hover {
+ background: #3db8b0;
+ transform: scale(1.05);
+ }
+ 
+ #info-button {
+ padding: 8px 20px;
+ font-size: 14px;
+ background: rgba(255, 255, 255, 0.1);
+ color: #888;
+ border: 1px solid rgba(255, 255, 255, 0.2);
+ border-radius: 6px;
+ cursor: pointer;
+ font-weight: normal;
+ transition: all 0.3s ease;
+ margin-top: 10px;
+ }
+ 
+ #info-button:hover {
+ background: rgba(255, 255, 255, 0.15);
+ color: #bbb;
+ }
+ 
+ #info-panel {
+ position: absolute;
+ top: 0;
+ left: 0;
+ right: 0;
+ background: rgba(0, 0, 0, 0.95);
+ color: white;
+ padding: 20px;
+ border-radius: 0 0 15px 15px;
+ transform: translateY(-100%);
+ transition: transform 0.4s ease;
+ z-index: 1000;
+ backdrop-filter: blur(10px);
+ }
+ 
+ #info-panel.show {
+ transform: translateY(0);
+ }
+ 
+ #info-panel h2 {
+ color: #4ecdc4;
+ margin-top: 0;
+ font-size: 18px;
+ text-align: center;
+ }
+ 
+ #info-panel .calculation {
+ font-family: 'Courier New', monospace;
+ font-size: 14px;
+ background: rgba(255, 255, 255, 0.05);
+ padding: 15px;
+ border-radius: 8px;
+ margin: 15px 0;
+ border-left: 4px solid #4ecdc4;
+ }
+ 
+ #info-panel .highlight {
+ background: rgba(255, 255, 0, 0.3);
+ padding: 2px 4px;
+ border-radius: 3px;
+ }
+ 
+ #close-info {
+ float: right;
+ font-size: 20px;
+ cursor: pointer;
+ color: #999;
+ margin-top: -5px;
+ }
+ 
+ #close-info:hover {
+ color: #4ecdc4;
+ }
+ 
+ #function-label {
+ position: absolute;
+ top: 20px;
+ left: 20px;
+ color: white;
+ font-family: 'Arial', sans-serif;
+ font-size: 18px;
+ font-weight: bold;
+ z-index: 100;
+ background: rgba(0, 0, 0, 0.3);
+ padding: 8px 12px;
+ border-radius: 6px;
+ backdrop-filter: blur(5px);
+ border: 1px solid rgba(255, 255, 255, 0.2);
+ }
+ 
+ #main-content {
+ display: flex;
+ flex-direction: row;
+ gap: 20px;
+ align-items: flex-start;
+ justify-content: center;
+ }
+ 
+ #step-controls-inline {
+ width: 600px;
+ max-width: 600px;
+ min-height: 140px;
+ }
+ 
+ #adjustable-parameters {
+ width: 300px;
+ max-width: 300px;
+ background: rgba(255, 255, 255, 0.05);
+ padding: 15px;
+ border-radius: 8px;
+ border: 1px solid rgba(76, 205, 196, 0.3);
+ min-height: 120px;
+ display: flex;
+ flex-direction: column;
+ justify-content: space-between;
+ }
+ 
+ #adjustable-parameters h3 {
+ margin: 0 0 15px 0;
+ color: #4ecdc4;
+ font-size: 16px;
+ text-align: center;
+ }
+ 
+ .parameter-row {
+ display: flex;
+ gap: 15px;
+ align-items: stretch;
+ }
+ 
+ .parameter-box {
+ flex: 1;
+ background: rgba(255, 255, 255, 0.05);
+ padding: 15px;
+ border-radius: 8px;
+ border: 1px solid rgba(76, 205, 196, 0.2);
+ }
+ 
+ .parameter-box label {
+ display: block;
+ margin-bottom: 8px;
+ font-size: 14px;
+ color: #ffffff;
+ }
+ 
+ .parameter-box input[type="range"] {
+ width: 100%;
+ height: 6px;
+ border-radius: 3px;
+ background: rgba(255, 255, 255, 0.2);
+ outline: none;
+ -webkit-appearance: none;
+ }
+ 
+ .parameter-box input[type="range"]::-webkit-slider-thumb {
+ -webkit-appearance: none;
+ appearance: none;
+ width: 16px;
+ height: 16px;
+ border-radius: 50%;
+ background: #4ecdc4;
+ cursor: pointer;
+ }
+ 
+ .parameter-box input[type="range"]::-moz-range-thumb {
+ width: 16px;
+ height: 16px;
+ border-radius: 50%;
+ background: #4ecdc4;
+ cursor: pointer;
+ border: none;
+ }
+ 
+ #lr-display {
+ color: #4ecdc4;
+ font-weight: bold;
+ }
+ 
+ #randomize-button {
+ width: 100%;
+ height: 100%;
+ min-height: 50px;
+ padding: 10px;
+ font-size: 13px;
+ background: #666666;
+ color: white;
+ border: none;
+ border-radius: 6px;
+ cursor: pointer;
+ font-weight: bold;
+ transition: all 0.3s ease;
+ display: flex;
+ align-items: center;
+ justify-content: center;
+ text-align: center;
+ line-height: 1.2;
+ }
+ 
+ #randomize-button:hover {
+ background: #555555;
+ transform: scale(1.02);
+ }
+ 
+ .info-icon {
+ color: #4ecdc4;
+ cursor: help;
+ font-weight: bold;
+ font-size: 14px;
+ margin-left: 5px;
+ }
+ 
+ .info-icon:hover {
+ color: #3db8b0;
+ }
+ 
+ #training-data-display {
+ width: 100%;
+ background: rgba(255, 255, 255, 0.05);
+ border: 1px solid rgba(76, 205, 196, 0.3);
+ border-radius: 10px;
+ padding: 20px;
+ margin-top: 20px;
+ display: none;
+ position: relative;
+ }
+ 
+ #training-data-display h3 {
+ color: #4ecdc4;
+ margin: 0 0 15px 0;
+ text-align: center;
+ }
+ 
+ #close-training-data {
+ font-size: 32px;
+ cursor: pointer;
+ color: #ffffff;
+ font-weight: bold;
+ background: rgba(0, 0, 0, 0.3);
+ border: 2px solid rgba(255, 255, 255, 0.5);
+ border-radius: 50%;
+ width: 40px;
+ height: 40px;
+ display: inline-flex;
+ align-items: center;
+ justify-content: center;
+ transition: all 0.3s ease;
+ margin-left: 50px;
+ vertical-align: middle;
+ position: absolute;
+ right: 80px;
+ top: 20px;
+ }
+ 
+ #close-training-data:hover {
+ color: #ffffff;
+ background: rgba(100, 100, 100, 0.8);
+ border: 2px solid rgba(255, 255, 255, 0.8);
+ transform: scale(1.1);
+ }
+ 
+ .training-table {
+ width: 100%;
+ border-collapse: collapse;
+ font-family: 'Courier New', monospace;
+ font-size: 14px;
+ }
+ 
+ .training-table th,
+ .training-table td {
+ border: 1px solid rgba(255, 255, 255, 0.2);
+ padding: 8px;
+ text-align: center;
+ }
+ 
+ .training-table th {
+ background: rgba(76, 205, 196, 0.2);
+ color: #4ecdc4;
+ font-weight: bold;
+ }
+ 
+ .training-table td {
+ background: rgba(255, 255, 255, 0.05);
+ }
+ 
+ .loss-summary {
+ margin-top: 15px;
+ padding: 15px;
+ background: rgba(255, 255, 255, 0.1);
+ border-radius: 8px;
+ border-left: 4px solid #4ecdc4;
+ }
+ 
+ .loss-summary .final-loss {
+ font-size: 18px;
+ font-weight: bold;
+ color: #4ecdc4;
+ text-align: center;
+ margin-top: 10px;
+ }
+ 
+ .mse-calculation {
+display: flex;
+gap: 30px;
+align-items: center;
+justify-content: center;
+margin-top: 20px;
+padding: 20px;
+}
+ 
+ .mse-formula {
+ font-size: 20px;
+ color: #ffffff;
+ font-weight: bold;
+ }
+ 
+ .fraction {
+ display: inline-flex;
+ flex-direction: column;
+ vertical-align: middle;
+ text-align: center;
+ font-size: 18px;
+ margin: 0 10px;
+ }
+ 
+ .fraction .numerator {
+ border-bottom: 2px solid #4ecdc4;
+ padding: 5px 10px;
+ color: #4ecdc4;
+ font-weight: bold;
+ min-width: 80px;
+ }
+ 
+ .fraction .denominator {
+ padding: 5px 10px;
+ color: #4ecdc4;
+ font-weight: bold;
+ min-width: 80px;
+ }
+ 
+ .calculation-step {
+ display: flex;
+ align-items: center;
+ gap: 15px;
+ font-size: 18px;
+ color: #ffffff;
+ }
+ 
+ .equals {
+ font-size: 24px;
+ color: #4ecdc4;
+ font-weight: bold;
+ margin: 0 10px;
+ }
+ 
+ .final-mse-result {
+font-size: 22px;
+color: #4ecdc4;
+font-weight: bold;
+padding: 10px 20px;
+}
+ 
+ #gradient-calculation-display {
+ width: 100%;
+ background: rgba(255, 255, 255, 0.05);
+ border: 1px solid rgba(255, 107, 107, 0.3);
+ border-radius: 10px;
+ padding: 20px;
+ margin-top: 20px;
+ display: none;
+ position: relative;
+ }
+ 
+ #gradient-calculation-display h3 {
+ color: #ff6b6b;
+ margin: 0 0 15px 0;
+ text-align: center;
+ }
+ 
+ #close-gradient-calc {
+ font-size: 32px;
+ cursor: pointer;
+ color: #ffffff;
+ font-weight: bold;
+ background: rgba(0, 0, 0, 0.3);
+ border: 2px solid rgba(255, 255, 255, 0.5);
+ border-radius: 50%;
+ width: 40px;
+ height: 40px;
+ display: inline-flex;
+ align-items: center;
+ justify-content: center;
+ transition: all 0.3s ease;
+ position: absolute;
+ right: 80px;
+ top: 20px;
+ }
+ 
+ #close-gradient-calc:hover {
+ color: #ffffff;
+ background: rgba(100, 100, 100, 0.8);
+ border: 2px solid rgba(255, 255, 255, 0.8);
+ transform: scale(1.1);
+ }
+ 
+ .gradient-content {
+ display: flex;
+ gap: 20px;
+ align-items: flex-start;
+ }
+ 
+ .gradient-left {
+ flex: 1;
+ background: rgba(255, 255, 255, 0.08);
+ padding: 20px;
+ border-radius: 10px;
+ border-left: 4px solid #ff6b6b;
+ }
+ 
+ .gradient-middle {
+ flex: 1;
+ background: rgba(255, 255, 255, 0.08);
+ padding: 20px;
+ border-radius: 10px;
+ border-left: 4px solid #4ecdc4;
+ }
+ 
+ .gradient-right {
+ flex: 1;
+ background: rgba(255, 255, 255, 0.08);
+ padding: 20px;
+ border-radius: 10px;
+ border-left: 4px solid #4ecdc4;
+ }
+ 
+ .gradient-step {
+ background: rgba(255, 255, 255, 0.05);
+ padding: 15px;
+ border-radius: 8px;
+ margin-bottom: 15px;
+ font-family: 'Courier New', monospace;
+ }
+ 
+ .gradient-step h4 {
+ color: #4ecdc4;
+ margin: 0 0 10px 0;
+ font-size: 16px;
+ }
+ 
+ .gradient-step .math-formula {
+ font-size: 16px;
+ color: #ffffff;
+ line-height: 1.6;
+ }
+ 
+         .gradient-step .math-result {
+          font-size: 18px;
+          font-weight: bold;
+          color: #ff6b6b;
+          margin-top: 10px;
+          padding: 10px;
+        }
+ 
+ .gradient-summary {
+ background: rgba(0, 122, 204, 0.1);
+ padding: 20px;
+ border-radius: 10px;
+ margin-top: 20px;
+ text-align: center;
+ }
+ 
+ .gradient-summary h4 {
+ color: #007acc;
+ margin: 0 0 15px 0;
+ }
+ 
+ .gradient-values {
+ display: flex;
+ justify-content: space-around;
+ margin-top: 15px;
+ }
+ 
+ .gradient-value {
+ background: rgba(0, 0, 0, 0.3);
+ padding: 15px;
+ border-radius: 8px;
+ border: 2px solid rgba(0, 122, 204, 0.5);
+ }
+ 
+ .gradient-value .label {
+ color: #007acc;
+ font-weight: bold;
+ }
+ 
+ .gradient-value .value {
+ color: #ffffff;
+ font-size: 20px;
+ font-weight: bold;
+ font-family: 'Courier New', monospace;
+ }
+ </style>
+</head>
+<body>
+ <div id="container">
+ <div id="info">
+ <!-- Hidden original elements to keep JavaScript working -->
+ <div id="current-values" style="display: none;">
+ <div><strong>Current Position:</strong></div>
+ <div>w = <span class="value-highlight" id="current-w">0.500</span></div>
+ <div>b = <span class="value-highlight" id="current-b">0.000</span></div>
+ <div>Loss = <span class="value-highlight" id="current-loss">?</span></div>
+ </div>
+ 
+ <!-- Main content area with step controls and parameters -->
+ <div id="main-content">
+ <!-- Step controls on the left -->
+ <div id="step-controls-inline">
+ <div id="step-title">Initialize Trainable Parameters</div>
+ <div id="step-description">We randomize W within constraints <span class="info-icon" title="Weights are typically initialized randomly to break symmetry and allow the network to learn different features. Common methods include Xavier/Glorot initialization or He initialization.">ⓘ</span> and set B = 0. Next, we need to calculate the Loss to see how far off our predictions are.</div>
+ <button id="next-button">Calculate Loss</button>
+ <button id="info-button" style="display: none;">See Calculation</button>
+ </div>
+ 
+ <!-- Adjustable parameters on the right -->
+ <div id="adjustable-parameters">
+ <h3>Adjustable Parameters</h3>
+ <div class="parameter-row">
+ <div class="parameter-box">
+ <label for="learning-rate-slider">Learning Rate: <span id="lr-display">0.085</span></label>
+         <input type="range" id="learning-rate-slider" min="0" max="0.5" step="0.001" value="0.085">
+ </div>
+ <div class="parameter-box">
+ <button id="randomize-button">Randomize Starting Point</button>
+ </div>
+ </div>
+ </div>
+ </div>
+ </div>
+ 
+ <!-- Training Data Display -->
+ <div id="training-data-display">
+ <h3>Loss Calculation (Using BGD) <span class="info-icon" title="BGD (Batch Gradient Descent) uses the entire training dataset in each iteration to calculate gradients for updating W & B. This is opposed to SGD (Stochastic Gradient Descent) which uses one sample at a time. In production settings, we cannot hold millions of data points at once, so most commonly there is a middle ground: Mini-Batch Gradient Descent, which processes 16-32 training points at once and averages them.">ⓘ</span> <span id="close-training-data">&times;</span></h3>
+ <table class="training-table">
+ <thead>
+ <tr>
+ <th>Input (x)</th>
+ <th>True Output (y)</th>
+ <th>Predicted (ŷ)</th>
+ <th>Error (ŷ - y)</th>
+ <th>Squared Error</th>
+ </tr>
+ </thead>
+ <tbody id="training-table-body">
+ <!-- Will be populated by JavaScript -->
+ </tbody>
+ </table>
+ <div class="loss-summary">
+ <div class="mse-calculation">
+ <div class="calculation-step">
+ <span class="mse-formula">MSE = </span>
+ <div class="fraction">
+ <div class="numerator" style="display: flex; align-items: center; justify-content: center; gap: 5px;">
+ <span style="font-size: 20px;">Σ</span>
+ <span style="font-size: 14px;">Squared Error</span>
+ </div>
+ <div class="denominator">n</div>
+ </div>
+ <span class="equals">=</span>
+ <div class="fraction">
+ <div class="numerator" id="sum-squared-errors">?</div>
+ <div class="denominator">50</div>
+ </div>
+ <span class="equals">=</span>
+ <div class="final-mse-result" id="final-loss-display">?</div>
+ </div>
+ </div>
+ </div>
+ </div>
+ 
+ <!-- Gradient Calculation Display -->
+ <div id="gradient-calculation-display">
+ <span id="close-gradient-calc">&times;</span>
+ 
+ <div class="gradient-content">
+ <!-- Left Column: Explanations + Step 1 -->
+ <div class="gradient-left" style="background: rgba(128, 128, 128, 0.1); padding: 15px; border-radius: 8px;">
+         <h2 style="color: #00cc66; margin: 0 0 20px 0; text-align: center; font-size: 24px; padding: 10px;">
+          <div class="fraction" style="display: inline-flex; vertical-align: middle; margin: 0 5px;">
+            <div style="display: flex; flex-direction: column; text-align: center;">
+              <div style="border-bottom: 3px solid #00cc66; padding: 5px 12px; color: #00cc66; font-weight: bold;">∂Loss</div>
+              <div style="padding: 5px 12px; color: #00cc66; font-weight: bold;">∂ŷ</div>
+            </div>
+          </div>
+        </h2>
+ 
+ <div class="gradient-step">
+ <div class="math-formula" style="color: #ffffff; font-size: 16px; line-height: 1.6; text-align: center;">
+ Loss = <div class="fraction" style="display: inline-flex; vertical-align: middle; margin: 0 5px;">
+ <div style="display: flex; flex-direction: column; text-align: center;">
+ <div style="border-bottom: 2px solid #ffffff; padding: 3px 8px; color: #ffffff; font-weight: bold;">1</div>
+ <div style="padding: 3px 8px; color: #ffffff; font-weight: bold;">n</div>
+ </div>
+           </div> × <span style="font-size: 32px; margin: 0 3px; color: #ffffff;">Σ</span><span style="color: #ffffff;">(y - ŷ)²</span>
+ </div>
+ <div class="math-result" style="font-size: 18px; font-weight: bold; color: #00cc66; margin-top: 15px; padding: 10px; text-align: center;">
+ <div class="fraction" style="display: inline-flex; vertical-align: middle; margin: 0 5px;">
+ <div style="display: flex; flex-direction: column; text-align: center;">
+ <div style="border-bottom: 2px solid #00cc66; padding: 3px 8px; color: #00cc66; font-weight: bold;">∂Loss</div>
+ <div style="padding: 3px 8px; color: #00cc66; font-weight: bold;">∂ŷ</div>
+ </div>
+ </div> = <div class="fraction" style="display: inline-flex; vertical-align: middle; margin: 0 5px;">
+ <div style="display: flex; flex-direction: column; text-align: center;">
+ <div style="border-bottom: 2px solid #00cc66; padding: 3px 8px; color: #00cc66; font-weight: bold;">2</div>
+ <div style="padding: 3px 8px; color: #00cc66; font-weight: bold;">n</div>
+ </div>
+           </div> × <span style="font-size: 32px; margin: 0 3px; color: #ffffff;">Σ</span><span style="color: #ffffff;">(ŷ - y)</span>
+ </div>
+ </div>
+ 
+ <div class="gradient-step">
+ <h4 style="color: #ffffff; margin: 15px 0 10px 0;">Plug in Numbers</h4>
+ <div style="color: #cccccc; font-size: 14px; text-align: center; margin-bottom: 10px; font-style: italic;">
+ (Using the sum of squared errors from the loss calculation step)
+ </div>
+ <div class="math-formula" style="color: #ffffff; font-size: 16px; line-height: 1.8; text-align: center;">
+ <div class="fraction" style="display: inline-flex; vertical-align: middle; margin: 0 5px;">
+ <div style="display: flex; flex-direction: column; text-align: center;">
+ <div style="border-bottom: 2px solid #00cc66; padding: 3px 8px; color: #00cc66; font-weight: bold;">2</div>
+ <div style="padding: 3px 8px; color: #00cc66; font-weight: bold;" id="gradient-yhat-n">50</div>
+ </div>
+           </div> <span style="color: #00cc66;">×</span> <span id="gradient-yhat-sum" style="color: #00cc66;">?</span>
+ </div>
+         <div class="math-result" style="font-size: 20px; font-weight: bold; color: #00cc66; margin-top: 15px; text-align: center;">
+          <div class="fraction" style="display: inline-flex; vertical-align: middle; margin: 0 5px;">
+            <div style="display: flex; flex-direction: column; text-align: center;">
+              <div style="border-bottom: 2px solid #00cc66; padding: 3px 8px; color: #00cc66; font-weight: bold;">∂Loss</div>
+              <div style="padding: 3px 8px; color: #00cc66; font-weight: bold;">∂ŷ</div>
+            </div>
+          </div> = <span id="gradient-yhat-final" style="color: #00cc66;">?</span>
+        </div>
+ </div>
+ </div>
+ 
+ <!-- Middle Column: ∂Loss/∂w -->
+ <div class="gradient-middle" style="background: rgba(128, 128, 128, 0.1); padding: 15px; border-radius: 8px;">
+         <h2 style="color: #ff6666; margin: 0 0 20px 0; text-align: center; font-size: 24px; padding: 10px;">
+          <div class="fraction" style="display: inline-flex; vertical-align: middle; margin: 0 5px;">
+            <div style="display: flex; flex-direction: column; text-align: center;">
+              <div style="border-bottom: 3px solid #ff6666; padding: 5px 12px; color: #ff6666; font-weight: bold;">∂Loss</div>
+              <div style="padding: 5px 12px; color: #ff6666; font-weight: bold;">∂w</div>
+            </div>
+          </div>
+        </h2>
+ 
+ <div class="gradient-step">
+ <h4 style="color: #ffffff; margin: 0 0 10px 0;">Chain Rule for w</h4>
+ <div class="math-formula" style="color: #ffffff; font-size: 16px; line-height: 1.8; text-align: center;">
+ <div class="fraction" style="display: inline-flex; vertical-align: middle; margin: 0 5px;">
+ <div style="display: flex; flex-direction: column; text-align: center;">
+ <div style="border-bottom: 2px solid #ffffff; padding: 3px 8px; color: #ffffff; font-weight: bold;">∂Loss</div>
+ <div style="padding: 3px 8px; color: #ffffff; font-weight: bold;">∂w</div>
+ </div>
+ </div> = <div class="fraction" style="display: inline-flex; vertical-align: middle; margin: 0 5px;">
+ <div style="display: flex; flex-direction: column; text-align: center;">
+ <div style="border-bottom: 2px solid #00cc66; padding: 3px 8px; color: #00cc66; font-weight: bold;">∂Loss</div>
+ <div style="padding: 3px 8px; color: #00cc66; font-weight: bold;">∂ŷ</div>
+ </div>
+ </div> × <div class="fraction" style="display: inline-flex; vertical-align: middle; margin: 0 5px;">
+ <div style="display: flex; flex-direction: column; text-align: center;">
+ <div style="border-bottom: 2px solid #ffffff; padding: 3px 8px; color: #ffffff; font-weight: bold;">∂ŷ</div>
+ <div style="padding: 3px 8px; color: #ffffff; font-weight: bold;">∂w</div>
+ </div>
+ </div>
+ </div>
+ </div>
+ 
+ <div class="gradient-step">
+ <h4 style="color: #ffffff; margin: 0 0 10px 0;">Find ∂ŷ/∂w</h4>
+ <div class="math-formula" style="color: #ffffff; font-size: 16px; line-height: 1.8; text-align: center;">
+ Since ŷ = w×x + b:<br>
+ <div class="fraction" style="display: inline-flex; vertical-align: middle; margin: 0 5px;">
+ <div style="display: flex; flex-direction: column; text-align: center;">
+ <div style="border-bottom: 2px solid #ffffff; padding: 3px 8px; color: #ffffff; font-weight: bold;">∂ŷ</div>
+ <div style="padding: 3px 8px; color: #ffffff; font-weight: bold;">∂w</div>
+ </div>
+ </div> = x
+ </div>
+ </div>
+ 
+         <div class="gradient-step">
+          <h4 style="color: #ffffff; margin: 0 0 10px 0;">Combine</h4>
+          <div class="math-formula" style="color: #ffffff; font-size: 16px; line-height: 1.8; text-align: center;">
+            <div class="fraction" style="display: inline-flex; vertical-align: middle; margin: 0 5px;">
+              <div style="display: flex; flex-direction: column; text-align: center;">
+                <div style="border-bottom: 2px solid #ffffff; padding: 3px 8px; color: #ffffff; font-weight: bold;">∂Loss</div>
+                <div style="padding: 3px 8px; color: #ffffff; font-weight: bold;">∂w</div>
+              </div>
+            </div> = <div class="fraction" style="display: inline-flex; vertical-align: middle; margin: 0 5px;">
+              <div style="display: flex; flex-direction: column; text-align: center;">
+                <div style="border-bottom: 2px solid #00cc66; padding: 3px 8px; color: #00cc66; font-weight: bold;">2</div>
+                <div style="padding: 3px 8px; color: #00cc66; font-weight: bold;">n</div>
+              </div>
+            </div> <span style="color: #00cc66;">×</span> <span style="color: #00cc66;">(ŷ - y)</span> <span style="color: #00cc66;">×</span> <span style="color: #ffffff;">x</span>
+          </div>
+        </div>
+ 
+         <div class="gradient-step">
+          <h4 style="color: #ffffff; margin: 0 0 10px 0;">Sum over all Training Examples</h4>
+          <div class="math-formula" style="color: #ffffff; font-size: 16px; line-height: 1.8; text-align: center;">
+            <div class="fraction" style="display: inline-flex; vertical-align: middle; margin: 0 5px;">
+              <div style="display: flex; flex-direction: column; text-align: center;">
+                <div style="border-bottom: 2px solid #ffffff; padding: 3px 8px; color: #ffffff; font-weight: bold;">∂Loss</div>
+                <div style="padding: 3px 8px; color: #ffffff; font-weight: bold;">∂w</div>
+              </div>
+            </div> = <div class="fraction" style="display: inline-flex; vertical-align: middle; margin: 0 5px;">
+              <div style="display: flex; flex-direction: column; text-align: center;">
+                <div style="border-bottom: 2px solid #00cc66; padding: 3px 8px; color: #00cc66; font-weight: bold;">2</div>
+                <div style="padding: 3px 8px; color: #00cc66; font-weight: bold;">n</div>
+              </div>
+            </div> <span style="color: #00cc66;">×</span> <span style="font-size: 32px; margin: 0 3px; color: #ffffff;">Σ</span><span style="font-size: 15px; position: relative; bottom: 14px; left: -8px; color: #ffffff;">i=1</span><span style="font-size: 15px; position: relative; top: 6px; left: -8px; color: #ffffff;">n</span> <span style="color: #00cc66;">(ŷᵢ - yᵢ)</span> <span style="color: #00cc66;">×</span> <span style="color: #ffffff;">xᵢ</span>
+          </div>
+        </div>
+ 
+         <div class="gradient-step">
+          <h4 style="color: #ffffff; margin: 0 0 10px 0;">Plug in Numbers</h4>
+          <div class="math-formula" style="color: #ffffff; font-size: 16px; line-height: 1.8; text-align: center;">
+            <div class="fraction" style="display: inline-flex; vertical-align: middle; margin: 0 5px;">
+              <div style="display: flex; flex-direction: column; text-align: center;">
+                <div style="border-bottom: 2px solid #00cc66; padding: 3px 8px; color: #00cc66; font-weight: bold;">2</div>
+                <div style="padding: 3px 8px; color: #00cc66; font-weight: bold;" id="gradient-w-n">50</div>
+              </div>
+            </div> <span style="color: #00cc66;">×</span> <span id="gradient-w-sum" style="color: #00cc66;">?</span>
+          </div>
+         <div class="math-result" style="font-size: 20px; font-weight: bold; color: #ffffff; margin-top: 15px; text-align: center;">
+          <div class="fraction" style="display: inline-flex; vertical-align: middle; margin: 0 5px;">
+            <div style="display: flex; flex-direction: column; text-align: center;">
+              <div style="border-bottom: 2px solid #ff6666; padding: 3px 8px; color: #ff6666; font-weight: bold;">∂Loss</div>
+              <div style="padding: 3px 8px; color: #ff6666; font-weight: bold;">∂w</div>
+            </div>
+          </div> = <span id="gradient-w-final" style="color: #ff6666;">?</span>
+        </div>
+ </div>
+ </div>
+ 
+ <!-- Right Column: ∂Loss/∂b -->
+ <div class="gradient-right" style="background: rgba(128, 128, 128, 0.1); padding: 15px; border-radius: 8px;">
+         <h2 style="color: #6699ff; margin: 0 0 20px 0; text-align: center; font-size: 24px; padding: 10px;">
+          <div class="fraction" style="display: inline-flex; vertical-align: middle; margin: 0 5px;">
+            <div style="display: flex; flex-direction: column; text-align: center;">
+              <div style="border-bottom: 3px solid #6699ff; padding: 5px 12px; color: #6699ff; font-weight: bold;">∂Loss</div>
+              <div style="padding: 5px 12px; color: #6699ff; font-weight: bold;">∂b</div>
+            </div>
+          </div>
+        </h2>
+ 
+ <div class="gradient-step">
+ <h4 style="color: #ffffff; margin: 0 0 10px 0;">Chain Rule for b</h4>
+ <div class="math-formula" style="color: #ffffff; font-size: 16px; line-height: 1.8; text-align: center;">
+ <div class="fraction" style="display: inline-flex; vertical-align: middle; margin: 0 5px;">
+ <div style="display: flex; flex-direction: column; text-align: center;">
+ <div style="border-bottom: 2px solid #ffffff; padding: 3px 8px; color: #ffffff; font-weight: bold;">∂Loss</div>
+ <div style="padding: 3px 8px; color: #ffffff; font-weight: bold;">∂b</div>
+ </div>
+ </div> = <div class="fraction" style="display: inline-flex; vertical-align: middle; margin: 0 5px;">
+ <div style="display: flex; flex-direction: column; text-align: center;">
+ <div style="border-bottom: 2px solid #00cc66; padding: 3px 8px; color: #00cc66; font-weight: bold;">∂Loss</div>
+ <div style="padding: 3px 8px; color: #00cc66; font-weight: bold;">∂ŷ</div>
+ </div>
+ </div> × <div class="fraction" style="display: inline-flex; vertical-align: middle; margin: 0 5px;">
+ <div style="display: flex; flex-direction: column; text-align: center;">
+ <div style="border-bottom: 2px solid #ffffff; padding: 3px 8px; color: #ffffff; font-weight: bold;">∂ŷ</div>
+ <div style="padding: 3px 8px; color: #ffffff; font-weight: bold;">∂b</div>
+ </div>
+ </div>
+ </div>
+ </div>
+ 
+ <div class="gradient-step">
+ <h4 style="color: #ffffff; margin: 0 0 10px 0;">Find ∂ŷ/∂b</h4>
+ <div class="math-formula" style="color: #ffffff; font-size: 16px; line-height: 1.8; text-align: center;">
+ Since ŷ = w×x + b:<br>
+ <div class="fraction" style="display: inline-flex; vertical-align: middle; margin: 0 5px;">
+ <div style="display: flex; flex-direction: column; text-align: center;">
+ <div style="border-bottom: 2px solid #ffffff; padding: 3px 8px; color: #ffffff; font-weight: bold;">∂ŷ</div>
+ <div style="padding: 3px 8px; color: #ffffff; font-weight: bold;">∂b</div>
+ </div>
+ </div> = 1
+ </div>
+ </div>
+ 
+         <div class="gradient-step">
+          <h4 style="color: #ffffff; margin: 0 0 10px 0;">Combine</h4>
+          <div class="math-formula" style="color: #ffffff; font-size: 16px; line-height: 1.8; text-align: center;">
+            <div class="fraction" style="display: inline-flex; vertical-align: middle; margin: 0 5px;">
+              <div style="display: flex; flex-direction: column; text-align: center;">
+                <div style="border-bottom: 2px solid #ffffff; padding: 3px 8px; color: #ffffff; font-weight: bold;">∂Loss</div>
+                <div style="padding: 3px 8px; color: #ffffff; font-weight: bold;">∂b</div>
+              </div>
+            </div> = <div class="fraction" style="display: inline-flex; vertical-align: middle; margin: 0 5px;">
+              <div style="display: flex; flex-direction: column; text-align: center;">
+                <div style="border-bottom: 2px solid #00cc66; padding: 3px 8px; color: #00cc66; font-weight: bold;">2</div>
+                <div style="padding: 3px 8px; color: #00cc66; font-weight: bold;">n</div>
+              </div>
+            </div> <span style="color: #00cc66;">×</span> <span style="color: #00cc66;">(ŷ - y)</span>
+          </div>
+        </div>
+ 
+         <div class="gradient-step">
+          <h4 style="color: #ffffff; margin: 0 0 10px 0;">Sum over all Training Examples</h4>
+          <div class="math-formula" style="color: #ffffff; font-size: 16px; line-height: 1.8; text-align: center;">
+            <div class="fraction" style="display: inline-flex; vertical-align: middle; margin: 0 5px;">
+              <div style="display: flex; flex-direction: column; text-align: center;">
+                <div style="border-bottom: 2px solid #ffffff; padding: 3px 8px; color: #ffffff; font-weight: bold;">∂Loss</div>
+                <div style="padding: 3px 8px; color: #ffffff; font-weight: bold;">∂b</div>
+              </div>
+            </div> = <div class="fraction" style="display: inline-flex; vertical-align: middle; margin: 0 5px;">
+              <div style="display: flex; flex-direction: column; text-align: center;">
+                <div style="border-bottom: 2px solid #00cc66; padding: 3px 8px; color: #00cc66; font-weight: bold;">2</div>
+                <div style="padding: 3px 8px; color: #00cc66; font-weight: bold;">n</div>
+              </div>
+            </div> <span style="color: #00cc66;">×</span> <span style="font-size: 32px; margin: 0 3px; color: #ffffff;">Σ</span><span style="font-size: 15px; position: relative; bottom: 14px; left: -8px; color: #ffffff;">i=1</span><span style="font-size: 15px; position: relative; top: 6px; left: -8px; color: #ffffff;">n</span> <span style="color: #00cc66;">(ŷᵢ - yᵢ)</span>
+          </div>
+        </div>
+ 
+         <div class="gradient-step">
+          <h4 style="color: #ffffff; margin: 0 0 10px 0;">Plug in Numbers</h4>
+          <div class="math-formula" style="color: #ffffff; font-size: 16px; line-height: 1.8; text-align: center;">
+            <div class="fraction" style="display: inline-flex; vertical-align: middle; margin: 0 5px;">
+              <div style="display: flex; flex-direction: column; text-align: center;">
+                <div style="border-bottom: 2px solid #00cc66; padding: 3px 8px; color: #00cc66; font-weight: bold;">2</div>
+                <div style="padding: 3px 8px; color: #00cc66; font-weight: bold;" id="gradient-b-n">50</div>
+              </div>
+            </div> <span style="color: #00cc66;">×</span> <span id="gradient-b-sum" style="color: #00cc66;">?</span>
+          </div>
+         <div class="math-result" style="font-size: 20px; font-weight: bold; color: #ffffff; margin-top: 15px; text-align: center;">
+          <div class="fraction" style="display: inline-flex; vertical-align: middle; margin: 0 5px;">
+            <div style="display: flex; flex-direction: column; text-align: center;">
+              <div style="border-bottom: 2px solid #6699ff; padding: 3px 8px; color: #6699ff; font-weight: bold;">∂Loss</div>
+              <div style="padding: 3px 8px; color: #6699ff; font-weight: bold;">∂b</div>
+            </div>
+          </div> = <span id="gradient-b-final" style="color: #6699ff;">?</span>
+        </div>
+ </div>
+ </div>
+ </div>
+ 
+
+ </div>
+ 
+     <!-- Gradient Descent Display -->
+    <div id="gradient-descent-display" style="display: none; position: fixed; top: 10%; left: 50%; transform: translateX(-50%); background: rgba(0, 0, 0, 0.95); color: white; padding: 30px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); z-index: 1000; width: 80%; max-width: 800px; max-height: 80vh; overflow-y: auto;">
+      <span id="close-gradient-descent" style="position: absolute; top: 20px; right: 80px; font-size: 28px; cursor: pointer; color: #ccc; font-weight: bold; width: 30px; height: 30px; border-radius: 50%; background: white; color: black; display: flex; align-items: center; justify-content: center; border: 2px solid #ccc;">&times;</span>
+      
+      <div style="display: flex; gap: 40px; justify-content: space-between;">
+        <!-- Left Column: Current Gradients -->
+        <div style="flex: 1; background: rgba(255, 255, 255, 0.1); padding: 20px; border-radius: 10px;">
+          <h4 style="color: #ffffff; margin: 0 0 20px 0; text-align: center; font-size: 22px;">Current Gradients</h4>
+          
+          <div style="margin-bottom: 20px;">
+            <div style="color: #ffffff; font-size: 18px; text-align: center; margin-bottom: 10px;">
+              <div class="fraction" style="display: inline-flex; vertical-align: middle; margin: 0 5px;">
+                <div style="display: flex; flex-direction: column; text-align: center;">
+                  <div style="border-bottom: 2px solid #ff6666; padding: 3px 8px; color: #ff6666; font-weight: bold;">∂Loss</div>
+                  <div style="padding: 3px 8px; color: #ff6666; font-weight: bold;">∂w</div>
+                </div>
+              </div> = <span id="gd-dw-value" style="color: #ff6666; font-weight: bold; font-size: 20px;">?</span>
+            </div>
+          </div>
+          
+          <div style="margin-bottom: 20px;">
+            <div style="color: #ffffff; font-size: 18px; text-align: center; margin-bottom: 10px;">
+              <div class="fraction" style="display: inline-flex; vertical-align: middle; margin: 0 5px;">
+                <div style="display: flex; flex-direction: column; text-align: center;">
+                  <div style="border-bottom: 2px solid #6699ff; padding: 3px 8px; color: #6699ff; font-weight: bold;">∂Loss</div>
+                  <div style="padding: 3px 8px; color: #6699ff; font-weight: bold;">∂b</div>
+                </div>
+              </div> = <span id="gd-db-value" style="color: #6699ff; font-weight: bold; font-size: 20px;">?</span>
+            </div>
+          </div>
+          
+          <div style="margin-top: 30px;">
+            <div style="color: #ffffff; font-size: 18px; text-align: center; margin-bottom: 10px;">
+              <strong>Learning Rate:</strong>
+            </div>
+            <div style="color: #ffffff; font-size: 20px; text-align: center; font-weight: bold;" id="gd-lr-value">?</div>
+          </div>
+        </div>
+        
+        <!-- Right Column: Gradient Descent Formula -->
+        <div style="flex: 1; background: rgba(255, 255, 255, 0.1); padding: 20px; border-radius: 10px;">
+          <h4 style="color: #ffffff; margin: 0 0 20px 0; text-align: center; font-size: 22px;">Gradient Descent Formula</h4>
+          
+          <div style="margin-bottom: 25px;">
+            <div style="color: #ff6666; font-size: 16px; text-align: center; margin-bottom: 10px;">
+              <strong>Weight Update:</strong>
+            </div>
+            <div style="color: #ff6666; font-size: 18px; text-align: center; line-height: 1.8;">
+              w<sub>new</sub> = w<sub>old</sub> - α × 
+              <div class="fraction" style="display: inline-flex; vertical-align: middle; margin: 0 5px;">
+                <div style="display: flex; flex-direction: column; text-align: center;">
+                  <div style="border-bottom: 2px solid #ff6666; padding: 3px 8px; color: #ff6666; font-weight: bold;">∂Loss</div>
+                  <div style="padding: 3px 8px; color: #ff6666; font-weight: bold;">∂w</div>
+                </div>
+              </div>
+            </div>
+            <div style="color: #ff6666; font-size: 14px; text-align: center; margin-top: 10px;">
+              w<sub>new</sub> = <span id="gd-w-old">?</span> - <span id="gd-w-lr">?</span> × <span id="gd-w-gradient">?</span> = <span id="gd-w-new" style="color: #ff6666; font-weight: bold; font-size: 18px;">?</span>
+            </div>
+          </div>
+          
+          <div style="margin-bottom: 25px;">
+            <div style="color: #6699ff; font-size: 16px; text-align: center; margin-bottom: 10px;">
+              <strong>Bias Update:</strong>
+            </div>
+            <div style="color: #6699ff; font-size: 18px; text-align: center; line-height: 1.8;">
+              b<sub>new</sub> = b<sub>old</sub> - α × 
+              <div class="fraction" style="display: inline-flex; vertical-align: middle; margin: 0 5px;">
+                <div style="display: flex; flex-direction: column; text-align: center;">
+                  <div style="border-bottom: 2px solid #6699ff; padding: 3px 8px; color: #6699ff; font-weight: bold;">∂Loss</div>
+                  <div style="padding: 3px 8px; color: #6699ff; font-weight: bold;">∂b</div>
+                </div>
+              </div>
+            </div>
+            <div style="color: #6699ff; font-size: 14px; text-align: center; margin-top: 10px;">
+              b<sub>new</sub> = <span id="gd-b-old">?</span> - <span id="gd-b-lr">?</span> × <span id="gd-b-gradient">?</span> = <span id="gd-b-new" style="color: #6699ff; font-weight: bold; font-size: 18px;">?</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+        <div id="canvas-container">
+      <div id="function-label">y = x + 5</div>
+      
+      <!-- 2D Gradient Visualization Panels -->
+      <div id="gradient-2d-panels" style="position: absolute; top: 20px; right: 20px; display: none; z-index: 100;">
+        <div style="display: flex; flex-direction: column; gap: 15px;">
+          <!-- Loss vs Weight Plot -->
+          <div style="background: rgba(0, 0, 0, 0.9); border: 2px solid #ff6666; border-radius: 10px; padding: 15px; width: 300px;">
+            <h4 style="color: #ff6666; margin: 0 0 10px 0; text-align: center; font-size: 16px;">Loss vs Weight</h4>
+            <div style="color: #ccc; text-align: center; margin-bottom: 10px; font-size: 12px;">Holding Bias constant at B = <span id="current-b-value">0</span></div>
+            <canvas id="weight-loss-canvas" width="270" height="180" style="border: 1px solid #666; border-radius: 5px; background: #111;"></canvas>
+            <div style="color: #ff6666; text-align: center; margin-top: 8px; font-size: 14px;">
+              ∂Loss/∂W = <span id="weight-gradient-display">0</span>
+            </div>
+          </div>
+          
+          <!-- Loss vs Bias Plot -->
+          <div style="background: rgba(0, 0, 0, 0.9); border: 2px solid #6699ff; border-radius: 10px; padding: 15px; width: 300px;">
+            <h4 style="color: #6699ff; margin: 0 0 10px 0; text-align: center; font-size: 16px;">Loss vs Bias</h4>
+            <div style="color: #ccc; text-align: center; margin-bottom: 10px; font-size: 12px;">Holding Weight constant at W = <span id="current-w-value">0.5</span></div>
+            <canvas id="bias-loss-canvas" width="270" height="180" style="border: 1px solid #666; border-radius: 5px; background: #111;"></canvas>
+            <div style="color: #6699ff; text-align: center; margin-top: 8px; font-size: 14px;">
+              ∂Loss/∂B = <span id="bias-gradient-display">0</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div id="info-panel">
+        <span id="close-info">&times;</span>
+        <div id="info-content"></div>
+      </div>
+      <canvas id="canvas"></canvas>
+    </div>
+ 
+
+ </div>
+
+
+ <script>
+ // Training data from y = x + 5
+ function generateTrainingData(numExamples = 50) {
+ const data = [];
+ for (let i = 0; i < numExamples; i++) {
+ const x = -5 + (10 * i / (numExamples - 1));
+ const y = x + 5;
+ data.push({ x, y });
+ }
+ return data;
+ }
+ 
+ // Calculate MSE loss for given w and b
+ function calculateLoss(w, b, trainingData) {
+ let totalLoss = 0;
+ for (const point of trainingData) {
+ const predicted = w * point.x + b;
+ const error = predicted - point.y;
+ totalLoss += error * error;
+ }
+ return totalLoss / trainingData.length;
+ }
+ 
+ // Calculate gradients for MSE loss
+ function calculateGradients(w, b, trainingData) {
+ let dw = 0;
+ let db = 0;
+ const n = trainingData.length;
+ 
+ for (const point of trainingData) {
+ const predicted = w * point.x + b;
+ const error = predicted - point.y;
+ dw += (2 * error * point.x) / n;
+ db += (2 * error) / n;
+ }
+ 
+ // Debug: Log gradient values
+ console.log(`Gradients: dw=${dw.toFixed(4)}, db=${db.toFixed(4)}`);
+ console.log(`Current w=${w.toFixed(3)}, b=${b.toFixed(3)}`);
+ 
+ // Clip gradients to prevent explosion
+ const maxGradient = 10.0;
+ dw = Math.max(-maxGradient, Math.min(maxGradient, dw));
+ db = Math.max(-maxGradient, Math.min(maxGradient, db));
+ 
+ return { dw, db };
+ }
+ 
+ // Generate loss landscape
+ function generateLossLandscape(trainingData) {
+ const wRange = [-1, 3];
+ const bRange = [-2, 8];
+ const resolution = 120; // Increased resolution for smoother surface
+ 
+ const landscape = [];
+ let maxLoss = 0;
+ 
+ for (let i = 0; i < resolution; i++) {
+ const row = [];
+ for (let j = 0; j < resolution; j++) {
+ const w = wRange[0] + (wRange[1] - wRange[0]) * i / (resolution - 1);
+ const b = bRange[0] + (bRange[1] - bRange[0]) * j / (resolution - 1);
+ 
+ let loss = calculateLoss(w, b, trainingData);
+ 
+ // Force the optimal point to have zero loss
+ if (Math.abs(w - 1.0) < 0.01 && Math.abs(b - 5.0) < 0.01) {
+ loss = 0.0;
+ }
+ 
+ row.push({ w, b, loss });
+ maxLoss = Math.max(maxLoss, loss);
+ }
+ landscape.push(row);
+ }
+ 
+ return { landscape, maxLoss, wRange, bRange };
+ }
+ 
+ // Three.js setup
+ const scene = new THREE.Scene();
+ const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+ const canvas = document.getElementById('canvas');
+ const renderer = new THREE.WebGLRenderer({ 
+ canvas: canvas, 
+ antialias: true,
+ alpha: true,
+ powerPreference: "high-performance"
+ });
+ 
+ function updateRendererSize() {
+ const container = document.getElementById('canvas-container');
+ const width = container.clientWidth;
+ const height = container.clientHeight;
+ renderer.setSize(width, height);
+ camera.aspect = width / height;
+ camera.updateProjectionMatrix();
+ }
+ 
+ updateRendererSize();
+ renderer.setClearColor(0x0a0a0a);
+ renderer.shadowMap.enabled = true;
+ renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+ 
+ // Add OrbitControls
+ const controls = new THREE.OrbitControls(camera, renderer.domElement);
+ controls.enableDamping = true;
+ controls.dampingFactor = 0.05;
+ 
+ // Generate data and landscape
+ const trainingData = generateTrainingData(50);
+ const { landscape, maxLoss, wRange, bRange } = generateLossLandscape(trainingData);
+ const visualMaxLoss = maxLoss;
+ 
+ // Create loss surface
+ function createSurface() {
+ const geometry = new THREE.BufferGeometry();
+ const vertices = [];
+ const indices = [];
+ const colors = [];
+ 
+ const resolution = landscape.length;
+ 
+ for (let i = 0; i < resolution; i++) {
+ for (let j = 0; j < resolution; j++) {
+ const point = landscape[i][j];
+ 
+ // Map so that w=0 -> x=0 and b=0 -> z=0 (on the axes)
+ const x = 8 * point.w / (wRange[1] - wRange[0]);
+ const y = (point.loss / visualMaxLoss) * 2.5;
+ const z = 8 * point.b / (bRange[1] - bRange[0]);
+ 
+ vertices.push(x, y, z);
+ 
+ const normalizedLoss = Math.min(point.loss / visualMaxLoss, 1);
+ 
+ // Create smooth vibrant gradient: Deep Blue → Cyan → Green → Yellow → Orange → Red
+ let r, g, b;
+ 
+ if (normalizedLoss < 0.15) {
+ // Deep Blue to Cyan (0.0 to 0.15)
+ const t = normalizedLoss / 0.15;
+ r = 0.0;
+ g = t * 0.7;
+ b = 0.9 + t * 0.1;
+ } else if (normalizedLoss < 0.35) {
+ // Cyan to Green (0.15 to 0.35)
+ const t = (normalizedLoss - 0.15) / 0.2;
+ r = 0.0;
+ g = 0.7 + t * 0.3;
+ b = 1.0 - t * 1.0;
+ } else if (normalizedLoss < 0.55) {
+ // Green to Yellow (0.35 to 0.55)
+ const t = (normalizedLoss - 0.35) / 0.2;
+ r = t * 1.0;
+ g = 1.0;
+ b = 0.0;
+ } else if (normalizedLoss < 0.75) {
+ // Yellow to Orange (0.55 to 0.75)
+ const t = (normalizedLoss - 0.55) / 0.2;
+ r = 1.0;
+ g = 1.0 - t * 0.3;
+ b = 0.0;
+ } else {
+ // Orange to Red (0.75 to 1.0)
+ const t = (normalizedLoss - 0.75) / 0.25;
+ r = 1.0;
+ g = 0.7 - t * 0.7;
+ b = 0.0;
+ }
+ 
+ // Add some saturation boost and make colors more vibrant
+ r = Math.min(1.0, r * 1.1);
+ g = Math.min(1.0, g * 1.1);
+ b = Math.min(1.0, b * 1.1);
+ 
+ colors.push(r, g, b);
+ }
+ }
+ 
+ for (let i = 0; i < resolution - 1; i++) {
+ for (let j = 0; j < resolution - 1; j++) {
+ const a = i * resolution + j;
+ const b = i * resolution + j + 1;
+ const c = (i + 1) * resolution + j;
+ const d = (i + 1) * resolution + j + 1;
+ 
+ indices.push(a, b, c);
+ indices.push(b, d, c);
+ }
+ }
+ 
+ geometry.setIndex(indices);
+ geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+ geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+ geometry.computeVertexNormals();
+ 
+ // Create high-quality material with better shading
+ const material = new THREE.MeshPhongMaterial({ 
+ vertexColors: true,
+ transparent: true,
+ opacity: 0.85,
+ side: THREE.DoubleSide,
+ shininess: 60,
+ specular: 0x222222,
+ flatShading: false,
+ });
+ 
+ const surface = new THREE.Mesh(geometry, material);
+ surface.receiveShadow = true;
+ surface.castShadow = true;
+ scene.add(surface);
+ 
+ // Add subtle wireframe overlay for topography definition
+ const wireframeGeometry = geometry.clone();
+ const wireframeMaterial = new THREE.MeshBasicMaterial({
+ color: 0x666666,
+ wireframe: true,
+ transparent: true,
+ opacity: 0.03,
+ linewidth: 1
+ });
+ const wireframe = new THREE.Mesh(wireframeGeometry, wireframeMaterial);
+ wireframe.position.y = 0.002; // Slightly above surface to prevent z-fighting
+ scene.add(wireframe);
+ 
+ return surface;
+ }
+ 
+ // Function to convert w,b coordinates to 3D position
+ function paramToPosition(w, b, loss) {
+ // Map so that w=0 -> x=0 and b=0 -> z=0 (on the axes)
+ const x = 8 * w / (wRange[1] - wRange[0]);
+ const z = 8 * b / (bRange[1] - bRange[0]);
+ const y = (loss / visualMaxLoss) * 2.5;
+ return { x, y, z };
+ }
+ 
+ // Enhanced lighting system for better surface quality
+ const ambientLight = new THREE.AmbientLight(0x404040, 0.3);
+ scene.add(ambientLight);
+ 
+ // Main directional light
+ const directionalLight1 = new THREE.DirectionalLight(0xffffff, 0.7);
+ directionalLight1.position.set(10, 10, 5);
+ directionalLight1.castShadow = true;
+ directionalLight1.shadow.mapSize.width = 2048;
+ directionalLight1.shadow.mapSize.height = 2048;
+ scene.add(directionalLight1);
+ 
+ // Secondary directional light for better surface definition
+ const directionalLight2 = new THREE.DirectionalLight(0xffffff, 0.4);
+ directionalLight2.position.set(-8, 8, -3);
+ scene.add(directionalLight2);
+ 
+ // Point light for dynamic highlights
+ const pointLight = new THREE.PointLight(0xffffff, 0.6, 15);
+ pointLight.position.set(0, 5, 0);
+ scene.add(pointLight);
+ 
+ // Hemisphere light for natural ambient lighting
+ const hemisphereLight = new THREE.HemisphereLight(0x87CEEB, 0x444444, 0.2);
+ scene.add(hemisphereLight);
+ 
+ // Position camera
+ camera.position.set(2, 1, 2);
+ controls.target.set(0, 0, 0);
+ 
+ // Tutorial state
+ let currentStep = 0;
+ let currentW = 0.5;
+ let currentB = 0.0;
+ let currentLoss = null;
+ let currentGradients = null;
+ let learningRate = 0.085; // Default learning rate
+ 
+ let surface = null;
+ let currentPoint = null;
+ let gradientArrow = null;
+ 
+ // Create surface
+ surface = createSurface();
+ 
+ // Add coordinate axes with labels
+ const axesGroup = new THREE.Group();
+ 
+ // Create axes - extended to match mesh boundaries
+ const axesHelper = new THREE.AxesHelper(6);
+ axesGroup.add(axesHelper);
+ 
+ // Add coordinate planes (extended well beyond mesh boundaries)
+ const meshBoundary = 6; // Extend significantly in positive direction
+ const maxHeight = 4; // Increased height for better coverage
+ 
+ // RED plane (W=0 plane) - Vertical plane in Z-Y direction
+ const redPlaneGeometry = new THREE.PlaneGeometry(meshBoundary * 2, maxHeight);
+ const redPlane = new THREE.Mesh(redPlaneGeometry, new THREE.MeshBasicMaterial({
+ color: 0xff0000,
+ transparent: true,
+ opacity: 0.12,
+ side: THREE.DoubleSide
+ }));
+ redPlane.rotation.y = Math.PI / 2; // Rotate to be perpendicular to X axis (W axis)
+ redPlane.position.set(0, maxHeight/2, 0); // Center vertically at half max height
+ axesGroup.add(redPlane);
+ 
+ // BLUE plane (B=0 plane) - Vertical plane in X-Y direction  
+ const bluePlaneGeometry = new THREE.PlaneGeometry(meshBoundary * 2, maxHeight);
+ const bluePlane = new THREE.Mesh(bluePlaneGeometry, new THREE.MeshBasicMaterial({
+ color: 0x0000ff,
+ transparent: true,
+ opacity: 0.12,
+ side: THREE.DoubleSide
+ }));
+ bluePlane.position.set(0, maxHeight/2, 0); // Center vertically at half max height
+ axesGroup.add(bluePlane);
+ 
+ // GREEN plane (Loss=0 plane) - Horizontal plane in X-Z direction
+ const greenPlaneGeometry = new THREE.PlaneGeometry(meshBoundary * 2, meshBoundary * 2);
+ const greenPlane = new THREE.Mesh(greenPlaneGeometry, new THREE.MeshBasicMaterial({
+ color: 0x00ff00,
+ transparent: true,
+ opacity: 0.12,
+ side: THREE.DoubleSide
+ }));
+ greenPlane.rotation.x = Math.PI / 2; // Rotate to be horizontal (X-Z plane)
+ greenPlane.position.set(0, 0, 0); // At the base level where loss = 0
+ axesGroup.add(greenPlane);
+ 
+ // Add axis labels using text sprites
+ function createTextSprite(text, color = 0xffffff, size = 0.3) {
+ const canvas = document.createElement('canvas');
+ const context = canvas.getContext('2d');
+ canvas.width = 256;
+ canvas.height = 128;
+ 
+ context.fillStyle = `#${color.toString(16).padStart(6, '0')}`;
+ context.font = 'bold 32px Arial';
+ context.textAlign = 'center';
+ context.fillText(text, 128, 80);
+ 
+ const texture = new THREE.CanvasTexture(canvas);
+ const material = new THREE.SpriteMaterial({ map: texture });
+ const sprite = new THREE.Sprite(material);
+ sprite.scale.set(size * 2, size, 1);
+ 
+ return sprite;
+ }
+ 
+ // W axis (X direction) - Red
+ const wLabel = createTextSprite('W →', 0xff0000);
+ wLabel.position.set(6.5, 0, 0);
+ axesGroup.add(wLabel);
+ 
+ // W axis positive end
+ const wPosLabel = createTextSprite('+', 0xff0000, 0.2);
+ wPosLabel.position.set(5.8, 0, 0);
+ axesGroup.add(wPosLabel);
+ 
+ // W axis negative end
+ const wNegLabel = createTextSprite('-', 0xff0000, 0.2);
+ wNegLabel.position.set(-5.8, 0, 0);
+ axesGroup.add(wNegLabel);
+ 
+ // B axis (Z direction) - Blue
+ const bLabel = createTextSprite('B →', 0x0000ff);
+ bLabel.position.set(0, 0, 6.5);
+ axesGroup.add(bLabel);
+ 
+ // B axis positive end
+ const bPosLabel = createTextSprite('+', 0x0000ff, 0.2);
+ bPosLabel.position.set(0, 0, 5.8);
+ axesGroup.add(bPosLabel);
+ 
+ // B axis negative end
+ const bNegLabel = createTextSprite('-', 0x0000ff, 0.2);
+ bNegLabel.position.set(0, 0, -5.8);
+ axesGroup.add(bNegLabel);
+ 
+ // Loss axis (Y direction) - Green
+ const lossLabel = createTextSprite('↑ Loss', 0x00ff00);
+ lossLabel.position.set(0, 4.5, 0);
+ axesGroup.add(lossLabel);
+ 
+ // Loss axis positive end
+ const lossPosLabel = createTextSprite('+', 0x00ff00, 0.2);
+ lossPosLabel.position.set(0, 4.2, 0);
+ axesGroup.add(lossPosLabel);
+ 
+ // Loss axis negative end (at origin)
+ const lossNegLabel = createTextSprite('-', 0x00ff00, 0.2);
+ lossNegLabel.position.set(0, -0.3, 0);
+ axesGroup.add(lossNegLabel);
+ 
+ // Add parameter value labels
+ const wMinLabel = createTextSprite(`${wRange[0]}`, 0xff6666, 0.2);
+ wMinLabel.position.set(-4, -0.4, 0);
+ axesGroup.add(wMinLabel);
+ 
+ const wMaxLabel = createTextSprite(`${wRange[1]}`, 0xff6666, 0.2);
+ wMaxLabel.position.set(4, -0.4, 0);
+ axesGroup.add(wMaxLabel);
+ 
+ const bMinLabel = createTextSprite(`${bRange[0]}`, 0x6666ff, 0.2);
+ bMinLabel.position.set(0, -0.4, -4);
+ axesGroup.add(bMinLabel);
+ 
+ const bMaxLabel = createTextSprite(`${bRange[1]}`, 0x6666ff, 0.2);
+ bMaxLabel.position.set(0, -0.4, 4);
+ axesGroup.add(bMaxLabel);
+ 
+ scene.add(axesGroup);
+ 
+ // Create current point
+ function createCurrentPoint(showIn3D = false) {
+ if (currentPoint) scene.remove(currentPoint);
+ 
+ let loss, pos;
+ 
+ if (showIn3D) {
+ // 3D position with calculated loss
+ loss = calculateLoss(currentW, currentB, trainingData);
+ pos = paramToPosition(currentW, currentB, loss);
+ currentLoss = loss;
+ } else {
+ // 2D position (flat on the base plane)
+ loss = 0; // Start at base level
+ pos = paramToPosition(currentW, currentB, 0);
+ pos.y = 0; // Force to base level
+ currentLoss = null;
+ }
+ 
+ const geometry = new THREE.SphereGeometry(0.035, 16, 16);
+ const material = new THREE.MeshLambertMaterial({ 
+ color: 0x2a2a2a,
+ emissive: 0x111111,
+ emissiveIntensity: 0.3
+ });
+ 
+ currentPoint = new THREE.Mesh(geometry, material);
+ currentPoint.position.set(pos.x, pos.y, pos.z);
+ scene.add(currentPoint);
+ 
+ // Add coordinate label
+ createCoordinateLabel();
+ 
+ return loss;
+ }
+ 
+ // Create coordinate label
+ function createCoordinateLabel() {
+ const pos = paramToPosition(currentW, currentB, currentLoss);
+ let labelText;
+ 
+ if (currentLoss !== null) {
+ labelText = `(${currentW.toFixed(1)}, ${currentB.toFixed(1)}, ${currentLoss.toFixed(1)})`;
+ } else {
+ labelText = `(${currentW.toFixed(1)}, ${currentB.toFixed(1)})`;
+ }
+ 
+ // Update existing label if it exists
+ if (currentPoint.coordinateLabel) {
+ // Update texture with new text
+ const canvas = document.createElement('canvas');
+ const context = canvas.getContext('2d');
+ canvas.width = 256;
+ canvas.height = 64;
+ 
+ context.fillStyle = '#ffffff';
+ context.font = 'bold 20px Arial';
+ context.textAlign = 'center';
+ context.fillText(labelText, 128, 40);
+ 
+ const texture = new THREE.CanvasTexture(canvas);
+ currentPoint.coordinateLabel.material.map.dispose(); // Clean up old texture
+ currentPoint.coordinateLabel.material.map = texture;
+ currentPoint.coordinateLabel.material.needsUpdate = true;
+ currentPoint.coordinateLabel.position.set(pos.x, pos.y + 0.3, pos.z);
+ } else {
+ // Create new label
+ const canvas = document.createElement('canvas');
+ const context = canvas.getContext('2d');
+ canvas.width = 256;
+ canvas.height = 64;
+ 
+ context.fillStyle = '#ffffff';
+ context.font = 'bold 20px Arial';
+ context.textAlign = 'center';
+ context.fillText(labelText, 128, 40);
+ 
+ const texture = new THREE.CanvasTexture(canvas);
+ const material = new THREE.SpriteMaterial({ map: texture });
+ const sprite = new THREE.Sprite(material);
+ sprite.scale.set(1, 0.5, 1);
+ sprite.position.set(pos.x, pos.y + 0.3, pos.z);
+ 
+ // Make sure coordinate labels render on top of planes
+ sprite.renderOrder = 999;
+ material.depthTest = false;
+ 
+ currentPoint.coordinateLabel = sprite;
+ scene.add(sprite);
+ }
+ }
+ 
+ // Helper function to create coordinate label at specific position
+ function createCoordinateLabelAtPosition(x, y, z, w, b, loss) {
+ let labelText;
+ 
+ if (loss !== null) {
+ labelText = `(${w.toFixed(1)}, ${b.toFixed(1)}, ${loss.toFixed(1)})`;
+ } else {
+ labelText = `(${w.toFixed(1)}, ${b.toFixed(1)})`;
+ }
+ 
+ const canvas = document.createElement('canvas');
+ const context = canvas.getContext('2d');
+ canvas.width = 256;
+ canvas.height = 64;
+ 
+ context.fillStyle = '#ffffff';
+ context.font = 'bold 20px Arial';
+ context.textAlign = 'center';
+ context.fillText(labelText, 128, 40);
+ 
+ const texture = new THREE.CanvasTexture(canvas);
+ const material = new THREE.SpriteMaterial({ map: texture });
+ const sprite = new THREE.Sprite(material);
+ sprite.scale.set(1, 0.5, 1);
+ sprite.position.set(x, y, z);
+ 
+ // Make sure coordinate labels render on top of planes
+ sprite.renderOrder = 999;
+ material.depthTest = false;
+ 
+ currentPoint.coordinateLabel = sprite;
+ scene.add(sprite);
+ }
+ 
+ // Create individual gradient arrows for weight and bias
+ function createGradientArrows() {
+ if (gradientArrow) scene.remove(gradientArrow);
+ 
+ const loss = calculateLoss(currentW, currentB, trainingData);
+ const gradients = calculateGradients(currentW, currentB, trainingData);
+ const pos = paramToPosition(currentW, currentB, loss);
+ 
+ gradientArrow = new THREE.Group();
+ 
+ // Scale for visibility
+ const scale = 1.0;
+ 
+ // WEIGHT GRADIENT ARROW (RED) - Points in POSITIVE gradient direction (opposite to descent)
+ const weightGradientX = gradients.dw * scale * 8 / (wRange[1] - wRange[0]);
+ const weightGradientPoints = [
+ new THREE.Vector3(pos.x, pos.y, pos.z),
+ new THREE.Vector3(pos.x + weightGradientX, pos.y, pos.z) // Only X direction for weight
+ ];
+ 
+ const weightGradientGeometry = new THREE.BufferGeometry().setFromPoints(weightGradientPoints);
+ const weightGradientMaterial = new THREE.LineBasicMaterial({ 
+ color: 0xff0000, // Red for weight
+ linewidth: 5
+ });
+ const weightGradientLine = new THREE.Line(weightGradientGeometry, weightGradientMaterial);
+ weightGradientLine.renderOrder = 1000;
+ 
+ // Add arrowhead for weight gradient
+ const weightArrowGeometry = new THREE.ConeGeometry(0.02, 0.1, 8);
+ const weightArrowMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+ const weightArrow = new THREE.Mesh(weightArrowGeometry, weightArrowMaterial);
+ weightArrow.position.set(pos.x + weightGradientX, pos.y, pos.z);
+ weightArrow.rotation.z = weightGradientX > 0 ? -Math.PI/2 : Math.PI/2; // Point in gradient direction
+ weightArrow.renderOrder = 1000;
+ 
+ // BIAS GRADIENT ARROW (BLUE) - Points in POSITIVE gradient direction (opposite to descent)
+ const biasGradientZ = gradients.db * scale * 8 / (bRange[1] - bRange[0]);
+ const biasGradientPoints = [
+ new THREE.Vector3(pos.x, pos.y, pos.z),
+ new THREE.Vector3(pos.x, pos.y, pos.z + biasGradientZ) // Only Z direction for bias
+ ];
+ 
+ const biasGradientGeometry = new THREE.BufferGeometry().setFromPoints(biasGradientPoints);
+ const biasGradientMaterial = new THREE.LineBasicMaterial({ 
+ color: 0x0000ff, // Blue for bias
+ linewidth: 5
+ });
+ const biasGradientLine = new THREE.Line(biasGradientGeometry, biasGradientMaterial);
+ biasGradientLine.renderOrder = 1000;
+ 
+ // Add arrowhead for bias gradient
+ const biasArrowGeometry = new THREE.ConeGeometry(0.02, 0.1, 8);
+ const biasArrowMaterial = new THREE.MeshBasicMaterial({ color: 0x0000ff });
+ const biasArrow = new THREE.Mesh(biasArrowGeometry, biasArrowMaterial);
+ biasArrow.position.set(pos.x, pos.y, pos.z + biasGradientZ);
+ biasArrow.rotation.x = biasGradientZ > 0 ? Math.PI/2 : -Math.PI/2; // Point in gradient direction
+ biasArrow.renderOrder = 1000;
+ 
+ // Create labels for gradients
+ function createGradientLabel(text, position, color) {
+ const canvas = document.createElement('canvas');
+ const context = canvas.getContext('2d');
+ canvas.width = 256;
+ canvas.height = 64;
+ 
+ context.fillStyle = `#${color.toString(16).padStart(6, '0')}`;
+ context.font = 'bold 16px Arial';
+ context.textAlign = 'center';
+ context.fillText(text, 128, 40);
+ 
+ const texture = new THREE.CanvasTexture(canvas);
+ const material = new THREE.SpriteMaterial({ map: texture });
+ const sprite = new THREE.Sprite(material);
+ sprite.scale.set(0.8, 0.4, 1);
+ sprite.position.copy(position);
+ sprite.renderOrder = 1000;
+ material.depthTest = false;
+ 
+ return sprite;
+ }
+ 
+ // Weight gradient label
+ const weightLabelPos = new THREE.Vector3(pos.x + weightGradientX/2, pos.y + 0.2, pos.z);
+ const weightLabel = createGradientLabel(`∂L/∂w = ${gradients.dw.toFixed(3)}`, weightLabelPos, 0xff0000);
+ 
+ // Bias gradient label
+ const biasLabelPos = new THREE.Vector3(pos.x, pos.y + 0.2, pos.z + biasGradientZ/2);
+ const biasLabel = createGradientLabel(`∂L/∂b = ${gradients.db.toFixed(3)}`, biasLabelPos, 0x0000ff);
+ 
+ // Add everything to the group
+ gradientArrow.add(weightGradientLine);
+ gradientArrow.add(weightArrow);
+ gradientArrow.add(biasGradientLine);
+ gradientArrow.add(biasArrow);
+ gradientArrow.add(weightLabel);
+ gradientArrow.add(biasLabel);
+ 
+ scene.add(gradientArrow);
+ 
+ // Show the 2D gradient visualization panels
+ show2DGradientPlots();
+ }
+ 
+   // Function to create and display 2D gradient plots
+  function show2DGradientPlots() {
+  document.getElementById('gradient-2d-panels').style.display = 'block';
+  
+  // Make sure we have current gradients calculated
+  if (!currentGradients) {
+    currentGradients = calculateGradients(currentW, currentB, trainingData);
+  }
+  
+  // Update current parameter values in the titles
+  document.getElementById('current-w-value').textContent = currentW.toFixed(3);
+  document.getElementById('current-b-value').textContent = currentB.toFixed(3);
+  
+  // Update gradient displays
+  document.getElementById('weight-gradient-display').textContent = currentGradients.dw.toFixed(3);
+  document.getElementById('bias-gradient-display').textContent = currentGradients.db.toFixed(3);
+  
+  // Debug logging
+  console.log('2D Plots - Current W:', currentW, 'Current B:', currentB);
+  console.log('2D Plots - Gradients dW:', currentGradients.dw, 'dB:', currentGradients.db);
+  
+  // Plot Loss vs Weight (holding B constant)
+  plotLossVsWeight();
+  
+  // Plot Loss vs Bias (holding W constant)  
+  plotLossVsBias();
+  }
+ 
+ function plotLossVsWeight() {
+ const canvas = document.getElementById('weight-loss-canvas');
+ const ctx = canvas.getContext('2d');
+ 
+ // Clear canvas
+ ctx.fillStyle = '#111';
+ ctx.fillRect(0, 0, canvas.width, canvas.height);
+ 
+ // Generate weight range and corresponding losses (holding B constant)
+ const wMin = wRange[0];
+ const wMax = wRange[1];
+ const points = 100;
+ const wValues = [];
+ const lossValues = [];
+ 
+ for (let i = 0; i < points; i++) {
+ const w = wMin + (wMax - wMin) * i / (points - 1);
+ const loss = calculateLoss(w, currentB, trainingData);
+ wValues.push(w);
+ lossValues.push(loss);
+ }
+ 
+ // Find min/max loss for scaling
+ const minLoss = Math.min(...lossValues);
+ const maxLoss = Math.max(...lossValues);
+ const lossRange = maxLoss - minLoss;
+ 
+ // Convert to canvas coordinates
+ function wToCanvasX(w) {
+ return ((w - wMin) / (wMax - wMin)) * (canvas.width - 40) + 20;
+ }
+ 
+ function lossToCanvasY(loss) {
+ return canvas.height - 20 - ((loss - minLoss) / lossRange) * (canvas.height - 40);
+ }
+ 
+   // Draw axes
+  ctx.strokeStyle = '#666';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(20, canvas.height - 20);
+  ctx.lineTo(canvas.width - 20, canvas.height - 20); // X axis
+  ctx.moveTo(20, 20);
+  ctx.lineTo(20, canvas.height - 20); // Y axis
+  ctx.stroke();
+  
+  // Draw axis tick marks and values
+  ctx.fillStyle = '#888';
+  ctx.font = '10px Arial';
+  ctx.textAlign = 'center';
+  
+  // X-axis ticks (Weight values)
+  for (let i = 0; i <= 4; i++) {
+    const w = wMin + (wMax - wMin) * i / 4;
+    const x = wToCanvasX(w);
+    ctx.beginPath();
+    ctx.moveTo(x, canvas.height - 20);
+    ctx.lineTo(x, canvas.height - 15);
+    ctx.stroke();
+    ctx.fillText(w.toFixed(1), x, canvas.height - 5);
+  }
+  
+  // Y-axis ticks (Loss values)
+  ctx.textAlign = 'right';
+  for (let i = 0; i <= 4; i++) {
+    const loss = minLoss + lossRange * i / 4;
+    const y = lossToCanvasY(loss);
+    ctx.beginPath();
+    ctx.moveTo(20, y);
+    ctx.lineTo(25, y);
+    ctx.stroke();
+    ctx.fillText(loss.toFixed(0), 18, y + 3);
+  }
+  
+  // Draw loss curve
+  ctx.strokeStyle = '#ff6666';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(wToCanvasX(wValues[0]), lossToCanvasY(lossValues[0]));
+  for (let i = 1; i < wValues.length; i++) {
+  ctx.lineTo(wToCanvasX(wValues[i]), lossToCanvasY(lossValues[i]));
+  }
+  ctx.stroke();
+ 
+ // Mark current point
+ const currentX = wToCanvasX(currentW);
+ const currentLoss = calculateLoss(currentW, currentB, trainingData);
+ const currentY = lossToCanvasY(currentLoss);
+ 
+ ctx.fillStyle = '#ffff00';
+ ctx.beginPath();
+ ctx.arc(currentX, currentY, 5, 0, 2 * Math.PI);
+ ctx.fill();
+ 
+   // Draw tangent line showing gradient
+  const gradient = currentGradients.dw;
+  const tangentLength = 0.3; // Length in weight units
+  const leftW = currentW - tangentLength;
+  const rightW = currentW + tangentLength;
+  const leftLoss = currentLoss - gradient * tangentLength;
+  const rightLoss = currentLoss + gradient * tangentLength;
+  
+  // Numerical gradient verification
+  const h = 0.001;
+  const lossLeft = calculateLoss(currentW - h, currentB, trainingData);
+  const lossRight = calculateLoss(currentW + h, currentB, trainingData);
+  const numericalGradient = (lossRight - lossLeft) / (2 * h);
+  console.log('Weight: Analytical gradient:', gradient.toFixed(4), 'Numerical gradient:', numericalGradient.toFixed(4));
+ 
+ ctx.strokeStyle = '#ffff00';
+ ctx.lineWidth = 3;
+ ctx.beginPath();
+ ctx.moveTo(wToCanvasX(leftW), lossToCanvasY(leftLoss));
+ ctx.lineTo(wToCanvasX(rightW), lossToCanvasY(rightLoss));
+ ctx.stroke();
+ 
+   // Add labels
+  ctx.fillStyle = '#ff6666';
+  ctx.font = '12px Arial';
+  ctx.textAlign = 'center';
+  ctx.fillText('Weight (W)', canvas.width/2, canvas.height - 5);
+  ctx.save();
+  ctx.translate(10, canvas.height/2);
+  ctx.rotate(-Math.PI/2);
+  ctx.fillText('Loss', 0, 0);
+  ctx.restore();
+  
+  // Add current point annotation
+  ctx.fillStyle = '#ffff00';
+  ctx.font = '10px Arial';
+  ctx.textAlign = 'center';
+  ctx.fillText(`Current: W=${currentW.toFixed(2)}`, currentX, currentY - 10);
+ }
+ 
+ function plotLossVsBias() {
+ const canvas = document.getElementById('bias-loss-canvas');
+ const ctx = canvas.getContext('2d');
+ 
+ // Clear canvas
+ ctx.fillStyle = '#111';
+ ctx.fillRect(0, 0, canvas.width, canvas.height);
+ 
+ // Generate bias range and corresponding losses (holding W constant)
+ const bMin = bRange[0];
+ const bMax = bRange[1];
+ const points = 100;
+ const bValues = [];
+ const lossValues = [];
+ 
+ for (let i = 0; i < points; i++) {
+ const b = bMin + (bMax - bMin) * i / (points - 1);
+ const loss = calculateLoss(currentW, b, trainingData);
+ bValues.push(b);
+ lossValues.push(loss);
+ }
+ 
+ // Find min/max loss for scaling
+ const minLoss = Math.min(...lossValues);
+ const maxLoss = Math.max(...lossValues);
+ const lossRange = maxLoss - minLoss;
+ 
+ // Convert to canvas coordinates
+ function bToCanvasX(b) {
+ return ((b - bMin) / (bMax - bMin)) * (canvas.width - 40) + 20;
+ }
+ 
+ function lossToCanvasY(loss) {
+ return canvas.height - 20 - ((loss - minLoss) / lossRange) * (canvas.height - 40);
+ }
+ 
+   // Draw axes
+  ctx.strokeStyle = '#666';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(20, canvas.height - 20);
+  ctx.lineTo(canvas.width - 20, canvas.height - 20); // X axis
+  ctx.moveTo(20, 20);
+  ctx.lineTo(20, canvas.height - 20); // Y axis
+  ctx.stroke();
+  
+  // Draw axis tick marks and values
+  ctx.fillStyle = '#888';
+  ctx.font = '10px Arial';
+  ctx.textAlign = 'center';
+  
+  // X-axis ticks (Bias values)
+  for (let i = 0; i <= 4; i++) {
+    const b = bMin + (bMax - bMin) * i / 4;
+    const x = bToCanvasX(b);
+    ctx.beginPath();
+    ctx.moveTo(x, canvas.height - 20);
+    ctx.lineTo(x, canvas.height - 15);
+    ctx.stroke();
+    ctx.fillText(b.toFixed(1), x, canvas.height - 5);
+  }
+  
+  // Y-axis ticks (Loss values)
+  ctx.textAlign = 'right';
+  for (let i = 0; i <= 4; i++) {
+    const loss = minLoss + lossRange * i / 4;
+    const y = lossToCanvasY(loss);
+    ctx.beginPath();
+    ctx.moveTo(20, y);
+    ctx.lineTo(25, y);
+    ctx.stroke();
+    ctx.fillText(loss.toFixed(0), 18, y + 3);
+  }
+  
+  // Draw loss curve
+  ctx.strokeStyle = '#6699ff';
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(bToCanvasX(bValues[0]), lossToCanvasY(lossValues[0]));
+  for (let i = 1; i < bValues.length; i++) {
+  ctx.lineTo(bToCanvasX(bValues[i]), lossToCanvasY(lossValues[i]));
+  }
+  ctx.stroke();
+ 
+ // Mark current point
+ const currentX = bToCanvasX(currentB);
+ const currentLoss = calculateLoss(currentW, currentB, trainingData);
+ const currentY = lossToCanvasY(currentLoss);
+ 
+ ctx.fillStyle = '#ffff00';
+ ctx.beginPath();
+ ctx.arc(currentX, currentY, 5, 0, 2 * Math.PI);
+ ctx.fill();
+ 
+   // Draw tangent line showing gradient
+  const gradient = currentGradients.db;
+  const tangentLength = 0.5; // Length in bias units
+  const leftB = currentB - tangentLength;
+  const rightB = currentB + tangentLength;
+  const leftLoss = currentLoss - gradient * tangentLength;
+  const rightLoss = currentLoss + gradient * tangentLength;
+  
+  // Numerical gradient verification
+  const h = 0.001;
+  const lossLeft = calculateLoss(currentW, currentB - h, trainingData);
+  const lossRight = calculateLoss(currentW, currentB + h, trainingData);
+  const numericalGradient = (lossRight - lossLeft) / (2 * h);
+  console.log('Bias: Analytical gradient:', gradient.toFixed(4), 'Numerical gradient:', numericalGradient.toFixed(4));
+ 
+ ctx.strokeStyle = '#ffff00';
+ ctx.lineWidth = 3;
+ ctx.beginPath();
+ ctx.moveTo(bToCanvasX(leftB), lossToCanvasY(leftLoss));
+ ctx.lineTo(bToCanvasX(rightB), lossToCanvasY(rightLoss));
+ ctx.stroke();
+ 
+   // Add labels
+  ctx.fillStyle = '#6699ff';
+  ctx.font = '12px Arial';
+  ctx.textAlign = 'center';
+  ctx.fillText('Bias (B)', canvas.width/2, canvas.height - 5);
+  ctx.save();
+  ctx.translate(10, canvas.height/2);
+  ctx.rotate(-Math.PI/2);
+  ctx.fillText('Loss', 0, 0);
+  ctx.restore();
+  
+  // Add current point annotation
+  ctx.fillStyle = '#ffff00';
+  ctx.font = '10px Arial';
+  ctx.textAlign = 'center';
+  ctx.fillText(`Current: B=${currentB.toFixed(2)}`, currentX, currentY - 10);
+ }
+ 
+ function hide2DGradientPlots() {
+ document.getElementById('gradient-2d-panels').style.display = 'none';
+ }
+ 
+ // Create movement vectors (small arrows showing actual parameter updates)
+ function createMovementVectors() {
+ // Remove existing gradient arrows first
+ if (gradientArrow) scene.remove(gradientArrow);
+ 
+ // Start from where the point actually is (current visual position)
+ const pos = {
+ x: currentPoint.position.x,
+ y: currentPoint.position.y,
+ z: currentPoint.position.z
+ };
+ const gradients = currentGradients;
+ 
+ gradientArrow = new THREE.Group();
+ 
+ // Calculate actual movement (gradient * learning rate * -1)
+ const weightMovement = -gradients.dw * learningRate * 8 / (wRange[1] - wRange[0]);
+ const biasMovement = -gradients.db * learningRate * 8 / (bRange[1] - bRange[0]);
+ 
+ // WEIGHT MOVEMENT VECTOR (RED) - Small arrow showing actual weight update
+ const weightMovePoints = [
+ new THREE.Vector3(pos.x, pos.y, pos.z),
+ new THREE.Vector3(pos.x + weightMovement, pos.y, pos.z)
+ ];
+ 
+ const weightMoveGeometry = new THREE.BufferGeometry().setFromPoints(weightMovePoints);
+ const weightMoveMaterial = new THREE.LineBasicMaterial({ 
+ color: 0xff0000,
+ linewidth: 8
+ });
+ const weightMoveLine = new THREE.Line(weightMoveGeometry, weightMoveMaterial);
+ weightMoveLine.renderOrder = 1001;
+ 
+ // Weight movement arrowhead
+ const weightMoveArrowGeometry = new THREE.ConeGeometry(0.015, 0.06, 8);
+ const weightMoveArrowMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+ const weightMoveArrow = new THREE.Mesh(weightMoveArrowGeometry, weightMoveArrowMaterial);
+ weightMoveArrow.position.set(pos.x + weightMovement, pos.y, pos.z);
+ weightMoveArrow.rotation.z = weightMovement > 0 ? -Math.PI/2 : Math.PI/2;
+ weightMoveArrow.renderOrder = 1001;
+ 
+ // BIAS MOVEMENT VECTOR (BLUE) - Small arrow showing actual bias update
+ const biasMovePoints = [
+ new THREE.Vector3(pos.x, pos.y, pos.z),
+ new THREE.Vector3(pos.x, pos.y, pos.z + biasMovement)
+ ];
+ 
+ const biasMoveGeometry = new THREE.BufferGeometry().setFromPoints(biasMovePoints);
+ const biasMoveMaterial = new THREE.LineBasicMaterial({ 
+ color: 0x0000ff,
+ linewidth: 8
+ });
+ const biasMoveLine = new THREE.Line(biasMoveGeometry, biasMoveMaterial);
+ biasMoveLine.renderOrder = 1001;
+ 
+ // Bias movement arrowhead
+ const biasMoveArrowGeometry = new THREE.ConeGeometry(0.015, 0.06, 8);
+ const biasMoveArrowMaterial = new THREE.MeshBasicMaterial({ color: 0x0000ff });
+ const biasMoveArrow = new THREE.Mesh(biasMoveArrowGeometry, biasMoveArrowMaterial);
+ biasMoveArrow.position.set(pos.x, pos.y, pos.z + biasMovement);
+ biasMoveArrow.rotation.x = biasMovement > 0 ? Math.PI/2 : -Math.PI/2;
+ biasMoveArrow.renderOrder = 1001;
+ 
+ // VECTOR ADDITION VISUALIZATION - Show A + B = C
+ // Helper line from end of weight vector to end of combined vector (shows bias component)
+ const helperLine1Points = [
+ new THREE.Vector3(pos.x + weightMovement, pos.y, pos.z),
+ new THREE.Vector3(pos.x + weightMovement, pos.y, pos.z + biasMovement)
+ ];
+ const helperLine1Geometry = new THREE.BufferGeometry().setFromPoints(helperLine1Points);
+ const helperLine1Material = new THREE.LineBasicMaterial({ 
+ color: 0x0000ff,
+ linewidth: 3,
+ transparent: true,
+ opacity: 0.4
+ });
+ const helperLine1 = new THREE.Line(helperLine1Geometry, helperLine1Material);
+ helperLine1.renderOrder = 1001;
+ 
+ // Helper line from end of bias vector to end of combined vector (shows weight component)
+ const helperLine2Points = [
+ new THREE.Vector3(pos.x, pos.y, pos.z + biasMovement),
+ new THREE.Vector3(pos.x + weightMovement, pos.y, pos.z + biasMovement)
+ ];
+ const helperLine2Geometry = new THREE.BufferGeometry().setFromPoints(helperLine2Points);
+ const helperLine2Material = new THREE.LineBasicMaterial({ 
+ color: 0xff0000,
+ linewidth: 3,
+ transparent: true,
+ opacity: 0.4
+ });
+ const helperLine2 = new THREE.Line(helperLine2Geometry, helperLine2Material);
+ helperLine2.renderOrder = 1001;
+ 
+ // COMBINED MOVEMENT VECTOR (YELLOW) - Shows linear addition of both movements
+ const combinedMovePoints = [
+ new THREE.Vector3(pos.x, pos.y, pos.z),
+ new THREE.Vector3(pos.x + weightMovement, pos.y, pos.z + biasMovement)
+ ];
+ 
+ const combinedMoveGeometry = new THREE.BufferGeometry().setFromPoints(combinedMovePoints);
+ const combinedMoveMaterial = new THREE.LineBasicMaterial({ 
+ color: 0xffff00,
+ linewidth: 6
+ });
+ const combinedMoveLine = new THREE.Line(combinedMoveGeometry, combinedMoveMaterial);
+ combinedMoveLine.renderOrder = 1002;
+ 
+ // Combined movement arrowhead
+ const combinedMoveArrowGeometry = new THREE.ConeGeometry(0.02, 0.08, 8);
+ const combinedMoveArrowMaterial = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+ const combinedMoveArrow = new THREE.Mesh(combinedMoveArrowGeometry, combinedMoveArrowMaterial);
+ combinedMoveArrow.position.set(pos.x + weightMovement, pos.y, pos.z + biasMovement);
+ 
+ // Calculate rotation for combined arrow
+ const angle = Math.atan2(biasMovement, weightMovement);
+ combinedMoveArrow.rotation.y = -angle;
+ combinedMoveArrow.renderOrder = 1002;
+ 
+ // Create labels for movement vectors
+ function createMovementLabel(text, position, color) {
+ const canvas = document.createElement('canvas');
+ const context = canvas.getContext('2d');
+ canvas.width = 256;
+ canvas.height = 64;
+ 
+ context.fillStyle = `#${color.toString(16).padStart(6, '0')}`;
+ context.font = 'bold 14px Arial';
+ context.textAlign = 'center';
+ context.fillText(text, 128, 40);
+ 
+ const texture = new THREE.CanvasTexture(canvas);
+ const material = new THREE.SpriteMaterial({ map: texture });
+ const sprite = new THREE.Sprite(material);
+ sprite.scale.set(0.7, 0.35, 1);
+ sprite.position.copy(position);
+ sprite.renderOrder = 1003;
+ material.depthTest = false;
+ 
+ return sprite;
+ }
+ 
+ // Movement labels
+ const weightMoveLabel = createMovementLabel(
+ `Δw = ${(-gradients.dw * learningRate).toFixed(4)}`, 
+ new THREE.Vector3(pos.x + weightMovement/2, pos.y + 0.15, pos.z), 
+ 0xff0000
+ );
+ 
+ const biasMoveLabel = createMovementLabel(
+ `Δb = ${(-gradients.db * learningRate).toFixed(4)}`, 
+ new THREE.Vector3(pos.x, pos.y + 0.15, pos.z + biasMovement/2), 
+ 0x0000ff
+ );
+ 
+   // Remove the Combined Movement label as requested
+  // const combinedMoveLabel = createMovementLabel(
+  //   `Combined Movement`, 
+  //   new THREE.Vector3(pos.x + weightMovement/2, pos.y + 0.25, pos.z + biasMovement/2), 
+  //   0xffff00
+  // );
+ 
+   // Add everything to the group
+  gradientArrow.add(weightMoveLine);
+  gradientArrow.add(weightMoveArrow);
+  gradientArrow.add(biasMoveLine);
+  gradientArrow.add(biasMoveArrow);
+  gradientArrow.add(helperLine1);
+  gradientArrow.add(helperLine2);
+  gradientArrow.add(combinedMoveLine);
+  gradientArrow.add(combinedMoveArrow);
+  gradientArrow.add(weightMoveLabel);
+  gradientArrow.add(biasMoveLabel);
+  // gradientArrow.add(combinedMoveLabel); // Removed as requested
+ 
+ scene.add(gradientArrow);
+ }
+ 
+ // Update display values
+ function updateDisplay() {
+ document.getElementById('current-w').textContent = currentW.toFixed(3);
+ document.getElementById('current-b').textContent = currentB.toFixed(3);
+ document.getElementById('current-loss').textContent = currentLoss ? currentLoss.toFixed(4) : '?';
+ }
+ 
+ // Store calculation info and show "See Calculation" button
+ function showInfoPanel(title, content) {
+ const infoContent = document.getElementById('info-content');
+ 
+ infoContent.innerHTML = `
+ <h2>${title}</h2>
+ ${content}
+ `;
+ 
+ const infoButton = document.getElementById('info-button');
+ infoButton.textContent = "See Calculation";
+ infoButton.style.display = 'block';
+ }
+ 
+ // Show gradient calculation display
+function showGradientCalculation() {
+document.getElementById('gradient-calculation-display').style.display = 'block';
+
+// Calculate the actual sums for the gradient calculation
+let sumWeightGradient = 0;
+let sumBiasGradient = 0;
+let sumYHatGradient = 0;
+
+for (const point of trainingData) {
+const predicted = currentW * point.x + currentB;
+const error = predicted - point.y;
+sumWeightGradient += error * point.x;
+sumBiasGradient += error;
+sumYHatGradient += error;
+}
+
+// Console logging for gradient calculation
+console.log('=== GRADIENT CALCULATION ===');
+console.log('Sum of errors (ŷ - y):', sumYHatGradient.toFixed(3));
+console.log('Sum of error × x:', sumWeightGradient.toFixed(3));
+console.log('Sum of errors (for bias):', sumBiasGradient.toFixed(3));
+console.log('∂Loss/∂ŷ = 2/' + trainingData.length + ' × ' + sumYHatGradient.toFixed(3) + ' = ' + (2 * sumYHatGradient / trainingData.length).toFixed(4));
+console.log('∂Loss/∂w = 2/' + trainingData.length + ' × ' + sumWeightGradient.toFixed(3) + ' = ' + (2 * sumWeightGradient / trainingData.length).toFixed(4));
+console.log('∂Loss/∂b = 2/' + trainingData.length + ' × ' + sumBiasGradient.toFixed(3) + ' = ' + (2 * sumBiasGradient / trainingData.length).toFixed(4));
+console.log('============================');
+
+// Update the numerical values in the display
+// First column: ∂Loss/∂ŷ
+document.getElementById('gradient-yhat-n').textContent = trainingData.length;
+document.getElementById('gradient-yhat-sum').textContent = sumYHatGradient.toFixed(3);
+document.getElementById('gradient-yhat-final').textContent = (2 * sumYHatGradient / trainingData.length).toFixed(4);
+
+// Second column: ∂Loss/∂w
+document.getElementById('gradient-w-n').textContent = trainingData.length;
+document.getElementById('gradient-w-sum').textContent = sumWeightGradient.toFixed(3);
+document.getElementById('gradient-w-final').textContent = (2 * sumWeightGradient / trainingData.length).toFixed(4);
+
+// Third column: ∂Loss/∂b
+document.getElementById('gradient-b-n').textContent = trainingData.length;
+document.getElementById('gradient-b-sum').textContent = sumBiasGradient.toFixed(3);
+document.getElementById('gradient-b-final').textContent = (2 * sumBiasGradient / trainingData.length).toFixed(4);
+
+  const infoButton = document.getElementById('info-button');
+  infoButton.textContent = "See Calculation";
+  infoButton.style.display = 'block';
+}
+
+// Show gradient descent display
+function showGradientDescent() {
+  document.getElementById('gradient-descent-display').style.display = 'block';
+  
+  // Populate the current gradient values
+  document.getElementById('gd-dw-value').textContent = currentGradients.dw.toFixed(4);
+  document.getElementById('gd-db-value').textContent = currentGradients.db.toFixed(4);
+  document.getElementById('gd-lr-value').textContent = learningRate.toFixed(3);
+  
+  // Calculate new parameter values
+  const newW = currentW - learningRate * currentGradients.dw;
+  const newB = currentB - learningRate * currentGradients.db;
+  
+  // Populate the formula calculations
+  document.getElementById('gd-w-old').textContent = currentW.toFixed(3);
+  document.getElementById('gd-w-lr').textContent = learningRate.toFixed(3);
+  document.getElementById('gd-w-gradient').textContent = currentGradients.dw.toFixed(4);
+  document.getElementById('gd-w-new').textContent = newW.toFixed(3);
+  
+  document.getElementById('gd-b-old').textContent = currentB.toFixed(3);
+  document.getElementById('gd-b-lr').textContent = learningRate.toFixed(3);
+  document.getElementById('gd-b-gradient').textContent = currentGradients.db.toFixed(4);
+  document.getElementById('gd-b-new').textContent = newB.toFixed(3);
+}
+ 
+ function openInfoPanel() {
+ document.getElementById('info-panel').classList.add('show');
+ }
+ 
+ function closeInfoPanel() {
+ const infoPanel = document.getElementById('info-panel');
+ infoPanel.classList.remove('show');
+ }
+ 
+ function hideInfoButton() {
+ const infoButton = document.getElementById('info-button');
+ infoButton.style.display = 'none';
+ }
+ 
+ // Function to populate training data table
+function populateTrainingDataTable() {
+const tbody = document.getElementById('training-table-body');
+tbody.innerHTML = '';
+
+let totalSquaredError = 0;
+let totalError = 0;
+const sampleData = trainingData.slice(0, 8); // Show first 8 examples
+
+sampleData.forEach(point => {
+const predicted = currentW * point.x + currentB;
+const error = predicted - point.y;
+const squaredError = error * error;
+totalSquaredError += squaredError;
+totalError += error;
+
+const row = document.createElement('tr');
+row.innerHTML = `
+<td>${point.x.toFixed(1)}</td>
+<td>${point.y.toFixed(1)}</td>
+<td>${predicted.toFixed(2)}</td>
+<td>${error.toFixed(2)}</td>
+<td>${squaredError.toFixed(3)}</td>
+`;
+tbody.appendChild(row);
+});
+
+// Add a row for remaining examples
+if (trainingData.length > 8) {
+const remainingData = trainingData.slice(8);
+let remainingSquaredError = 0;
+let remainingError = 0;
+remainingData.forEach(point => {
+const predicted = currentW * point.x + currentB;
+const error = predicted - point.y;
+remainingSquaredError += error * error;
+remainingError += error;
+});
+
+const row = document.createElement('tr');
+row.innerHTML = `
+<td colspan="3">... ${remainingData.length} more examples ...</td>
+<td>${remainingError.toFixed(3)}</td>
+<td>${remainingSquaredError.toFixed(3)}</td>
+`;
+row.style.fontStyle = 'italic';
+row.style.opacity = '0.7';
+tbody.appendChild(row);
+totalSquaredError += remainingSquaredError;
+totalError += remainingError;
+}
+
+// Add total sum row
+const totalRow = document.createElement('tr');
+totalRow.innerHTML = `
+<td colspan="3" style="text-align: right; font-weight: bold; color: #4ecdc4;">Total Sum:</td>
+<td style="font-weight: bold; color: #4ecdc4; border-top: 2px solid #4ecdc4;">${totalError.toFixed(3)}</td>
+<td style="font-weight: bold; color: #4ecdc4; border-top: 2px solid #4ecdc4;">${totalSquaredError.toFixed(3)}</td>
+`;
+tbody.appendChild(totalRow);
+ 
+ const realMSE = totalSquaredError / trainingData.length;
+ 
+ // Console logging - show the REAL calculation from table data
+ console.log('=== REAL TABLE CALCULATION ===');
+ console.log('Current W:', currentW, 'Current B:', currentB);
+ console.log('Total from table rows:', totalSquaredError.toFixed(6));
+ console.log('Number of examples:', trainingData.length);
+ console.log('REAL MSE:', realMSE.toFixed(6));
+ console.log('===============================');
+ 
+ // Update the MSE calculation display with REAL values from table
+ document.getElementById('sum-squared-errors').textContent = totalSquaredError.toFixed(3);
+ document.getElementById('final-loss-display').textContent = realMSE.toFixed(4);
+ 
+ // Return the real MSE for educational/calculation purposes
+ return realMSE;
+ }
+ 
+ // Tutorial steps
+ const steps = [
+ {
+ title: "Calculate Loss",
+ description: "Now we calculate the loss using our current parameters. The loss tells us how far off our predictions are from the true values.",
+          buttonText: "Calculate Gradients",
+ action: function() {
+ // DON'T show training data table automatically
+ // document.getElementById('training-data-display').style.display = 'block';
+ 
+ // Populate the training data table and get the REAL calculated loss (but don't show it yet)
+ const realTableLoss = populateTrainingDataTable();
+ 
+ // For visualization, we can use the standard calculateLoss function (approximate)
+ const visualLoss = calculateLoss(currentW, currentB, trainingData);
+ 
+ // Console log both for comparison
+ console.log('=== LOSS COMPARISON ===');
+ console.log('Real table loss:', realTableLoss.toFixed(6));
+ console.log('Visual loss (for 3D):', visualLoss.toFixed(6));
+ console.log('======================');
+ 
+ // Use visual loss for 3D positioning (smooth animation)
+ const finalPos = paramToPosition(currentW, currentB, visualLoss);
+ 
+ // Start animation from current 2D position to 3D position
+ const startPos = { x: currentPoint.position.x, y: currentPoint.position.y, z: currentPoint.position.z };
+ const endPos = { x: finalPos.x, y: finalPos.y, z: finalPos.z };
+ 
+ let progress = 0;
+ const duration = 1500; // 1.5 seconds
+ const startTime = Date.now();
+ 
+ function animate() {
+ const elapsed = Date.now() - startTime;
+ progress = Math.min(elapsed / duration, 1);
+ 
+ const currentPos = {
+ x: startPos.x + (endPos.x - startPos.x) * progress,
+ y: startPos.y + (endPos.y - startPos.y) * progress,
+ z: startPos.z + (endPos.z - startPos.z) * progress
+ };
+ 
+ currentPoint.position.set(currentPos.x, currentPos.y, currentPos.z);
+ 
+ // Update coordinate label position during animation (no recreation)
+ if (currentPoint.coordinateLabel) {
+ currentPoint.coordinateLabel.position.set(currentPos.x, currentPos.y + 0.3, currentPos.z);
+ }
+ 
+ if (progress < 1) {
+ requestAnimationFrame(animate);
+ } else {
+ // Animation complete - use REAL loss for coordinate labels
+ currentLoss = realTableLoss;
+ currentPoint.material.color.setHex(0x2a2a2a);
+ currentPoint.material.emissive.setHex(0x111111);
+ createCoordinateLabel();
+ 
+ // Don't call updateDisplay() here as it might overwrite our table calculation
+ // The table already shows the correct REAL loss calculation
+ 
+ // SHOW the info button so users can see the calculation
+ const infoButton = document.getElementById('info-button');
+ infoButton.textContent = "See Calculation";
+ infoButton.style.display = 'block';
+ 
+ console.log('Animation complete - Visual Loss used for 3D:', visualLoss.toFixed(6));
+ console.log('But coordinate label shows REAL loss:', realTableLoss.toFixed(6));
+ }
+ }
+ 
+ animate();
+ currentStep = 1;
+ }
+ },
+         {
+          title: "Calculate Gradients",
+          description: "Now we calculate how the loss changes with respect to w and b (gradients). This tells us which direction to move to minimize the loss.",
+          buttonText: "Gradient Descent",
+          action: function() {
+            // Auto-close the training data display when moving to next step
+            document.getElementById('training-data-display').style.display = 'none';
+            
+            currentGradients = calculateGradients(currentW, currentB, trainingData);
+            
+            // DON'T show gradient calculation display automatically
+            // showGradientCalculation();
+            
+            // Show the gradient arrows immediately after calculation
+            createGradientArrows();
+            
+            // SHOW the info button so users can see the calculation
+            const infoButton = document.getElementById('info-button');
+            infoButton.textContent = "See Calculation";
+            infoButton.style.display = 'block';
+            
+            currentStep = 2;
+          }
+        },
+         {
+          title: "Apply Gradient Descent",
+          description: "Now we apply gradient descent by moving in the OPPOSITE direction of the gradients, scaled by the learning rate.",
+          buttonText: "Move to new position",
+          action: function() {
+            // Auto-close the gradient calculation display when moving to next step
+            document.getElementById('gradient-calculation-display').style.display = 'none';
+            
+            // Show the small movement vectors (scaled by learning rate and negative)
+            createMovementVectors();
+            
+            // SHOW the info button so users can see the gradient descent calculation
+            const infoButton = document.getElementById('info-button');
+            infoButton.textContent = "Show Calculation";
+            infoButton.style.display = 'block';
+            
+            currentStep = 3;
+          }
+        },
+ {
+ title: "Update Parameters",
+ description: "Update our parameters using the gradient descent rule: new_parameter = old_parameter - learning_rate × gradient",
+ buttonText: "Calculate Loss",
+           action: function() {
+            // Auto-close the gradient descent display when moving to next step
+            document.getElementById('gradient-descent-display').style.display = 'none';
+            
+            // Hide the info button when moving to next step
+            hideInfoButton();
+            
+            const oldW = currentW;
+            const oldB = currentB;
+            
+            currentW = currentW - learningRate * currentGradients.dw;
+            currentB = currentB - learningRate * currentGradients.db;
+ 
+ // Animate to new W,B position but keep same height (suspended in air)
+ const startPos = {
+ x: currentPoint.position.x,
+ y: currentPoint.position.y,
+ z: currentPoint.position.z
+ };
+ 
+ const currentHeight = startPos.y; // Keep current height
+ const newX = 8 * currentW / (wRange[1] - wRange[0]);
+ const newZ = 8 * currentB / (bRange[1] - bRange[0]);
+ 
+ const endPos = {
+ x: newX,
+ y: currentHeight, // Same height - suspended!
+ z: newZ
+ };
+ 
+ // Animate to suspended position
+ let progress = 0;
+ const duration = 1000; // 1 second
+ const startTime = Date.now();
+ 
+ function animateToSuspended() {
+ const elapsed = Date.now() - startTime;
+ progress = Math.min(elapsed / duration, 1);
+ 
+ const currentPos = {
+ x: startPos.x + (endPos.x - startPos.x) * progress,
+ y: startPos.y + (endPos.y - startPos.y) * progress,
+ z: startPos.z + (endPos.z - startPos.z) * progress
+ };
+ 
+ currentPoint.position.set(currentPos.x, currentPos.y, currentPos.z);
+ 
+ // Update coordinate label position and text
+ if (currentPoint.coordinateLabel) {
+ currentPoint.coordinateLabel.position.set(currentPos.x, currentPos.y + 0.3, currentPos.z);
+ 
+ // Update label text with new W,B but keep original loss value
+ if (progress === 1) {
+ // Create new label text with updated W,B coordinates
+ let labelText = `(${currentW.toFixed(1)}, ${currentB.toFixed(1)}, ${currentLoss.toFixed(1)})`;
+ 
+ const canvas = document.createElement('canvas');
+ const context = canvas.getContext('2d');
+ canvas.width = 256;
+ canvas.height = 64;
+ 
+ context.fillStyle = '#ffffff';
+ context.font = 'bold 20px Arial';
+ context.textAlign = 'center';
+ context.fillText(labelText, 128, 40);
+ 
+ const texture = new THREE.CanvasTexture(canvas);
+ currentPoint.coordinateLabel.material.map.dispose();
+ currentPoint.coordinateLabel.material.map = texture;
+ currentPoint.coordinateLabel.material.needsUpdate = true;
+ }
+ }
+ 
+ if (progress < 1) {
+ requestAnimationFrame(animateToSuspended);
+ }
+ }
+ 
+ animateToSuspended();
+ 
+ const updateCalculation = `
+ <div class="calculation">
+ <strong>Parameter Update Calculation:</strong><br><br>
+ Learning Rate = ${learningRate}<br><br>
+ 
+ new_w = old_w - learning_rate × ∂Loss/∂w<br>
+ new_w = ${oldW.toFixed(3)} - ${learningRate} × (${currentGradients.dw.toFixed(4)})<br>
+ <span class="highlight">new_w = ${currentW.toFixed(3)}</span><br><br>
+ 
+ new_b = old_b - learning_rate × ∂Loss/∂b<br>
+ new_b = ${oldB.toFixed(3)} - ${learningRate} × (${currentGradients.db.toFixed(4)})<br>
+ <span class="highlight">new_b = ${currentB.toFixed(3)}</span>
+ </div>
+ `;
+ 
+ // Store calculation for later and show "See Calculation" button
+ showInfoPanel("Parameter Update", updateCalculation);
+ currentStep = 4;
+ }
+ },
+ {
+ title: "Move to New Position",
+ description: "Watch the point slide down the loss surface to its new position with the updated parameters!",
+ buttonText: "Calculate Loss",
+ action: function() {
+ animateToNewPosition();
+ currentStep = 5;
+ }
+ }
+ ];
+ 
+ // Animation function
+ function animateToNewPosition() {
+ const startLoss = currentLoss;
+ const endLoss = calculateLoss(currentW, currentB, trainingData);
+ 
+ // Start from where the point actually is (not a calculated position)
+ const startPos = {
+ x: currentPoint.position.x,
+ y: currentPoint.position.y,
+ z: currentPoint.position.z
+ };
+ const endPos = paramToPosition(currentW, currentB, endLoss);
+ 
+ let progress = 0;
+ const duration = 2000; // 2 seconds
+ const startTime = Date.now();
+ 
+ function animate() {
+ const elapsed = Date.now() - startTime;
+ progress = Math.min(elapsed / duration, 1);
+ 
+ const currentPos = {
+ x: startPos.x + (endPos.x - startPos.x) * progress,
+ y: startPos.y + (endPos.y - startPos.y) * progress,
+ z: startPos.z + (endPos.z - startPos.z) * progress
+ };
+ 
+ currentPoint.position.set(currentPos.x, currentPos.y, currentPos.z);
+ 
+ // Update coordinate label to move with the point (smooth movement)
+ if (currentPoint.coordinateLabel) {
+ currentPoint.coordinateLabel.position.set(currentPos.x, currentPos.y + 0.3, currentPos.z);
+ }
+ 
+ if (progress < 1) {
+ requestAnimationFrame(animate);
+ } else {
+ currentLoss = endLoss;
+ 
+ // Update coordinate label with new values
+ createCoordinateLabel();
+ updateDisplay();
+ 
+ // Remove gradient arrow
+ if (gradientArrow) {
+ scene.remove(gradientArrow);
+ gradientArrow = null;
+ }
+ 
+ // Automatically start next iteration - go directly to Calculate Loss step
+ currentStep = 0; // Reset to beginning of cycle
+ 
+ // Hide all displays for next iteration
+ document.getElementById('training-data-display').style.display = 'none';
+ document.getElementById('gradient-calculation-display').style.display = 'none';
+ document.getElementById('gradient-descent-display').style.display = 'none';
+ 
+ // Directly trigger the Calculate Loss step
+ const nextStep = steps[currentStep];
+ document.getElementById('step-title').textContent = nextStep.title;
+ document.getElementById('step-description').textContent = nextStep.description;
+ document.getElementById('next-button').textContent = nextStep.buttonText;
+ nextStep.action();
+ }
+ }
+ 
+ animate();
+ }
+ 
+ // Initialize
+ createCurrentPoint(false); // Start in 2D mode
+ updateDisplay();
+ 
+ // Event listeners
+ document.getElementById('next-button').addEventListener('click', function() {
+ if (currentStep < steps.length) {
+ const step = steps[currentStep];
+ document.getElementById('step-title').textContent = step.title;
+ document.getElementById('step-description').textContent = step.description;
+ document.getElementById('next-button').textContent = step.buttonText;
+ step.action();
+ }
+ });
+ 
+ // Info panel event listeners
+document.getElementById('info-button').addEventListener('click', function() {
+if (currentStep === 1) {
+// Show loss calculation table
+document.getElementById('training-data-display').style.display = 'block';
+} else if (currentStep === 2) {
+// Show gradient calculation display
+showGradientCalculation();
+} else if (currentStep === 3) {
+// Show gradient descent display
+showGradientDescent();
+} else {
+// Show old info panel for other steps
+openInfoPanel();
+}
+});
+ document.getElementById('close-info').addEventListener('click', closeInfoPanel);
+ 
+ // Training data display close button
+ document.getElementById('close-training-data').addEventListener('click', function() {
+ document.getElementById('training-data-display').style.display = 'none';
+ });
+ 
+ // Gradient calculation display close button
+document.getElementById('close-gradient-calc').addEventListener('click', function() {
+document.getElementById('gradient-calculation-display').style.display = 'none';
+});
+
+// Gradient descent display close button
+document.getElementById('close-gradient-descent').addEventListener('click', function() {
+document.getElementById('gradient-descent-display').style.display = 'none';
+});
+ 
+ // Learning rate slider event
+ document.getElementById('learning-rate-slider').addEventListener('input', function(e) {
+ learningRate = parseFloat(e.target.value);
+ document.getElementById('lr-display').textContent = learningRate.toFixed(3);
+ 
+ // Reset tutorial to beginning when learning rate changes
+ resetTutorial();
+ });
+ 
+ // Randomize button event
+ document.getElementById('randomize-button').addEventListener('click', function() {
+ randomizeStartingPoint();
+ });
+ 
+ // Function to randomize starting point within bounds
+ function randomizeStartingPoint() {
+ // Generate random values within the mesh bounds
+ currentW = wRange[0] + Math.random() * (wRange[1] - wRange[0]);
+ currentB = bRange[0] + Math.random() * (bRange[1] - bRange[0]);
+ 
+ // Reset tutorial state
+ currentStep = 0;
+ currentLoss = null;
+ currentGradients = null;
+ 
+ // Remove any existing arrows
+ if (gradientArrow) {
+ scene.remove(gradientArrow);
+ gradientArrow = null;
+ }
+ 
+ // Clean up any leftover coordinate labels
+ cleanupCoordinateLabels();
+ 
+ // Reset point to 2D mode with new coordinates
+ createCurrentPoint(false);
+ updateDisplay();
+ 
+ // Reset UI
+ document.getElementById('step-title').textContent = "Initialize Trainable Parameters";
+ document.getElementById('step-description').innerHTML = "We randomize W within constraints <span class=\"info-icon\" title=\"Weights are typically initialized randomly to break symmetry and allow the network to learn different features. Common methods include Xavier/Glorot initialization or He initialization.\">ⓘ</span> and set B = 0. Next, we need to calculate the Loss to see how far off our predictions are.";
+ document.getElementById('next-button').textContent = "Calculate Loss";
+ 
+ // Hide training data display
+ document.getElementById('training-data-display').style.display = 'none';
+ 
+ // Hide gradient calculation display
+ document.getElementById('gradient-calculation-display').style.display = 'none';
+ 
+ // Hide gradient descent display
+ document.getElementById('gradient-descent-display').style.display = 'none';
+ 
+ // Hide 2D gradient plots
+ hide2DGradientPlots();
+ 
+ // Hide info button and close panel
+ hideInfoButton();
+ closeInfoPanel();
+ }
+ 
+ // Function to clean up all coordinate labels
+ function cleanupCoordinateLabels() {
+ // Remove all sprites (coordinate labels) from the scene
+ const spritesToRemove = [];
+ scene.traverse((child) => {
+ if (child instanceof THREE.Sprite && child.material.map) {
+ // Check if it's a coordinate label by checking if it has canvas texture
+ const texture = child.material.map;
+ if (texture instanceof THREE.CanvasTexture) {
+ spritesToRemove.push(child);
+ }
+ }
+ });
+ 
+ spritesToRemove.forEach(sprite => {
+ scene.remove(sprite);
+ if (sprite.material.map) {
+ sprite.material.map.dispose();
+ }
+ sprite.material.dispose();
+ });
+ }
+ 
+ // Function to reset tutorial to beginning
+ function resetTutorial() {
+ // Reset tutorial state
+ currentStep = 0;
+ currentW = 0.5;
+ currentB = 0.0;
+ currentLoss = null;
+ currentGradients = null;
+ 
+ // Remove any existing arrows
+ if (gradientArrow) {
+ scene.remove(gradientArrow);
+ gradientArrow = null;
+ }
+ 
+ // Clean up any leftover coordinate labels
+ cleanupCoordinateLabels();
+ 
+ // Reset point to 2D mode
+ createCurrentPoint(false);
+ updateDisplay();
+ 
+ // Reset UI
+ document.getElementById('step-title').textContent = "Initialize Trainable Parameters";
+ document.getElementById('step-description').innerHTML = "We randomize W within constraints <span class=\"info-icon\" title=\"Weights are typically initialized randomly to break symmetry and allow the network to learn different features. Common methods include Xavier/Glorot initialization or He initialization.\">ⓘ</span> and set B = 0. Next, we need to calculate the Loss to see how far off our predictions are.";
+ document.getElementById('next-button').textContent = "Calculate Loss";
+ 
+ // Hide training data display
+ document.getElementById('training-data-display').style.display = 'none';
+ 
+ // Hide gradient calculation display
+ document.getElementById('gradient-calculation-display').style.display = 'none';
+ 
+ // Hide gradient descent display
+ document.getElementById('gradient-descent-display').style.display = 'none';
+ 
+ // Hide 2D gradient plots
+ hide2DGradientPlots();
+ 
+ // Hide info button and close panel
+ hideInfoButton();
+ closeInfoPanel();
+ }
+ 
+ // Animation loop
+ function animate() {
+ requestAnimationFrame(animate);
+ controls.update();
+ renderer.render(scene, camera);
+ }
+ 
+ // Handle window resize
+ window.addEventListener('resize', updateRendererSize);
+ 
+ animate();
+ </script>
+</body>
+</html>
