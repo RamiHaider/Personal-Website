@@ -103,33 +103,24 @@
             gap: 20px;
         }
 
-        .upload-container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 15px;
-            padding: 30px;
-            border: 2px dashed #adb5bd;
+        .drawing-section, .upload-section {
+            background: transparent;
+            padding: 20px;
             border-radius: 8px;
-            background-color: transparent;
-            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
-        .upload-container:hover {
-            border-color: #6c757d;
-            background-color: rgba(255,255,255,0.05);
-        }
-
-        .upload-icon {
-            font-size: 48px;
-            color: #6c757d;
+        .drawing-section h3, .upload-section h3 {
+            color: #adb5bd;
+            font-size: 18px;
+            margin-bottom: 15px;
         }
 
         .file-input {
             display: none;
         }
 
-        .upload-button {
+        .control-button {
             padding: 10px 20px;
             background-color: #495057;
             color: white;
@@ -138,10 +129,19 @@
             cursor: pointer;
             font-weight: 500;
             transition: background-color 0.3s ease;
+            margin-right: 10px;
         }
 
-        .upload-button:hover {
+        .control-button:hover {
             background-color: #343a40;
+        }
+
+        .control-button.primary {
+            background-color: #007bff;
+        }
+
+        .control-button.primary:hover {
+            background-color: #0056b3;
         }
 
         .canvas-container {
@@ -152,6 +152,38 @@
             border-radius: 8px;
             box-shadow: none;
             overflow: hidden;
+        }
+
+        #drawing-canvas {
+            border: 1px solid #adb5bd;
+            background-color: white;
+            border-radius: 8px;
+            cursor: crosshair;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .drawing-controls {
+            display: flex;
+            justify-content: center;
+            margin-top: 15px;
+            gap: 10px;
+        }
+
+
+
+        .results-container {
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .drawing-result-info {
+            margin-top: 15px;
+            padding: 10px;
+            text-align: center;
+            font-weight: 500;
+            color: #adb5bd;
+            border-radius: 5px;
         }
 
         #result-canvas {
@@ -213,51 +245,48 @@
         <div class="main-content-wrapper">
             <main role="main">
                 <div class="content">
-                    <h1>Automating Tasks: Saving Time & Money</h1>
+                    <h1>Detecting Anomalies in Time Series Data</h1>
                     
-                    <!-- Legal/Ethical Disclaimer -->
-                    <div style="background: linear-gradient(135deg, #ff6b6b, #ee5a24); padding: 25px; border-radius: 10px; margin: 20px 0; border-left: 5px solid #c23616; box-shadow: 0 4px 12px rgba(255, 107, 107, 0.3);">
-                        <h2 style="color: white; margin: 0 0 15px 0; font-size: 20px; font-weight: 600;">⚠️ Disclaimer (Read Before Using This Demo)</h2>
-                        <p style="color: white; margin: 0 0 15px 0; line-height: 1.6; font-size: 16px;">
-                            <strong>This is an independent, personal project developed from scratch and not affiliated with nor based on proprietary code, data, or models from Sander Geophysics Limited (SGL).</strong>
-                        </p>
-                        <p style="color: white; margin: 0 0 15px 0; line-height: 1.6; font-size: 16px;">
-                            While it explores a similar problem—time series anomaly detection—none of SGL's internal tools, datasets, architectures, or model parameters were used, shared, or reproduced here. This is a public-facing demonstration built for educational and exploratory purposes only.
-                        </p>
-                        <p style="color: white; margin: 0; line-height: 1.6; font-size: 16px;">
-                            <strong>For ethical and legal clarity: this model is a functional copy inspired by the concept only, not the original implementation.</strong>
-                        </p>
-                    </div>
-                    
+
                     <div class="date-info" data-upload-date="2023-07-15" data-file-path="portfolio/automation-tasks.html">
-                        <p>Original Upload: 2023-07-15</p>
+                        <p>Original Upload: 2025-02-15</p>
                         <p>Last Updated: <span class="update-date"></span></p>
                     </div>
 
                     <!-- Model Testing Interface -->
                     <div class="model-test-section">
                         <h2>Test the Model</h2>
-                        <p>Upload an image of a time series (ideally 640x640px) to see if our model can detect anomalies.</p>
-                        <p>View all inferences uploaded and results <a href="https://api.ramihaider.me/dashboard" target="_blank">here</a> in the API's dashboard  </p>
+                        <p>Draw a time series or upload an image to see if our model can detect anomalies.</p>
+                        <p>View all inferences uploaded and results <a href="https://api.ramihaider.me/dashboard" target="_blank">here</a> in the API's dashboard</p>
                         
                         <div class="model-test-container">
-                            <div class="upload-container" id="upload-area">
-                                <div class="upload-icon">📊</div>
-                                <p>Drag & drop your time series image here or click to browse</p>
-                                <input type="file" id="file-input" class="file-input" accept="image/*">
-                                <button class="upload-button" id="browse-button">Browse Files</button>
+                            <!-- Drawing Canvas -->
+                            <div class="drawing-section">
+                                <h3>Draw Your Time Series</h3>
+                                <div class="canvas-container" id="drawing-canvas-container">
+                                    <canvas id="drawing-canvas" width="800" height="400"></canvas>
+                                </div>
+                                <div class="drawing-controls">
+                                    <button class="control-button" id="clear-button">Clear</button>
+                                    <button class="control-button" id="upload-button">📁 Upload</button>
+                                    <button class="control-button primary" id="send-button">Send</button>
+                                    <input type="file" id="file-input" class="file-input" accept="image/*">
+                                </div>
+                                <div class="drawing-result-info hidden" id="drawing-result-info">
+                                    <!-- Results will be displayed here -->
+                                </div>
                             </div>
                             
-                            <div class="canvas-container hidden" id="canvas-container">
+                            <!-- Results Display -->
+                            <div class="results-container hidden" id="results-container">
                                 <canvas id="result-canvas"></canvas>
                                 <div class="loading-overlay" id="loading-overlay">
                                     <div class="spinner"></div>
                                     <p>Analyzing image...</p>
                                 </div>
-                            </div>
-                            
-                            <div class="result-info hidden" id="result-info">
-                                <!-- Results will be displayed here -->
+                                <div class="result-info hidden" id="result-info">
+                                    <!-- Results will be displayed here -->
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -282,41 +311,94 @@
     <!-- Model Testing Interface JavaScript -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const uploadArea = document.getElementById('upload-area');
+            // Drawing canvas elements
+            const drawingCanvas = document.getElementById('drawing-canvas');
+            const drawingCtx = drawingCanvas.getContext('2d');
+            const clearButton = document.getElementById('clear-button');
+            const uploadButton = document.getElementById('upload-button');
+            const sendButton = document.getElementById('send-button');
             const fileInput = document.getElementById('file-input');
-            const browseButton = document.getElementById('browse-button');
-            const canvasContainer = document.getElementById('canvas-container');
+            
+            // Result elements
+            const resultsContainer = document.getElementById('results-container');
             const resultCanvas = document.getElementById('result-canvas');
+            const resultCtx = resultCanvas.getContext('2d');
             const loadingOverlay = document.getElementById('loading-overlay');
             const resultInfo = document.getElementById('result-info');
-            const ctx = resultCanvas.getContext('2d');
+            const drawingResultInfo = document.getElementById('drawing-result-info');
             
-            // Handle browse button click
-            browseButton.addEventListener('click', function() {
-                fileInput.click();
-            });
+            // Drawing state
+            let isDrawing = false;
+            let lastX = 0;
+            let lastY = 0;
+            let hasUploadedImage = false;
             
-            // Handle drag and drop events
-            uploadArea.addEventListener('dragover', function(e) {
-                e.preventDefault();
-                uploadArea.style.borderColor = '#495057';
-                uploadArea.style.backgroundColor = 'rgba(255,255,255,0.05)';
-            });
+            // Set up drawing canvas
+            drawingCtx.strokeStyle = 'red';
+            drawingCtx.lineWidth = 4;
+            drawingCtx.lineCap = 'round';
+            drawingCtx.lineJoin = 'round';
             
-            uploadArea.addEventListener('dragleave', function() {
-                uploadArea.style.borderColor = '#adb5bd';
-                uploadArea.style.backgroundColor = 'transparent';
-            });
+            // Drawing event listeners
+            drawingCanvas.addEventListener('mousedown', startDrawing);
+            drawingCanvas.addEventListener('mousemove', draw);
+            drawingCanvas.addEventListener('mouseup', stopDrawing);
+            drawingCanvas.addEventListener('mouseout', stopDrawing);
             
-            uploadArea.addEventListener('drop', function(e) {
-                e.preventDefault();
-                uploadArea.style.borderColor = '#adb5bd';
-                uploadArea.style.backgroundColor = 'transparent';
+            // Touch events for mobile
+            drawingCanvas.addEventListener('touchstart', handleTouch);
+            drawingCanvas.addEventListener('touchmove', handleTouch);
+            drawingCanvas.addEventListener('touchend', stopDrawing);
+            
+            function startDrawing(e) {
+                isDrawing = true;
+                const rect = drawingCanvas.getBoundingClientRect();
+                lastX = e.clientX - rect.left;
+                lastY = e.clientY - rect.top;
+            }
+            
+            function draw(e) {
+                if (!isDrawing) return;
                 
-                if (e.dataTransfer.files.length > 0) {
-                    fileInput.files = e.dataTransfer.files;
-                    handleFileUpload(e.dataTransfer.files[0]);
-                }
+                const rect = drawingCanvas.getBoundingClientRect();
+                const currentX = e.clientX - rect.left;
+                const currentY = e.clientY - rect.top;
+                
+                drawingCtx.beginPath();
+                drawingCtx.moveTo(lastX, lastY);
+                drawingCtx.lineTo(currentX, currentY);
+                drawingCtx.stroke();
+                
+                lastX = currentX;
+                lastY = currentY;
+            }
+            
+            function stopDrawing() {
+                isDrawing = false;
+            }
+            
+            function handleTouch(e) {
+                e.preventDefault();
+                const touch = e.touches[0];
+                const mouseEvent = new MouseEvent(e.type === 'touchstart' ? 'mousedown' : 
+                                                 e.type === 'touchmove' ? 'mousemove' : 'mouseup', {
+                    clientX: touch.clientX,
+                    clientY: touch.clientY
+                });
+                drawingCanvas.dispatchEvent(mouseEvent);
+            }
+            
+            // Clear button - clears both drawing and predictions
+            clearButton.addEventListener('click', function() {
+                drawingCtx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
+                drawingResultInfo.classList.add('hidden');
+                resultsContainer.classList.add('hidden');
+                hasUploadedImage = false;
+            });
+            
+            // Upload button
+            uploadButton.addEventListener('click', function() {
+                fileInput.click();
             });
             
             // Handle file input change
@@ -326,42 +408,99 @@
                 }
             });
             
-            // Process the uploaded file
             function handleFileUpload(file) {
-                // Check if file is an image
                 if (!file.type.match('image.*')) {
                     alert('Please upload an image file');
                     return;
                 }
                 
-                // Show canvas container
-                canvasContainer.classList.remove('hidden');
-                
-                // Create image object to get dimensions
                 const img = new Image();
                 img.onload = function() {
-                    // Set canvas dimensions to match image
-                    resultCanvas.width = img.width;
-                    resultCanvas.height = img.height;
+                    // Clear canvas first
+                    drawingCtx.clearRect(0, 0, drawingCanvas.width, drawingCanvas.height);
                     
-                    // Draw image on canvas
-                    ctx.drawImage(img, 0, 0);
+                    // Calculate dimensions to fit image in canvas while maintaining aspect ratio
+                    const canvasRatio = drawingCanvas.width / drawingCanvas.height;
+                    const imageRatio = img.width / img.height;
                     
-                    // Show loading overlay
-                    loadingOverlay.classList.add('visible');
+                    let drawWidth, drawHeight, offsetX, offsetY;
                     
-                    // Send to API
-                    sendToAPI(file);
+                    if (imageRatio > canvasRatio) {
+                        // Image is wider, fit to width
+                        drawWidth = drawingCanvas.width;
+                        drawHeight = drawWidth / imageRatio;
+                        offsetX = 0;
+                        offsetY = (drawingCanvas.height - drawHeight) / 2;
+                    } else {
+                        // Image is taller, fit to height
+                        drawHeight = drawingCanvas.height;
+                        drawWidth = drawHeight * imageRatio;
+                        offsetX = (drawingCanvas.width - drawWidth) / 2;
+                        offsetY = 0;
+                    }
+                    
+                    // Draw the image on the canvas
+                    drawingCtx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
+                    hasUploadedImage = true;
                 };
                 
-                // Load image from file
                 img.src = URL.createObjectURL(file);
             }
             
-            // Send file to API for prediction
-            function sendToAPI(file) {
+            // Send button - works for both drawings and uploads
+            sendButton.addEventListener('click', function() {
+                // Check if there's any content on the canvas
+                const imageData = drawingCtx.getImageData(0, 0, drawingCanvas.width, drawingCanvas.height);
+                const hasContent = imageData.data.some((pixel, index) => {
+                    return index % 4 === 3 && pixel !== 0; // Check alpha channel
+                });
+                
+                if (!hasContent) {
+                    alert('Please draw something or upload an image first!');
+                    return;
+                }
+                
+                // Create a temporary canvas with white background
+                const tempCanvas = document.createElement('canvas');
+                const tempCtx = tempCanvas.getContext('2d');
+                tempCanvas.width = drawingCanvas.width;
+                tempCanvas.height = drawingCanvas.height;
+                
+                // Fill with white background
+                tempCtx.fillStyle = 'white';
+                tempCtx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+                
+                // Draw the original content on top
+                tempCtx.drawImage(drawingCanvas, 0, 0);
+                
+                // Convert temp canvas to blob and send
+                tempCanvas.toBlob(function(blob) {
+                    sendToAPI(blob, true);
+                }, 'image/png');
+            });
+            
+
+            
+            // Send to API (works for both drawing and upload)
+            function sendToAPI(imageData, isDrawing) {
                 const formData = new FormData();
-                formData.append('image', file);
+                
+                if (isDrawing) {
+                    formData.append('image', imageData, 'drawing.png');
+                } else {
+                    formData.append('image', imageData);
+                }
+                
+                if (isDrawing) {
+                    // For drawings, show loading overlay on the drawing canvas
+                    drawingCanvas.style.opacity = '0.5';
+                    drawingResultInfo.classList.add('hidden');
+                } else {
+                    // For uploads, show results container and loading
+                    resultsContainer.classList.remove('hidden');
+                    loadingOverlay.classList.add('visible');
+                    resultInfo.classList.add('hidden');
+                }
                 
                 fetch('https://api.ramihaider.me/predict', {
                     method: 'POST',
@@ -374,57 +513,64 @@
                     return response.json();
                 })
                 .then(data => {
-                    // Hide loading overlay
-                    loadingOverlay.classList.remove('visible');
-                    
-                    // Display results
-                    displayResults(data);
+                    if (isDrawing) {
+                        drawingCanvas.style.opacity = '1';
+                    } else {
+                        loadingOverlay.classList.remove('visible');
+                    }
+                    displayResults(data, imageData, isDrawing);
                 })
                 .catch(error => {
                     console.error('Error:', error);
-                    loadingOverlay.classList.remove('visible');
-                    resultInfo.classList.remove('hidden');
-                    resultInfo.textContent = 'Error processing image. Please try again.';
+                    if (isDrawing) {
+                        drawingCanvas.style.opacity = '1';
+                        drawingResultInfo.classList.remove('hidden');
+                        drawingResultInfo.textContent = 'Error processing image. Please try again.';
+                    } else {
+                        loadingOverlay.classList.remove('visible');
+                        resultInfo.classList.remove('hidden');
+                        resultInfo.textContent = 'Error processing image. Please try again.';
+                    }
                 });
             }
             
-            // Display detection results on canvas
-            function displayResults(data) {
-                // Get the image from canvas
-                const img = new Image();
-                img.onload = function() {
-                    // Clear canvas and redraw image
-                    ctx.clearRect(0, 0, resultCanvas.width, resultCanvas.height);
-                    ctx.drawImage(img, 0, 0);
+            // Display results
+            function displayResults(data, imageData, isDrawing) {
+                if (isDrawing) {
+                    // For drawings, draw directly on the drawing canvas
+                    drawDetectionsOnCanvas(drawingCtx);
+                } else {
+                    // For uploads, load the image and draw on result canvas
+                    const img = new Image();
+                    img.onload = function() {
+                        resultCanvas.width = img.width;
+                        resultCanvas.height = img.height;
+                        resultCtx.drawImage(img, 0, 0);
+                        drawDetectionsOnCanvas(resultCtx);
+                    };
+                    img.src = URL.createObjectURL(imageData);
+                    return;
+                }
+                
+                function drawDetectionsOnCanvas(ctx) {
+                    const infoElement = isDrawing ? drawingResultInfo : resultInfo;
+                    infoElement.classList.remove('hidden');
                     
-                    // Show result info
-                    resultInfo.classList.remove('hidden');
-                    
-                    // Check if detections were found
                     if (data.detections && data.detections.length > 0) {
-                        // Draw bounding boxes
+                        // Draw bounding boxes without confidence scores
                         data.detections.forEach(detection => {
-                            const { x1, y1, x2, y2, confidence } = detection;
+                            const { x1, y1, x2, y2 } = detection;
                             
-                            // Draw red rectangle
                             ctx.strokeStyle = 'red';
                             ctx.lineWidth = 3;
                             ctx.strokeRect(x1, y1, x2 - x1, y2 - y1);
-                            
-                            // Draw confidence text
-                            ctx.font = '16px Arial';
-                            ctx.fillStyle = 'red';
-                            ctx.fillText(`${Math.round(confidence * 100)}%`, x1, y1 - 5);
                         });
                         
-                        // Update result info
-                        resultInfo.textContent = `${data.detections.length} ${data.detections.length === 1 ? 'anomaly' : 'anomalies'} detected with ${Math.round(data.detections[0].confidence * 100)}% confidence`;
+                        infoElement.textContent = `${data.detections.length} ${data.detections.length === 1 ? 'anomaly' : 'anomalies'} detected`;
                     } else {
-                        resultInfo.textContent = 'No anomalies detected';
+                        infoElement.textContent = 'No anomalies detected';
                     }
-                };
-                
-                img.src = resultCanvas.toDataURL();
+                }
             }
         });
     </script>
