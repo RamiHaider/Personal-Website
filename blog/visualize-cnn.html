@@ -33,6 +33,182 @@
             margin-top: 0.5rem; /* Reduce spacing above paragraphs */
         }
         
+        /* Mobile responsive styles */
+        @media (max-width: 768px) {
+            .main-content-wrapper {
+                padding: 15px !important;
+            }
+            
+            .content {
+                padding: 10px 15px !important;
+            }
+            
+            h1 {
+                font-size: 28px;
+                line-height: 1.2;
+                margin-bottom: 10px;
+            }
+            
+            h2 {
+                font-size: 22px;
+                line-height: 1.3;
+                margin-top: 20px;
+            }
+            
+            h3 {
+                font-size: 18px;
+                line-height: 1.3;
+            }
+            
+            p, li {
+                font-size: 14px;
+                line-height: 1.5;
+                font-weight: 400;
+            }
+            
+            /* Canvas responsiveness */
+            canvas {
+                max-width: 100% !important;
+                height: auto !important;
+                display: block;
+                margin: 10px auto !important;
+            }
+            
+            /* Image responsiveness */
+            img {
+                max-width: 100% !important;
+                height: auto !important;
+            }
+            
+            /* Code block responsiveness */
+            pre {
+                overflow-x: auto;
+                max-width: 100%;
+                font-size: 12px !important;
+                padding: 10px !important;
+            }
+            
+            pre[class*="language-"] {
+                font-size: 12px !important;
+                padding: 10px !important;
+                margin: 10px 0 !important;
+            }
+            
+            /* Visualization containers */
+            .region-selector-container,
+            .rgb-decomposition-container,
+            .simple-convolution-container,
+            .three-filters-container,
+            .relu-visualization-container,
+            .max-pooling-container,
+            .second-layer-container,
+            .flattening-container,
+            .neural-network-container,
+            .output-prediction-container {
+                margin: 15px 0 !important;
+                padding: 0 !important;
+                overflow-x: auto;
+            }
+            
+            /* Date info styling */
+            .date-info {
+                margin-bottom: 15px;
+            }
+            
+            .date-info p {
+                font-size: 12px;
+                margin: 2px 0;
+            }
+            
+            /* Spacing adjustments */
+            div[style*="height: 20px"] {
+                height: 10px !important;
+            }
+            
+            div[style*="height: 15px"] {
+                height: 8px !important;
+            }
+            
+            /* Center content on mobile */
+            div[style*="text-align: center"] {
+                padding: 0 5px;
+            }
+        }
+        
+        /* Small mobile devices */
+        @media (max-width: 480px) {
+            h1 {
+                font-size: 24px;
+            }
+            
+            h2 {
+                font-size: 20px;
+            }
+            
+            h3 {
+                font-size: 16px;
+            }
+            
+            p, li {
+                font-size: 13px;
+            }
+            
+            /* Make canvases scale properly on very small screens */
+            #rgbDecompositionCanvas {
+                width: 100% !important;
+                height: auto !important;
+                min-height: 200px;
+            }
+            
+            #simpleConvolutionCanvas {
+                width: 100% !important;
+                height: auto !important;
+                min-height: 180px;
+            }
+            
+            #threeFiltersCanvas {
+                width: 100% !important;
+                height: auto !important;
+                min-height: 250px;
+            }
+            
+            #reluCanvas {
+                width: 100% !important;
+                height: auto !important;
+                min-height: 280px;
+            }
+            
+            #maxPoolingCanvas {
+                width: 100% !important;
+                height: auto !important;
+                min-height: 250px;
+            }
+            
+            #secondLayerCanvas {
+                width: 100% !important;
+                height: auto !important;
+                min-height: 150px;
+            }
+            
+            #flatteningCanvas {
+                width: 100% !important;
+                height: auto !important;
+                min-height: 350px;
+            }
+            
+            #neuralNetworkCanvas {
+                width: 100% !important;
+                height: auto !important;
+                min-height: 250px;
+            }
+            
+            #outputPredictionCanvas {
+                width: 100% !important;
+                height: auto !important;
+                min-height: 150px;
+            }
+        }
+        
         .date-info {
             color: rgba(0, 0, 0, 0.7);
         }
@@ -507,6 +683,77 @@
     <script src="../js/neural-network-parallel.js"></script>
     <script src="../js/output-prediction-static.js"></script>
     <script src="../js/convolution-animation.js"></script>
+    
+    <script>
+        // Mobile responsiveness for canvas elements
+        function resizeCanvases() {
+            const isMobile = window.innerWidth <= 768;
+            const isSmallMobile = window.innerWidth <= 480;
+            
+            if (isMobile) {
+                const canvases = document.querySelectorAll('canvas');
+                canvases.forEach(canvas => {
+                    const container = canvas.parentElement;
+                    const containerWidth = container.offsetWidth - 30; // Account for padding
+                    
+                    // Get original dimensions from attributes or default
+                    const originalWidth = parseInt(canvas.getAttribute('width')) || 800;
+                    const originalHeight = parseInt(canvas.getAttribute('height')) || 400;
+                    
+                    // Calculate scale factor
+                    const scale = Math.min(containerWidth / originalWidth, 1);
+                    
+                    // Apply responsive sizing
+                    if (isSmallMobile) {
+                        canvas.style.width = '100%';
+                        canvas.style.maxWidth = containerWidth + 'px';
+                        canvas.style.height = 'auto';
+                        
+                        // Adjust canvas resolution for retina displays
+                        const ratio = window.devicePixelRatio || 1;
+                        canvas.width = containerWidth * ratio;
+                        canvas.height = (originalHeight * scale) * ratio;
+                        
+                        // Scale context for retina
+                        const ctx = canvas.getContext('2d');
+                        if (ctx) {
+                            ctx.scale(ratio * scale, ratio * scale);
+                        }
+                    } else {
+                        canvas.style.width = (originalWidth * scale) + 'px';
+                        canvas.style.height = (originalHeight * scale) + 'px';
+                    }
+                });
+                
+                // Adjust image container margins
+                const imageContainers = document.querySelectorAll('div[style*="text-align: center"]');
+                imageContainers.forEach(container => {
+                    if (container.querySelector('img')) {
+                        container.style.margin = '15px 0';
+                    }
+                });
+            }
+        }
+        
+        // Run on load and resize
+        window.addEventListener('load', resizeCanvases);
+        window.addEventListener('resize', resizeCanvases);
+        
+        // Touch event handling for mobile interactions
+        document.addEventListener('DOMContentLoaded', function() {
+            const canvases = document.querySelectorAll('canvas');
+            canvases.forEach(canvas => {
+                // Prevent default touch behavior
+                canvas.addEventListener('touchstart', function(e) {
+                    e.preventDefault();
+                }, { passive: false });
+                
+                canvas.addEventListener('touchmove', function(e) {
+                    e.preventDefault();
+                }, { passive: false });
+            });
+        });
+    </script>
     
     <!-- Prism.js for syntax highlighting -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>

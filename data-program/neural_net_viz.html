@@ -1,0 +1,1334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Gradient Descent Tutorial</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #000000;
+            font-family: 'Arial', sans-serif;
+            color: white;
+            overflow-x: hidden;
+        }
+        
+        #container {
+            width: 100%;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        #info {
+            width: calc(100% - 40px);
+            margin: 20px;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 20px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            box-sizing: border-box;
+        }
+        
+        h1 {
+            margin: 0 0 15px 0;
+            font-size: 28px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-align: center;
+        }
+        
+        #canvas-container {
+            width: 100%;
+            height: 60vh;
+            min-height: 400px;
+            position: relative;
+            margin: 20px 0;
+        }
+        
+        #canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        
+        #step-controls {
+            width: calc(100% - 40px);
+            margin: 0 20px 20px 20px;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            box-sizing: border-box;
+            text-align: center;
+        }
+        
+        #step-title {
+            font-size: 24px;
+            margin-bottom: 15px;
+            color: #4ecdc4;
+            font-weight: bold;
+        }
+        
+        #step-description {
+            font-size: 18px;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+        
+        #next-button {
+            padding: 15px 30px;
+            font-size: 18px;
+            background: #4ecdc4;
+            color: black;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        #next-button:hover {
+            background: #3db8b0;
+            transform: scale(1.05);
+        }
+        
+        #next-button:disabled {
+            background: #666;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        /* Modal for calculations */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 20px;
+            top: 20px;
+            width: 400px;
+            background-color: rgba(255, 255, 255, 0.95);
+            color: black;
+            border-radius: 10px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        }
+        
+        .modal-content {
+            padding: 20px;
+        }
+        
+        .modal h2 {
+            color: #333;
+            margin-top: 0;
+            font-size: 18px;
+            text-align: center;
+        }
+        
+        .calculation {
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            background: #f5f5f5;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            border-left: 4px solid #4ecdc4;
+        }
+        
+        .highlight {
+            background: yellow;
+            padding: 2px 4px;
+            border-radius: 3px;
+        }
+        
+        .close-modal {
+            float: right;
+            font-size: 20px;
+            cursor: pointer;
+            color: #999;
+            margin-top: -5px;
+        }
+        
+        .close-modal:hover {
+            color: #333;
+        }
+        
+        #current-values {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+        }
+        
+        .value-highlight {
+            color: #4ecdc4;
+            font-weight: bold;
+        }
+        
+        #step-controls-inline {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+            text-align: center;
+        }
+        
+        #step-controls-inline #step-title {
+            font-size: 20px;
+            margin-bottom: 10px;
+            color: #4ecdc4;
+            font-weight: bold;
+        }
+        
+        #step-controls-inline #step-description {
+            font-size: 16px;
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }
+        
+        #step-controls-inline #next-button {
+            padding: 12px 25px;
+            font-size: 16px;
+            background: #4ecdc4;
+            color: black;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        #step-controls-inline #next-button:hover {
+            background: #3db8b0;
+            transform: scale(1.05);
+        }
+        
+        #main-content {
+            display: flex;
+            gap: 30px;
+            align-items: flex-start;
+        }
+        
+        #step-controls-inline {
+            flex: 2;
+        }
+        
+        #adjustable-parameters {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid rgba(76, 205, 196, 0.3);
+        }
+        
+        #adjustable-parameters h3 {
+            margin: 0 0 15px 0;
+            color: #4ecdc4;
+            font-size: 16px;
+            text-align: center;
+        }
+        
+        .parameter-control {
+            margin-bottom: 15px;
+        }
+        
+        .parameter-control label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #ffffff;
+        }
+        
+        .parameter-control input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: rgba(255, 255, 255, 0.2);
+            outline: none;
+            -webkit-appearance: none;
+        }
+        
+        .parameter-control input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #4ecdc4;
+            cursor: pointer;
+        }
+        
+        .parameter-control input[type="range"]::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #4ecdc4;
+            cursor: pointer;
+            border: none;
+        }
+        
+        #lr-display {
+            color: #4ecdc4;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <div id="info">
+            <!-- Hidden original elements to keep JavaScript working -->
+            <div id="current-values" style="display: none;">
+                <div><strong>Current Position:</strong></div>
+                <div>w = <span class="value-highlight" id="current-w">0.500</span></div>
+                <div>b = <span class="value-highlight" id="current-b">0.000</span></div>
+                <div>Loss = <span class="value-highlight" id="current-loss">?</span></div>
+            </div>
+            
+            <!-- Main content area with step controls and parameters -->
+            <div id="main-content">
+                <!-- Step controls on the left -->
+                <div id="step-controls-inline">
+                    <div id="step-title">We initialize w and b with random values</div>
+                    <div id="step-description">Now we need to calculate how far off we are from the actual output given the input, using these w and b values. To do this we calculate the loss.</div>
+                    <button id="next-button">Calculate Loss</button>
+                </div>
+                
+                <!-- Adjustable parameters on the right -->
+                <div id="adjustable-parameters">
+                    <h3>Adjustable Parameters</h3>
+                    <div class="parameter-control">
+                        <label for="learning-rate-slider">Learning Rate: <span id="lr-display">0.01</span></label>
+                        <input type="range" id="learning-rate-slider" min="0.001" max="0.1" step="0.001" value="0.01">
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="canvas-container">
+            <canvas id="canvas"></canvas>
+        </div>
+        
+
+    </div>
+    
+    <!-- Modal for calculations -->
+    <div id="calculation-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <div id="modal-content"></div>
+        </div>
+    </div>
+
+    <script>
+        // Training data from y = x + 5
+        function generateTrainingData(numExamples = 50) {
+            const data = [];
+            for (let i = 0; i < numExamples; i++) {
+                const x = -5 + (10 * i / (numExamples - 1));
+                const y = x + 5;
+                data.push({ x, y });
+            }
+            return data;
+        }
+        
+        // Calculate MSE loss for given w and b
+        function calculateLoss(w, b, trainingData) {
+            let totalLoss = 0;
+            for (const point of trainingData) {
+                const predicted = w * point.x + b;
+                const error = predicted - point.y;
+                totalLoss += error * error;
+            }
+            return totalLoss / trainingData.length;
+        }
+        
+        // Calculate gradients for MSE loss
+        function calculateGradients(w, b, trainingData) {
+            let dw = 0;
+            let db = 0;
+            const n = trainingData.length;
+            
+            for (const point of trainingData) {
+                const predicted = w * point.x + b;
+                const error = predicted - point.y;
+                dw += (2 * error * point.x) / n;
+                db += (2 * error) / n;
+            }
+            
+            // Debug: Log gradient values
+            console.log(`Gradients: dw=${dw.toFixed(4)}, db=${db.toFixed(4)}`);
+            console.log(`Current w=${w.toFixed(3)}, b=${b.toFixed(3)}`);
+            
+            // Clip gradients to prevent explosion
+            const maxGradient = 10.0;
+            dw = Math.max(-maxGradient, Math.min(maxGradient, dw));
+            db = Math.max(-maxGradient, Math.min(maxGradient, db));
+            
+            return { dw, db };
+        }
+        
+        // Generate loss landscape
+        function generateLossLandscape(trainingData) {
+            const wRange = [-1, 3];
+            const bRange = [-2, 8];
+            const resolution = 100;
+            
+            const landscape = [];
+            let maxLoss = 0;
+            
+            for (let i = 0; i < resolution; i++) {
+                const row = [];
+                for (let j = 0; j < resolution; j++) {
+                    const w = wRange[0] + (wRange[1] - wRange[0]) * i / (resolution - 1);
+                    const b = bRange[0] + (bRange[1] - bRange[0]) * j / (resolution - 1);
+                    
+                    let loss = calculateLoss(w, b, trainingData);
+                    
+                    // Force the optimal point to have zero loss
+                    if (Math.abs(w - 1.0) < 0.01 && Math.abs(b - 5.0) < 0.01) {
+                        loss = 0.0;
+                    }
+                    
+                    row.push({ w, b, loss });
+                    maxLoss = Math.max(maxLoss, loss);
+                }
+                landscape.push(row);
+            }
+            
+            return { landscape, maxLoss, wRange, bRange };
+        }
+        
+        // Three.js setup
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
+        const canvas = document.getElementById('canvas');
+        const renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
+        
+        function updateRendererSize() {
+            const container = document.getElementById('canvas-container');
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+            renderer.setSize(width, height);
+            camera.aspect = width / height;
+            camera.updateProjectionMatrix();
+        }
+        
+        updateRendererSize();
+        renderer.setClearColor(0x0a0a0a);
+        
+        // Add OrbitControls
+        const controls = new THREE.OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+        controls.dampingFactor = 0.05;
+        
+        // Generate data and landscape
+        const trainingData = generateTrainingData(50);
+        const { landscape, maxLoss, wRange, bRange } = generateLossLandscape(trainingData);
+        const visualMaxLoss = maxLoss;
+        
+        // Create loss surface
+        function createSurface() {
+            const geometry = new THREE.BufferGeometry();
+            const vertices = [];
+            const indices = [];
+            const colors = [];
+            
+            const resolution = landscape.length;
+            
+            for (let i = 0; i < resolution; i++) {
+                for (let j = 0; j < resolution; j++) {
+                    const point = landscape[i][j];
+                    
+                    // Map so that w=0 -> x=0 and b=0 -> z=0 (on the axes)
+                    const x = 8 * point.w / (wRange[1] - wRange[0]);
+                    const y = (point.loss / visualMaxLoss) * 2.5;
+                    const z = 8 * point.b / (bRange[1] - bRange[0]);
+                    
+                    vertices.push(x, y, z);
+                    
+                    const normalizedLoss = Math.min(point.loss / visualMaxLoss, 1);
+                    if (normalizedLoss < 0.05) {
+                        colors.push(0, 0, 0.8);
+                    } else if (normalizedLoss < 0.2) {
+                        colors.push(0, 0.8, 0.8);
+                    } else if (normalizedLoss < 0.5) {
+                        colors.push(1, 1, 1 - normalizedLoss);
+                    } else {
+                        colors.push(1, 1 - normalizedLoss * 0.5, 0);
+                    }
+                }
+            }
+            
+            for (let i = 0; i < resolution - 1; i++) {
+                for (let j = 0; j < resolution - 1; j++) {
+                    const a = i * resolution + j;
+                    const b = i * resolution + j + 1;
+                    const c = (i + 1) * resolution + j;
+                    const d = (i + 1) * resolution + j + 1;
+                    
+                    indices.push(a, b, c);
+                    indices.push(b, d, c);
+                }
+            }
+            
+            geometry.setIndex(indices);
+            geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
+            geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+            geometry.computeVertexNormals();
+            
+            const material = new THREE.MeshLambertMaterial({ 
+                vertexColors: true,
+                transparent: true,
+                opacity: 0.9,
+                side: THREE.DoubleSide
+            });
+            
+            const surface = new THREE.Mesh(geometry, material);
+            scene.add(surface);
+            
+            return surface;
+        }
+        
+        // Function to convert w,b coordinates to 3D position
+        function paramToPosition(w, b, loss) {
+            // Map so that w=0 -> x=0 and b=0 -> z=0 (on the axes)
+            const x = 8 * w / (wRange[1] - wRange[0]);
+            const z = 8 * b / (bRange[1] - bRange[0]);
+            const y = (loss / visualMaxLoss) * 2.5;
+            return { x, y, z };
+        }
+        
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0x404040, 0.4);
+        scene.add(ambientLight);
+        
+        const directionalLight1 = new THREE.DirectionalLight(0xffffff, 0.8);
+        directionalLight1.position.set(10, 10, 5);
+        scene.add(directionalLight1);
+        
+        // Position camera
+        camera.position.set(2, 1, 2);
+        controls.target.set(0, 0, 0);
+        
+        // Tutorial state
+        let currentStep = 0;
+        let currentW = 0.5;
+        let currentB = 0.0;
+        let currentLoss = null;
+        let currentGradients = null;
+        let learningRate = 0.01; // Much smaller learning rate
+        
+        let surface = null;
+        let currentPoint = null;
+        let gradientArrow = null;
+        
+        // Create surface
+        surface = createSurface();
+        
+        // Add coordinate axes with labels
+        const axesGroup = new THREE.Group();
+        
+        // Create axes
+        const axesHelper = new THREE.AxesHelper(3);
+        axesGroup.add(axesHelper);
+        
+        // Add coordinate planes (proper flat planes from end to end)
+        const planeSize = 8;
+        const planeGeometry = new THREE.PlaneGeometry(planeSize, planeSize);
+        
+        // RED plane - Vertical (rotated on Y axis)
+        const redPlane = new THREE.Mesh(planeGeometry, new THREE.MeshBasicMaterial({
+            color: 0xff0000,
+            transparent: true,
+            opacity: 0.15,
+            side: THREE.DoubleSide
+        }));
+        redPlane.rotation.y = Math.PI / 2; // Rotate on Y axis to be perpendicular to blue and green
+        redPlane.position.set(0, planeSize/4, 0); // Center vertically
+        axesGroup.add(redPlane);
+        
+        // BLUE plane - Vertical (takes current red position)
+        const bluePlane = new THREE.Mesh(planeGeometry, new THREE.MeshBasicMaterial({
+            color: 0x0000ff,
+            transparent: true,
+            opacity: 0.15,
+            side: THREE.DoubleSide
+        }));
+        bluePlane.rotation.z = Math.PI / 2; // Vertical orientation
+        bluePlane.position.set(0, planeSize/4, 0); // Center vertically
+        axesGroup.add(bluePlane);
+        
+        // GREEN plane - Vertical (rotated 90 degrees from blue)
+        const greenPlane = new THREE.Mesh(planeGeometry, new THREE.MeshBasicMaterial({
+            color: 0x00ff00,
+            transparent: true,
+            opacity: 0.15,
+            side: THREE.DoubleSide
+        }));
+        greenPlane.rotation.x = Math.PI / 2; // Rotated 90 degrees from blue
+        greenPlane.position.set(0, 0, 0); // Bring it down to where W and B = 0
+        axesGroup.add(greenPlane);
+        
+        // Add axis labels using text sprites
+        function createTextSprite(text, color = 0xffffff, size = 0.3) {
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            canvas.width = 256;
+            canvas.height = 128;
+            
+            context.fillStyle = `#${color.toString(16).padStart(6, '0')}`;
+            context.font = 'bold 32px Arial';
+            context.textAlign = 'center';
+            context.fillText(text, 128, 80);
+            
+            const texture = new THREE.CanvasTexture(canvas);
+            const material = new THREE.SpriteMaterial({ map: texture });
+            const sprite = new THREE.Sprite(material);
+            sprite.scale.set(size * 2, size, 1);
+            
+            return sprite;
+        }
+        
+        // W axis (X direction)
+        const wLabel = createTextSprite('W →', 0xff0000);
+        wLabel.position.set(4.5, 0, 0);
+        axesGroup.add(wLabel);
+        
+        // B axis (Z direction)
+        const bLabel = createTextSprite('B →', 0x0000ff);
+        bLabel.position.set(0, 0, 4.5);
+        axesGroup.add(bLabel);
+        
+        // Loss axis (Y direction)
+        const lossLabel = createTextSprite('↑ Loss', 0x00ff00);
+        lossLabel.position.set(0, 2, 0);
+        axesGroup.add(lossLabel);
+        
+        // Add parameter value labels
+        const wMinLabel = createTextSprite(`${wRange[0]}`, 0xff6666, 0.2);
+        wMinLabel.position.set(-4, -0.3, 0);
+        axesGroup.add(wMinLabel);
+        
+        const wMaxLabel = createTextSprite(`${wRange[1]}`, 0xff6666, 0.2);
+        wMaxLabel.position.set(4, -0.3, 0);
+        axesGroup.add(wMaxLabel);
+        
+        const bMinLabel = createTextSprite(`${bRange[0]}`, 0x6666ff, 0.2);
+        bMinLabel.position.set(0, -0.3, -4);
+        axesGroup.add(bMinLabel);
+        
+        const bMaxLabel = createTextSprite(`${bRange[1]}`, 0x6666ff, 0.2);
+        bMaxLabel.position.set(0, -0.3, 4);
+        axesGroup.add(bMaxLabel);
+        
+        scene.add(axesGroup);
+        
+        // Create current point
+        function createCurrentPoint(showIn3D = false) {
+            if (currentPoint) scene.remove(currentPoint);
+            
+            let loss, pos;
+            
+            if (showIn3D) {
+                // 3D position with calculated loss
+                loss = calculateLoss(currentW, currentB, trainingData);
+                pos = paramToPosition(currentW, currentB, loss);
+                currentLoss = loss;
+            } else {
+                // 2D position (flat on the base plane)
+                loss = 0; // Start at base level
+                pos = paramToPosition(currentW, currentB, 0);
+                pos.y = 0; // Force to base level
+                currentLoss = null;
+            }
+            
+            const geometry = new THREE.SphereGeometry(0.05, 16, 16);
+            const material = new THREE.MeshLambertMaterial({ 
+                color: showIn3D ? 0x00ff00 : 0xffaa00,
+                emissive: showIn3D ? 0x003300 : 0x332200,
+                emissiveIntensity: 0.5
+            });
+            
+            currentPoint = new THREE.Mesh(geometry, material);
+            currentPoint.position.set(pos.x, pos.y, pos.z);
+            scene.add(currentPoint);
+            
+            // Add coordinate label
+            createCoordinateLabel();
+            
+            return loss;
+        }
+        
+        // Create coordinate label
+        function createCoordinateLabel() {
+            // Remove existing label
+            if (currentPoint.coordinateLabel) {
+                scene.remove(currentPoint.coordinateLabel);
+            }
+            
+            const pos = paramToPosition(currentW, currentB, currentLoss);
+            let labelText;
+            
+            if (currentLoss !== null) {
+                labelText = `(${currentW.toFixed(1)}, ${currentB.toFixed(1)}, ${currentLoss.toFixed(1)})`;
+            } else {
+                labelText = `(${currentW.toFixed(1)}, ${currentB.toFixed(1)})`;
+            }
+            
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            canvas.width = 256;
+            canvas.height = 64;
+            
+            context.fillStyle = '#ffffff';
+            context.font = 'bold 20px Arial';
+            context.textAlign = 'center';
+            context.fillText(labelText, 128, 40);
+            
+            const texture = new THREE.CanvasTexture(canvas);
+            const material = new THREE.SpriteMaterial({ map: texture });
+            const sprite = new THREE.Sprite(material);
+            sprite.scale.set(1, 0.5, 1);
+            sprite.position.set(pos.x, pos.y + 0.3, pos.z);
+            
+            // Make sure coordinate labels render on top of planes
+            sprite.renderOrder = 999;
+            material.depthTest = false;
+            
+            currentPoint.coordinateLabel = sprite;
+            scene.add(sprite);
+        }
+        
+        // Helper function to create coordinate label at specific position
+        function createCoordinateLabelAtPosition(x, y, z, w, b, loss) {
+            let labelText;
+            
+            if (loss !== null) {
+                labelText = `(${w.toFixed(1)}, ${b.toFixed(1)}, ${loss.toFixed(1)})`;
+            } else {
+                labelText = `(${w.toFixed(1)}, ${b.toFixed(1)})`;
+            }
+            
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            canvas.width = 256;
+            canvas.height = 64;
+            
+            context.fillStyle = '#ffffff';
+            context.font = 'bold 20px Arial';
+            context.textAlign = 'center';
+            context.fillText(labelText, 128, 40);
+            
+            const texture = new THREE.CanvasTexture(canvas);
+            const material = new THREE.SpriteMaterial({ map: texture });
+            const sprite = new THREE.Sprite(material);
+            sprite.scale.set(1, 0.5, 1);
+            sprite.position.set(x, y, z);
+            
+            // Make sure coordinate labels render on top of planes
+            sprite.renderOrder = 999;
+            material.depthTest = false;
+            
+            currentPoint.coordinateLabel = sprite;
+            scene.add(sprite);
+        }
+        
+        // Create individual gradient arrows for weight and bias
+        function createGradientArrows() {
+            if (gradientArrow) scene.remove(gradientArrow);
+            
+            const loss = calculateLoss(currentW, currentB, trainingData);
+            const gradients = calculateGradients(currentW, currentB, trainingData);
+            const pos = paramToPosition(currentW, currentB, loss);
+            
+            gradientArrow = new THREE.Group();
+            
+            // Scale for visibility
+            const scale = 1.0;
+            
+            // WEIGHT GRADIENT ARROW (RED) - Points in POSITIVE gradient direction (opposite to descent)
+            const weightGradientX = gradients.dw * scale * 8 / (wRange[1] - wRange[0]);
+            const weightGradientPoints = [
+                new THREE.Vector3(pos.x, pos.y, pos.z),
+                new THREE.Vector3(pos.x + weightGradientX, pos.y, pos.z) // Only X direction for weight
+            ];
+            
+            const weightGradientGeometry = new THREE.BufferGeometry().setFromPoints(weightGradientPoints);
+            const weightGradientMaterial = new THREE.LineBasicMaterial({ 
+                color: 0xff0000, // Red for weight
+                linewidth: 5
+            });
+            const weightGradientLine = new THREE.Line(weightGradientGeometry, weightGradientMaterial);
+            weightGradientLine.renderOrder = 1000;
+            
+            // Add arrowhead for weight gradient
+            const weightArrowGeometry = new THREE.ConeGeometry(0.02, 0.1, 8);
+            const weightArrowMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+            const weightArrow = new THREE.Mesh(weightArrowGeometry, weightArrowMaterial);
+            weightArrow.position.set(pos.x + weightGradientX, pos.y, pos.z);
+            weightArrow.rotation.z = weightGradientX > 0 ? -Math.PI/2 : Math.PI/2; // Point in gradient direction
+            weightArrow.renderOrder = 1000;
+            
+            // BIAS GRADIENT ARROW (BLUE) - Points in POSITIVE gradient direction (opposite to descent)
+            const biasGradientZ = gradients.db * scale * 8 / (bRange[1] - bRange[0]);
+            const biasGradientPoints = [
+                new THREE.Vector3(pos.x, pos.y, pos.z),
+                new THREE.Vector3(pos.x, pos.y, pos.z + biasGradientZ) // Only Z direction for bias
+            ];
+            
+            const biasGradientGeometry = new THREE.BufferGeometry().setFromPoints(biasGradientPoints);
+            const biasGradientMaterial = new THREE.LineBasicMaterial({ 
+                color: 0x0000ff, // Blue for bias
+                linewidth: 5
+            });
+            const biasGradientLine = new THREE.Line(biasGradientGeometry, biasGradientMaterial);
+            biasGradientLine.renderOrder = 1000;
+            
+            // Add arrowhead for bias gradient
+            const biasArrowGeometry = new THREE.ConeGeometry(0.02, 0.1, 8);
+            const biasArrowMaterial = new THREE.MeshBasicMaterial({ color: 0x0000ff });
+            const biasArrow = new THREE.Mesh(biasArrowGeometry, biasArrowMaterial);
+            biasArrow.position.set(pos.x, pos.y, pos.z + biasGradientZ);
+            biasArrow.rotation.x = biasGradientZ > 0 ? Math.PI/2 : -Math.PI/2; // Point in gradient direction
+            biasArrow.renderOrder = 1000;
+            
+            // Create labels for gradients
+            function createGradientLabel(text, position, color) {
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
+                canvas.width = 256;
+                canvas.height = 64;
+                
+                context.fillStyle = `#${color.toString(16).padStart(6, '0')}`;
+                context.font = 'bold 16px Arial';
+                context.textAlign = 'center';
+                context.fillText(text, 128, 40);
+                
+                const texture = new THREE.CanvasTexture(canvas);
+                const material = new THREE.SpriteMaterial({ map: texture });
+                const sprite = new THREE.Sprite(material);
+                sprite.scale.set(0.8, 0.4, 1);
+                sprite.position.copy(position);
+                sprite.renderOrder = 1000;
+                material.depthTest = false;
+                
+                return sprite;
+            }
+            
+            // Weight gradient label
+            const weightLabelPos = new THREE.Vector3(pos.x + weightGradientX/2, pos.y + 0.2, pos.z);
+            const weightLabel = createGradientLabel(`∂L/∂w = ${gradients.dw.toFixed(3)}`, weightLabelPos, 0xff0000);
+            
+            // Bias gradient label
+            const biasLabelPos = new THREE.Vector3(pos.x, pos.y + 0.2, pos.z + biasGradientZ/2);
+            const biasLabel = createGradientLabel(`∂L/∂b = ${gradients.db.toFixed(3)}`, biasLabelPos, 0x0000ff);
+            
+            // Add everything to the group
+            gradientArrow.add(weightGradientLine);
+            gradientArrow.add(weightArrow);
+            gradientArrow.add(biasGradientLine);
+            gradientArrow.add(biasArrow);
+            gradientArrow.add(weightLabel);
+            gradientArrow.add(biasLabel);
+            
+            scene.add(gradientArrow);
+        }
+        
+        // Create movement vectors (small arrows showing actual parameter updates)
+        function createMovementVectors() {
+            // Remove existing gradient arrows first
+            if (gradientArrow) scene.remove(gradientArrow);
+            
+            const loss = calculateLoss(currentW, currentB, trainingData);
+            const gradients = calculateGradients(currentW, currentB, trainingData);
+            const pos = paramToPosition(currentW, currentB, loss);
+            
+            gradientArrow = new THREE.Group();
+            
+            // Calculate actual movement (gradient * learning rate * -1)
+            const weightMovement = -gradients.dw * learningRate * 8 / (wRange[1] - wRange[0]);
+            const biasMovement = -gradients.db * learningRate * 8 / (bRange[1] - bRange[0]);
+            
+            // WEIGHT MOVEMENT VECTOR (RED) - Small arrow showing actual weight update
+            const weightMovePoints = [
+                new THREE.Vector3(pos.x, pos.y, pos.z),
+                new THREE.Vector3(pos.x + weightMovement, pos.y, pos.z)
+            ];
+            
+            const weightMoveGeometry = new THREE.BufferGeometry().setFromPoints(weightMovePoints);
+            const weightMoveMaterial = new THREE.LineBasicMaterial({ 
+                color: 0xff0000,
+                linewidth: 8
+            });
+            const weightMoveLine = new THREE.Line(weightMoveGeometry, weightMoveMaterial);
+            weightMoveLine.renderOrder = 1001;
+            
+            // Weight movement arrowhead
+            const weightMoveArrowGeometry = new THREE.ConeGeometry(0.015, 0.06, 8);
+            const weightMoveArrowMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+            const weightMoveArrow = new THREE.Mesh(weightMoveArrowGeometry, weightMoveArrowMaterial);
+            weightMoveArrow.position.set(pos.x + weightMovement, pos.y, pos.z);
+            weightMoveArrow.rotation.z = weightMovement > 0 ? -Math.PI/2 : Math.PI/2;
+            weightMoveArrow.renderOrder = 1001;
+            
+            // BIAS MOVEMENT VECTOR (BLUE) - Small arrow showing actual bias update
+            const biasMovePoints = [
+                new THREE.Vector3(pos.x, pos.y, pos.z),
+                new THREE.Vector3(pos.x, pos.y, pos.z + biasMovement)
+            ];
+            
+            const biasMoveGeometry = new THREE.BufferGeometry().setFromPoints(biasMovePoints);
+            const biasMoveMaterial = new THREE.LineBasicMaterial({ 
+                color: 0x0000ff,
+                linewidth: 8
+            });
+            const biasMoveLine = new THREE.Line(biasMoveGeometry, biasMoveMaterial);
+            biasMoveLine.renderOrder = 1001;
+            
+            // Bias movement arrowhead
+            const biasMoveArrowGeometry = new THREE.ConeGeometry(0.015, 0.06, 8);
+            const biasMoveArrowMaterial = new THREE.MeshBasicMaterial({ color: 0x0000ff });
+            const biasMoveArrow = new THREE.Mesh(biasMoveArrowGeometry, biasMoveArrowMaterial);
+            biasMoveArrow.position.set(pos.x, pos.y, pos.z + biasMovement);
+            biasMoveArrow.rotation.x = biasMovement > 0 ? Math.PI/2 : -Math.PI/2;
+            biasMoveArrow.renderOrder = 1001;
+            
+            // VECTOR ADDITION VISUALIZATION - Show A + B = C
+            // Helper line from end of weight vector to end of combined vector (shows bias component)
+            const helperLine1Points = [
+                new THREE.Vector3(pos.x + weightMovement, pos.y, pos.z),
+                new THREE.Vector3(pos.x + weightMovement, pos.y, pos.z + biasMovement)
+            ];
+            const helperLine1Geometry = new THREE.BufferGeometry().setFromPoints(helperLine1Points);
+            const helperLine1Material = new THREE.LineBasicMaterial({ 
+                color: 0x0000ff,
+                linewidth: 3,
+                transparent: true,
+                opacity: 0.4
+            });
+            const helperLine1 = new THREE.Line(helperLine1Geometry, helperLine1Material);
+            helperLine1.renderOrder = 1001;
+            
+            // Helper line from end of bias vector to end of combined vector (shows weight component)
+            const helperLine2Points = [
+                new THREE.Vector3(pos.x, pos.y, pos.z + biasMovement),
+                new THREE.Vector3(pos.x + weightMovement, pos.y, pos.z + biasMovement)
+            ];
+            const helperLine2Geometry = new THREE.BufferGeometry().setFromPoints(helperLine2Points);
+            const helperLine2Material = new THREE.LineBasicMaterial({ 
+                color: 0xff0000,
+                linewidth: 3,
+                transparent: true,
+                opacity: 0.4
+            });
+            const helperLine2 = new THREE.Line(helperLine2Geometry, helperLine2Material);
+            helperLine2.renderOrder = 1001;
+            
+            // COMBINED MOVEMENT VECTOR (YELLOW) - Shows linear addition of both movements
+            const combinedMovePoints = [
+                new THREE.Vector3(pos.x, pos.y, pos.z),
+                new THREE.Vector3(pos.x + weightMovement, pos.y, pos.z + biasMovement)
+            ];
+            
+            const combinedMoveGeometry = new THREE.BufferGeometry().setFromPoints(combinedMovePoints);
+            const combinedMoveMaterial = new THREE.LineBasicMaterial({ 
+                color: 0xffff00,
+                linewidth: 6
+            });
+            const combinedMoveLine = new THREE.Line(combinedMoveGeometry, combinedMoveMaterial);
+            combinedMoveLine.renderOrder = 1002;
+            
+            // Combined movement arrowhead
+            const combinedMoveArrowGeometry = new THREE.ConeGeometry(0.02, 0.08, 8);
+            const combinedMoveArrowMaterial = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+            const combinedMoveArrow = new THREE.Mesh(combinedMoveArrowGeometry, combinedMoveArrowMaterial);
+            combinedMoveArrow.position.set(pos.x + weightMovement, pos.y, pos.z + biasMovement);
+            
+            // Calculate rotation for combined arrow
+            const angle = Math.atan2(biasMovement, weightMovement);
+            combinedMoveArrow.rotation.y = -angle;
+            combinedMoveArrow.renderOrder = 1002;
+            
+            // Create labels for movement vectors
+            function createMovementLabel(text, position, color) {
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
+                canvas.width = 256;
+                canvas.height = 64;
+                
+                context.fillStyle = `#${color.toString(16).padStart(6, '0')}`;
+                context.font = 'bold 14px Arial';
+                context.textAlign = 'center';
+                context.fillText(text, 128, 40);
+                
+                const texture = new THREE.CanvasTexture(canvas);
+                const material = new THREE.SpriteMaterial({ map: texture });
+                const sprite = new THREE.Sprite(material);
+                sprite.scale.set(0.7, 0.35, 1);
+                sprite.position.copy(position);
+                sprite.renderOrder = 1003;
+                material.depthTest = false;
+                
+                return sprite;
+            }
+            
+            // Movement labels
+            const weightMoveLabel = createMovementLabel(
+                `Δw = ${(-gradients.dw * learningRate).toFixed(4)}`, 
+                new THREE.Vector3(pos.x + weightMovement/2, pos.y + 0.15, pos.z), 
+                0xff0000
+            );
+            
+            const biasMoveLabel = createMovementLabel(
+                `Δb = ${(-gradients.db * learningRate).toFixed(4)}`, 
+                new THREE.Vector3(pos.x, pos.y + 0.15, pos.z + biasMovement/2), 
+                0x0000ff
+            );
+            
+            const combinedMoveLabel = createMovementLabel(
+                `Combined Movement`, 
+                new THREE.Vector3(pos.x + weightMovement/2, pos.y + 0.25, pos.z + biasMovement/2), 
+                0xffff00
+            );
+            
+            // Add everything to the group
+            gradientArrow.add(weightMoveLine);
+            gradientArrow.add(weightMoveArrow);
+            gradientArrow.add(biasMoveLine);
+            gradientArrow.add(biasMoveArrow);
+            gradientArrow.add(helperLine1);
+            gradientArrow.add(helperLine2);
+            gradientArrow.add(combinedMoveLine);
+            gradientArrow.add(combinedMoveArrow);
+            gradientArrow.add(weightMoveLabel);
+            gradientArrow.add(biasMoveLabel);
+            gradientArrow.add(combinedMoveLabel);
+            
+            scene.add(gradientArrow);
+        }
+        
+        // Update display values
+        function updateDisplay() {
+            document.getElementById('current-w').textContent = currentW.toFixed(3);
+            document.getElementById('current-b').textContent = currentB.toFixed(3);
+            document.getElementById('current-loss').textContent = currentLoss ? currentLoss.toFixed(4) : '?';
+        }
+        
+        // Show modal with calculation
+        function showCalculationModal(title, content) {
+            const modal = document.getElementById('calculation-modal');
+            const modalContent = document.getElementById('modal-content');
+            
+            modalContent.innerHTML = `
+                <h2>${title}</h2>
+                ${content}
+            `;
+            
+            modal.style.display = 'block';
+        }
+        
+        function closeModal() {
+            document.getElementById('calculation-modal').style.display = 'none';
+        }
+        
+        // Tutorial steps
+        const steps = [
+            {
+                title: "Step 1: Starting Position",
+                description: "We start at a random point: w = 0.5, b = 0.0. Click Next to calculate the loss at this position.",
+                buttonText: "Next: Calculate Loss",
+                action: function() {
+                    // Animate from 2D to 3D
+                    const finalLoss = calculateLoss(currentW, currentB, trainingData);
+                    const finalPos = paramToPosition(currentW, currentB, finalLoss);
+                    
+                    // Start animation from current 2D position to 3D position
+                    const startPos = { x: currentPoint.position.x, y: currentPoint.position.y, z: currentPoint.position.z };
+                    const endPos = { x: finalPos.x, y: finalPos.y, z: finalPos.z };
+                    
+                    let progress = 0;
+                    const duration = 1500; // 1.5 seconds
+                    const startTime = Date.now();
+                    
+                    function animate() {
+                        const elapsed = Date.now() - startTime;
+                        progress = Math.min(elapsed / duration, 1);
+                        
+                        const currentPos = {
+                            x: startPos.x + (endPos.x - startPos.x) * progress,
+                            y: startPos.y + (endPos.y - startPos.y) * progress,
+                            z: startPos.z + (endPos.z - startPos.z) * progress
+                        };
+                        
+                        currentPoint.position.set(currentPos.x, currentPos.y, currentPos.z);
+                        
+                        // Update coordinate label during animation
+                        if (currentPoint.coordinateLabel) {
+                            scene.remove(currentPoint.coordinateLabel);
+                        }
+                        
+                        if (progress < 1) {
+                            // Show interpolated loss during animation
+                            const interpolatedLoss = finalLoss * progress;
+                            const tempLoss = currentLoss;
+                            currentLoss = interpolatedLoss;
+                            createCoordinateLabel();
+                            currentLoss = tempLoss;
+                            requestAnimationFrame(animate);
+                        } else {
+                            // Animation complete
+                            currentLoss = finalLoss;
+                            currentPoint.material.color.setHex(0x00ff00);
+                            currentPoint.material.emissive.setHex(0x003300);
+                            createCoordinateLabel();
+                            updateDisplay();
+                            
+                            // Show calculation modal
+                            const lossCalculation = `
+                                <div class="calculation">
+                                    <strong>Loss Calculation:</strong><br><br>
+                                    For each training point (x, y):<br>
+                                    predicted = w × x + b = ${currentW} × x + ${currentB}<br><br>
+                                    
+                                    Example: x = -5<br>
+                                    predicted = ${currentW} × (-5) + ${currentB} = ${(currentW * -5 + currentB).toFixed(3)}<br><br>
+                                    
+                                    Let's define the loss as (predicted - actual)²<br>
+                                    loss = (${(currentW * -5 + currentB).toFixed(3)} - 0)² = ${((currentW * -5 + currentB) ** 2).toFixed(3)}<br><br>
+                                    
+                                    <span class="highlight">Total Loss = ${currentLoss.toFixed(4)}</span>
+                                </div>
+                            `;
+                            
+                            showCalculationModal("Loss Calculation", lossCalculation);
+                            
+                            // Update button text
+                            document.getElementById('next-button').textContent = "Now calculate how loss changes with w and b";
+                        }
+                    }
+                    
+                    animate();
+                    currentStep = 1;
+                }
+            },
+            {
+                title: "Calculate Gradients",
+                description: "Now we calculate how the loss changes with respect to w and b (gradients). This tells us which direction to move.",
+                buttonText: "Next: Calculate Gradients",
+                action: function() {
+                    currentGradients = calculateGradients(currentW, currentB, trainingData);
+                    
+                    const gradientCalculation = `
+                        <div class="calculation">
+                            <strong>Gradient Calculation using Chain Rule:</strong><br><br>
+                            
+                            <strong>For bias (b):</strong><br>
+                            ∂Loss/∂b = ∂Loss/∂output × ∂output/∂bias<br>
+                            ∂Loss/∂b = 2(predicted - actual) × 1<br>
+                            ∂Loss/∂b = ${currentGradients.db.toFixed(4)}<br><br>
+                            
+                            <strong>For weight (w):</strong><br>
+                            ∂Loss/∂w = ∂Loss/∂output × ∂output/∂weight<br>
+                            ∂Loss/∂w = 2(predicted - actual) × input<br>
+                            ∂Loss/∂w = ${currentGradients.dw.toFixed(4)}<br><br>
+                            
+                            <strong>What this means:</strong><br>
+                            • If ∂Loss/∂w > 0: Loss increases when w increases<br>
+                            • If ∂Loss/∂w < 0: Loss decreases when w increases<br><br>
+                            
+                            <span class="highlight">Move OPPOSITE to gradient to minimize loss!</span>
+                        </div>
+                    `;
+                    
+                    showCalculationModal("Gradient Calculation", gradientCalculation);
+                    
+                    // Show the gradient arrows immediately after calculation
+                    createGradientArrows();
+                    currentStep = 2;
+                }
+            },
+            {
+                title: "Gradient Descent",
+                description: "Now we apply gradient descent by moving in the OPPOSITE direction of the gradients, scaled by the learning rate.",
+                buttonText: "Next: Parameter Update",
+                action: function() {
+                    // Show the small movement vectors (scaled by learning rate and negative)
+                    createMovementVectors();
+                    currentStep = 3;
+                }
+            },
+            {
+                title: "Parameter Update",
+                description: "Now we update our parameters: new_w = old_w - learning_rate × ∂Loss/∂w",
+                buttonText: "Next: Animate Movement",
+                action: function() {
+                    const oldW = currentW;
+                    const oldB = currentB;
+                    
+                    currentW = currentW - learningRate * currentGradients.dw;
+                    currentB = currentB - learningRate * currentGradients.db;
+                    
+                    const updateCalculation = `
+                        <div class="calculation">
+                            <strong>Parameter Update:</strong><br><br>
+                            Learning Rate = ${learningRate}<br><br>
+                            
+                            new_w = old_w - learning_rate × ∂Loss/∂w<br>
+                            new_w = ${oldW.toFixed(3)} - ${learningRate} × ${currentGradients.dw.toFixed(4)}<br>
+                            <span class="highlight">new_w = ${currentW.toFixed(3)}</span><br><br>
+                            
+                            new_b = old_b - learning_rate × ∂Loss/∂b<br>
+                            new_b = ${oldB.toFixed(3)} - ${learningRate} × ${currentGradients.db.toFixed(4)}<br>
+                            <span class="highlight">new_b = ${currentB.toFixed(3)}</span>
+                        </div>
+                    `;
+                    
+                    showCalculationModal("Parameter Update", updateCalculation);
+                    currentStep = 4;
+                }
+            },
+            {
+                title: "Animate to New Position",
+                description: "Watch the point slide down the loss surface to its new position!",
+                buttonText: "Next: Calculate New Loss",
+                action: function() {
+                    animateToNewPosition();
+                    currentStep = 5;
+                }
+            }
+        ];
+        
+        // Animation function
+        function animateToNewPosition() {
+            const startLoss = currentLoss;
+            const endLoss = calculateLoss(currentW, currentB, trainingData);
+            const startPos = paramToPosition(currentW + learningRate * currentGradients.dw, currentB + learningRate * currentGradients.db, startLoss);
+            const endPos = paramToPosition(currentW, currentB, endLoss);
+            
+            let progress = 0;
+            const duration = 2000; // 2 seconds
+            const startTime = Date.now();
+            
+            function animate() {
+                const elapsed = Date.now() - startTime;
+                progress = Math.min(elapsed / duration, 1);
+                
+                const currentPos = {
+                    x: startPos.x + (endPos.x - startPos.x) * progress,
+                    y: startPos.y + (endPos.y - startPos.y) * progress,
+                    z: startPos.z + (endPos.z - startPos.z) * progress
+                };
+                
+                currentPoint.position.set(currentPos.x, currentPos.y, currentPos.z);
+                
+                // Update coordinate label to move with the point (but don't animate the loss value)
+                if (currentPoint.coordinateLabel) {
+                    currentPoint.coordinateLabel.position.set(currentPos.x, currentPos.y + 0.3, currentPos.z);
+                    // Update the label with the final loss value directly (no animation)
+                    scene.remove(currentPoint.coordinateLabel);
+                    const finalPos = paramToPosition(currentW, currentB, endLoss);
+                    createCoordinateLabelAtPosition(finalPos.x, finalPos.y + 0.3, finalPos.z, currentW, currentB, endLoss);
+                }
+                
+                if (progress < 1) {
+                    requestAnimationFrame(animate);
+                } else {
+                    currentLoss = endLoss;
+                    
+                    // Update coordinate label with new values
+                    createCoordinateLabel();
+                    updateDisplay();
+                    
+                    // Remove gradient arrow
+                    if (gradientArrow) {
+                        scene.remove(gradientArrow);
+                        gradientArrow = null;
+                    }
+                    
+                    // Reset for next iteration
+                    document.getElementById('step-title').textContent = "Continue Gradient Descent";
+                    document.getElementById('step-description').textContent = "Great! We've moved to a lower loss position. Click Next to continue the gradient descent process.";
+                    document.getElementById('next-button').textContent = "Next: Calculate New Loss";
+                    currentStep = 0; // Reset to beginning of cycle
+                }
+            }
+            
+            animate();
+        }
+        
+        // Initialize
+        createCurrentPoint(false); // Start in 2D mode
+        updateDisplay();
+        
+        // Event listeners
+        document.getElementById('next-button').addEventListener('click', function() {
+            if (currentStep < steps.length) {
+                const step = steps[currentStep];
+                document.getElementById('step-title').textContent = step.title;
+                document.getElementById('step-description').textContent = step.description;
+                document.getElementById('next-button').textContent = step.buttonText;
+                step.action();
+            }
+        });
+        
+        // Close modal event
+        document.querySelector('.close-modal').addEventListener('click', closeModal);
+        
+        // Learning rate slider event
+        document.getElementById('learning-rate-slider').addEventListener('input', function(e) {
+            learningRate = parseFloat(e.target.value);
+            document.getElementById('lr-display').textContent = learningRate.toFixed(3);
+            
+            // Reset tutorial to beginning when learning rate changes
+            resetTutorial();
+        });
+        
+        // Function to reset tutorial to beginning
+        function resetTutorial() {
+            // Reset tutorial state
+            currentStep = 0;
+            currentW = 0.5;
+            currentB = 0.0;
+            currentLoss = null;
+            currentGradients = null;
+            
+            // Remove any existing arrows
+            if (gradientArrow) {
+                scene.remove(gradientArrow);
+                gradientArrow = null;
+            }
+            
+            // Reset point to 2D mode
+            createCurrentPoint(false);
+            updateDisplay();
+            
+            // Reset UI
+            document.getElementById('step-title').textContent = "We initialize w and b with random values";
+            document.getElementById('step-description').textContent = "Now we need to calculate how far off we are from the actual output given the input, using these w and b values. To do this we calculate the loss.";
+            document.getElementById('next-button').textContent = "Calculate Loss";
+            
+            // Close any open modals
+            closeModal();
+        }
+        
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+            controls.update();
+            renderer.render(scene, camera);
+        }
+        
+        // Handle window resize
+        window.addEventListener('resize', updateRendererSize);
+        
+        animate();
+    </script>
+</body>
+</html>
