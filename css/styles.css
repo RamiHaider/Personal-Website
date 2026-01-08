@@ -1081,6 +1081,17 @@ nav a:hover {
     margin-bottom: 10px;
 }
 
+.intro-container p a {
+    color: #7dd3fc;
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.intro-container p a:hover {
+    color: #bae6fd;
+    text-decoration: underline;
+}
+
 .bio-link {
     color: #A4A155;
     text-decoration: none;

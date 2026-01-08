@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GeoJSON vs Shapefile vs GeoPackage</title>
+    <link rel="stylesheet" href="../css/styles.css">
+    <style>
+        .main-content-wrapper {
+            background-color: rgba(0, 0, 0, 0.6) !important;
+            color: white;
+        }
+
+        .content {
+            background-color: transparent !important;
+            color: white;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            color: white;
+        }
+
+        p, li, td, th {
+            color: rgba(255, 255, 255, 0.9);
+        }
+
+        .date-info {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        th, td {
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .format-name {
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="header"></div>
+
+        <div class="main-content-wrapper">
+            <main role="main">
+                <div class="content">
+                    <h1>GeoJSON vs Shapefile vs GeoPackage</h1>
+                    <div class="date-info" data-upload-date="2025-12-25" data-file-path="blog/geojson-vs-shapefile-vs-geopackage.html">
+                        <p>Original Upload: 2025-12-25</p>
+                        <p>Last Updated: <span class="update-date"></span></p>
+                        <p class="article-views" style="margin-top: 5px; font-size: 13px; color: rgba(255, 255, 255, 0.5);"></p>
+                    </div>
+
+                    <div style="height: 20px;"></div>
+
+                    <table>
+                        <tr>
+                            <th></th>
+                            <th>GeoJSON</th>
+                            <th>Shapefile</th>
+                            <th>GeoPackage</th>
+                        </tr>
+                        <tr>
+                            <td class="format-name">Format</td>
+                            <td>JSON text</td>
+                            <td>Binary + sidecar files</td>
+                            <td>SQLite database</td>
+                        </tr>
+                        <tr>
+                            <td class="format-name">Files</td>
+                            <td>1 (.geojson)</td>
+                            <td>3-7 (.shp, .shx, .dbf, .prj...)</td>
+                            <td>1 (.gpkg)</td>
+                        </tr>
+                        <tr>
+                            <td class="format-name">Size Limit</td>
+                            <td>None (RAM-bound)</td>
+                            <td>2GB per file</td>
+                            <td>None</td>
+                        </tr>
+                        <tr>
+                            <td class="format-name">CRS</td>
+                            <td>WGS84 only (spec)</td>
+                            <td>Any (.prj file)</td>
+                            <td>Any (embedded)</td>
+                        </tr>
+                        <tr>
+                            <td class="format-name">Field Names</td>
+                            <td>Unlimited</td>
+                            <td>10 characters max</td>
+                            <td>Unlimited</td>
+                        </tr>
+                        <tr>
+                            <td class="format-name">Data Types</td>
+                            <td>String, Number, Boolean, Null</td>
+                            <td>Limited (no datetime)</td>
+                            <td>Full SQL types</td>
+                        </tr>
+                        <tr>
+                            <td class="format-name">Multiple Layers</td>
+                            <td>No</td>
+                            <td>No</td>
+                            <td>Yes</td>
+                        </tr>
+                        <tr>
+                            <td class="format-name">Raster Support</td>
+                            <td>No</td>
+                            <td>No</td>
+                            <td>Yes</td>
+                        </tr>
+                        <tr>
+                            <td class="format-name">Human Readable</td>
+                            <td>Yes</td>
+                            <td>No</td>
+                            <td>No</td>
+                        </tr>
+                        <tr>
+                            <td class="format-name">Web Use</td>
+                            <td>Native</td>
+                            <td>Needs conversion</td>
+                            <td>Needs conversion</td>
+                        </tr>
+                        <tr>
+                            <td class="format-name">Edit Partial</td>
+                            <td>No (rewrite all)</td>
+                            <td>Yes</td>
+                            <td>Yes</td>
+                        </tr>
+                        <tr>
+                            <td class="format-name">Topology</td>
+                            <td>No</td>
+                            <td>No</td>
+                            <td>Optional</td>
+                        </tr>
+                    </table>
+
+                    <h3>Use When</h3>
+                    <p><strong>GeoJSON:</strong> Web apps, APIs, small datasets, human inspection.</p>
+                    <p><strong>Shapefile:</strong> Legacy systems, ESRI workflows, regulatory submissions.</p>
+                    <p><strong>GeoPackage:</strong> Large datasets, multiple layers, offline mobile, modern desktop GIS.</p>
+
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <script src="../js/main.js"></script>
+    <script src="../js/dates.js"></script>
+    <script src="../js/view-counter.js"></script>
+</body>
+</html>

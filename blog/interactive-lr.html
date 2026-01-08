@@ -88,17 +88,73 @@
         
         #canvas-container {
             width: 100%;
-            height: 60vh;
-            min-height: 400px;
+            height: 75vh;
+            min-height: 600px;
             position: relative;
             margin: 20px 0;
             overflow: hidden;
+            display: flex;
+            flex-direction: row;
         }
-        
+
+        #parameter-space {
+            flex: 0 0 80%;
+            position: relative;
+            height: 100%;
+        }
+
         #canvas {
             width: 100%;
             height: 100%;
             display: block;
+        }
+
+        #data-space {
+            flex: 0 0 20%;
+            background: rgba(0, 0, 0, 0.9);
+            border-left: 1px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            flex-direction: column;
+            padding: 10px;
+            box-sizing: border-box;
+        }
+
+        #data-space-title {
+            color: #4ecdc4;
+            font-size: 14px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 8px;
+        }
+
+        #data-space-subtitle {
+            color: #888;
+            font-size: 11px;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        #data-canvas {
+            flex: 1;
+            width: 100%;
+            min-height: 200px;
+            border-radius: 5px;
+            background: #111;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        #data-space-info {
+            color: #888;
+            font-size: 10px;
+            text-align: center;
+            margin-top: 8px;
+            font-family: 'Courier New', monospace;
+        }
+
+        #data-space-info .model-equation {
+            color: #ffff00;
+            font-weight: bold;
+            font-size: 12px;
         }
         
         #step-controls {
@@ -722,10 +778,11 @@
                 <div class="content">
                     <div id="container">
                         <div id="info">
-                            <h1 style="margin: 0 0 30px 0; font-size: 36px; background: linear-gradient(45deg, #ff6b6b, #4ecdc4); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; text-align: center; font-weight: bold;">
+                            <h1 style="margin: 0 0 10px 0; font-size: 36px; background: linear-gradient(45deg, #ff6b6b, #4ecdc4); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; text-align: center; font-weight: bold;">
                                 Visualization of Gradient Descent
                             </h1>
-                            
+                            <p class="article-views" style="text-align: center; margin: 0 0 20px 0; font-size: 13px; color: rgba(255, 255, 255, 0.5);"></p>
+
                             <!-- Hidden original elements to keep JavaScript working -->
                             <div id="current-values" style="display: none;">
                                 <div><strong>Current Position:</strong></div>
@@ -1152,38 +1209,52 @@
                         </div>
 
                         <div id="canvas-container">
-                            <div id="function-label">y = x + 5</div>
-                            
-                            <!-- 2D Gradient Visualization Panels -->
-                            <div id="gradient-2d-panels" style="position: absolute; top: 20px; right: 20px; display: none; z-index: 100;">
-                                <div style="display: flex; flex-direction: column; gap: 15px;">
-                                    <!-- Loss vs Weight Plot -->
-                                    <div style="background: rgba(0, 0, 0, 0.9); border: 2px solid #ff6666; border-radius: 10px; padding: 15px; width: 300px;">
-                                        <h4 style="color: #ff6666; margin: 0 0 10px 0; text-align: center; font-size: 16px;">Loss vs Weight</h4>
-                                        <div style="color: #ccc; text-align: center; margin-bottom: 10px; font-size: 12px;">Holding Bias constant at B = <span id="current-b-value">0</span></div>
-                                        <canvas id="weight-loss-canvas" width="270" height="180" style="border: 1px solid #666; border-radius: 5px; background: #111;"></canvas>
-                                        <div style="color: #ff6666; text-align: center; margin-top: 8px; font-size: 14px;">
-                                            ∂Loss/∂W = <span id="weight-gradient-display">0</span>
+                            <!-- Parameter Space (80%) -->
+                            <div id="parameter-space">
+                                <div id="function-label">y = x + 5</div>
+
+                                <!-- 2D Gradient Visualization Panels -->
+                                <div id="gradient-2d-panels" style="position: absolute; top: 20px; right: 20px; display: none; z-index: 100;">
+                                    <div style="display: flex; flex-direction: column; gap: 15px;">
+                                        <!-- Loss vs Weight Plot -->
+                                        <div style="background: rgba(0, 0, 0, 0.9); border: 2px solid #ff6666; border-radius: 10px; padding: 15px; width: 300px;">
+                                            <h4 style="color: #ff6666; margin: 0 0 10px 0; text-align: center; font-size: 16px;">Loss vs Weight</h4>
+                                            <div style="color: #ccc; text-align: center; margin-bottom: 10px; font-size: 12px;">Holding Bias constant at B = <span id="current-b-value">0</span></div>
+                                            <canvas id="weight-loss-canvas" width="270" height="180" style="border: 1px solid #666; border-radius: 5px; background: #111;"></canvas>
+                                            <div style="color: #ff6666; text-align: center; margin-top: 8px; font-size: 14px;">
+                                                ∂Loss/∂W = <span id="weight-gradient-display">0</span>
+                                            </div>
                                         </div>
-                                    </div>
-                                    
-                                    <!-- Loss vs Bias Plot -->
-                                    <div style="background: rgba(0, 0, 0, 0.9); border: 2px solid #6699ff; border-radius: 10px; padding: 15px; width: 300px;">
-                                        <h4 style="color: #6699ff; margin: 0 0 10px 0; text-align: center; font-size: 16px;">Loss vs Bias</h4>
-                                        <div style="color: #ccc; text-align: center; margin-bottom: 10px; font-size: 12px;">Holding Weight constant at W = <span id="current-w-value">0.5</span></div>
-                                        <canvas id="bias-loss-canvas" width="270" height="180" style="border: 1px solid #666; border-radius: 5px; background: #111;"></canvas>
-                                        <div style="color: #6699ff; text-align: center; margin-top: 8px; font-size: 14px;">
-                                            ∂Loss/∂B = <span id="bias-gradient-display">0</span>
+
+                                        <!-- Loss vs Bias Plot -->
+                                        <div style="background: rgba(0, 0, 0, 0.9); border: 2px solid #6699ff; border-radius: 10px; padding: 15px; width: 300px;">
+                                            <h4 style="color: #6699ff; margin: 0 0 10px 0; text-align: center; font-size: 16px;">Loss vs Bias</h4>
+                                            <div style="color: #ccc; text-align: center; margin-bottom: 10px; font-size: 12px;">Holding Weight constant at W = <span id="current-w-value">0.5</span></div>
+                                            <canvas id="bias-loss-canvas" width="270" height="180" style="border: 1px solid #666; border-radius: 5px; background: #111;"></canvas>
+                                            <div style="color: #6699ff; text-align: center; margin-top: 8px; font-size: 14px;">
+                                                ∂Loss/∂B = <span id="bias-gradient-display">0</span>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
+
+                                <div id="info-panel">
+                                    <span id="close-info">&times;</span>
+                                    <div id="info-content"></div>
+                                </div>
+                                <canvas id="canvas"></canvas>
                             </div>
-                            
-                            <div id="info-panel">
-                                <span id="close-info">&times;</span>
-                                <div id="info-content"></div>
+
+                            <!-- Data Space (20%) -->
+                            <div id="data-space">
+                                <div id="data-space-title">Data Space</div>
+                                <div id="data-space-subtitle">50 training points</div>
+                                <canvas id="data-canvas"></canvas>
+                                <div id="data-space-info">
+                                    <div>Target: <span style="color: #4ecdc4;">y = x + 5</span></div>
+                                    <div style="margin-top: 4px;">Model: <span class="model-equation" id="model-equation">y = 0.50x + 0.00</span></div>
+                                </div>
                             </div>
-                            <canvas id="canvas"></canvas>
                         </div>
                     </div>
                 </div>
@@ -1282,12 +1353,140 @@
     });
     
     function updateRendererSize() {
-        const container = document.getElementById('canvas-container');
+        const container = document.getElementById('parameter-space');
         const width = container.clientWidth;
         const height = container.clientHeight;
         renderer.setSize(width, height);
         camera.aspect = width / height;
         camera.updateProjectionMatrix();
+    }
+
+    // Draw the data space visualization (training points + current model line)
+    function drawDataSpace() {
+        const canvas = document.getElementById('data-canvas');
+        if (!canvas) return;
+
+        const ctx = canvas.getContext('2d');
+
+        // Set canvas size to match container (with fallback)
+        const rect = canvas.getBoundingClientRect();
+        canvas.width = rect.width || 200;
+        canvas.height = rect.height || 300;
+
+        const width = canvas.width;
+        const height = canvas.height;
+
+        // Skip drawing if dimensions are too small
+        if (width < 50 || height < 50) return;
+
+        // Clear canvas
+        ctx.fillStyle = '#111';
+        ctx.fillRect(0, 0, width, height);
+
+        // Data ranges (x: -5 to 5, y: 0 to 10 for y = x + 5)
+        const xMin = -6, xMax = 6;
+        const yMin = -2, yMax = 12;
+
+        // Padding
+        const padding = { top: 15, right: 10, bottom: 20, left: 25 };
+        const plotWidth = width - padding.left - padding.right;
+        const plotHeight = height - padding.top - padding.bottom;
+
+        // Convert data coordinates to canvas coordinates
+        function xToCanvas(x) {
+            return padding.left + ((x - xMin) / (xMax - xMin)) * plotWidth;
+        }
+
+        function yToCanvas(y) {
+            return padding.top + plotHeight - ((y - yMin) / (yMax - yMin)) * plotHeight;
+        }
+
+        // Draw grid lines
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+        ctx.lineWidth = 1;
+
+        // Vertical grid lines
+        for (let x = -4; x <= 4; x += 2) {
+            ctx.beginPath();
+            ctx.moveTo(xToCanvas(x), padding.top);
+            ctx.lineTo(xToCanvas(x), height - padding.bottom);
+            ctx.stroke();
+        }
+
+        // Horizontal grid lines
+        for (let y = 0; y <= 10; y += 2) {
+            ctx.beginPath();
+            ctx.moveTo(padding.left, yToCanvas(y));
+            ctx.lineTo(width - padding.right, yToCanvas(y));
+            ctx.stroke();
+        }
+
+        // Draw axes
+        ctx.strokeStyle = '#666';
+        ctx.lineWidth = 1;
+
+        // X-axis (y=0)
+        ctx.beginPath();
+        ctx.moveTo(padding.left, yToCanvas(0));
+        ctx.lineTo(width - padding.right, yToCanvas(0));
+        ctx.stroke();
+
+        // Y-axis (x=0)
+        ctx.beginPath();
+        ctx.moveTo(xToCanvas(0), padding.top);
+        ctx.lineTo(xToCanvas(0), height - padding.bottom);
+        ctx.stroke();
+
+        // Draw target line (y = x + 5) in teal (dashed)
+        ctx.strokeStyle = '#4ecdc4';
+        ctx.lineWidth = 1;
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        ctx.moveTo(xToCanvas(xMin), yToCanvas(xMin + 5));
+        ctx.lineTo(xToCanvas(xMax), yToCanvas(xMax + 5));
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Draw training data points
+        ctx.fillStyle = '#4ecdc4';
+        for (const point of trainingData) {
+            const cx = xToCanvas(point.x);
+            const cy = yToCanvas(point.y);
+            ctx.beginPath();
+            ctx.arc(cx, cy, 3, 0, 2 * Math.PI);
+            ctx.fill();
+        }
+
+        // Draw current model line (y = w*x + b) in yellow
+        ctx.strokeStyle = '#ffff00';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        const y1 = currentW * xMin + currentB;
+        const y2 = currentW * xMax + currentB;
+        ctx.moveTo(xToCanvas(xMin), yToCanvas(y1));
+        ctx.lineTo(xToCanvas(xMax), yToCanvas(y2));
+        ctx.stroke();
+
+        // Draw axis labels
+        ctx.fillStyle = '#888';
+        ctx.font = '9px Arial';
+        ctx.textAlign = 'center';
+
+        // X-axis label
+        ctx.fillText('x', width - 8, yToCanvas(0) + 12);
+
+        // Y-axis label
+        ctx.save();
+        ctx.translate(10, padding.top + plotHeight / 2);
+        ctx.rotate(-Math.PI / 2);
+        ctx.fillText('y', 0, 0);
+        ctx.restore();
+
+        // Update model equation display
+        const sign = currentB >= 0 ? '+' : '-';
+        const absB = Math.abs(currentB);
+        document.getElementById('model-equation').textContent =
+            `y = ${currentW.toFixed(2)}x ${sign} ${absB.toFixed(2)}`;
     }
     
     updateRendererSize();
@@ -2634,7 +2833,10 @@
                 
                 currentW = currentW - learningRate * currentGradients.dw;
                 currentB = currentB - learningRate * currentGradients.db;
-    
+
+                // Update data space visualization to show new model line
+                drawDataSpace();
+
                 // Animate to new W,B position but keep same height (suspended in air)
                 const startPos = {
                     x: currentPoint.position.x,
@@ -2805,6 +3007,10 @@
     // Initialize
     createCurrentPoint(false); // Start in 2D mode
     updateDisplay();
+    drawDataSpace(); // Draw initial data space visualization
+
+    // Redraw data space after a brief delay to ensure layout is computed
+    setTimeout(drawDataSpace, 100);
     
     // Event listeners
     document.getElementById('next-button').addEventListener('click', function() {
@@ -2887,12 +3093,13 @@
         // Reset point to 2D mode with new coordinates
         createCurrentPoint(false);
         updateDisplay();
-    
+        drawDataSpace(); // Update data space with new model line
+
         // Reset UI
         document.getElementById('step-title').textContent = "Initialize Trainable Parameters";
         document.getElementById('step-description').innerHTML = "We randomize W within constraints <span class=\"info-icon\" title=\"Weights are typically initialized randomly to break symmetry and allow the network to learn different features. Common methods include Xavier/Glorot initialization or He initialization.\">ⓘ</span> and set B = 0. Next, we need to calculate the Loss to see how far off our predictions are.";
         document.getElementById('next-button').textContent = "Calculate Loss";
-    
+
         // Hide training data display
         document.getElementById('training-data-display').style.display = 'none';
     
@@ -2954,15 +3161,16 @@
         // Reset point to 2D mode
         createCurrentPoint(false);
         updateDisplay();
-    
+        drawDataSpace(); // Update data space with reset model line
+
         // Reset UI
         document.getElementById('step-title').textContent = "Initialize Trainable Parameters";
         document.getElementById('step-description').innerHTML = "We randomize W within constraints <span class=\"info-icon\" title=\"Weights are typically initialized randomly to break symmetry and allow the network to learn different features. Common methods include Xavier/Glorot initialization or He initialization.\">ⓘ</span> and set B = 0. Next, we need to calculate the Loss to see how far off our predictions are.";
         document.getElementById('next-button').textContent = "Calculate Loss";
-    
+
         // Hide training data display
         document.getElementById('training-data-display').style.display = 'none';
-    
+
         // Hide gradient calculation display
         document.getElementById('gradient-calculation-display').style.display = 'none';
     
@@ -2985,9 +3193,13 @@
     }
     
     // Handle window resize
-    window.addEventListener('resize', updateRendererSize);
-    
+    window.addEventListener('resize', function() {
+        updateRendererSize();
+        drawDataSpace();
+    });
+
     animate();
     </script>
+    <script src="../js/view-counter.js"></script>
 </body>
 </html>
