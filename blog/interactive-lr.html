@@ -363,44 +363,44 @@
         }
         
         #adjustable-parameters {
-            width: 300px;
-            max-width: 300px;
+            width: 260px;
+            max-width: 260px;
             background: transparent;
-            padding: 15px;
+            padding: 12px;
             border-radius: 8px;
             border: 1px solid rgba(255, 255, 255, 0.3);
             backdrop-filter: blur(10px);
-            min-height: 120px;
+            min-height: 100px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
         }
-        
+
         #adjustable-parameters h3 {
-            margin: 0 0 15px 0;
+            margin: 0 0 10px 0;
             color: #4ecdc4;
-            font-size: 16px;
+            font-size: 14px;
             text-align: center;
         }
-        
+
         .parameter-row {
             display: flex;
-            gap: 15px;
+            gap: 10px;
             align-items: stretch;
         }
-        
+
         .parameter-box {
             flex: 1;
             background: rgba(255, 255, 255, 0.05);
-            padding: 15px;
+            padding: 10px;
             border-radius: 8px;
             border: 1px solid rgba(76, 205, 196, 0.2);
         }
-        
+
         .parameter-box label {
             display: block;
-            margin-bottom: 8px;
-            font-size: 14px;
+            margin-bottom: 6px;
+            font-size: 12px;
             color: #ffffff;
         }
         
@@ -440,9 +440,9 @@
         #randomize-button {
             width: 100%;
             height: 100%;
-            min-height: 50px;
-            padding: 10px;
-            font-size: 13px;
+            min-height: 40px;
+            padding: 8px;
+            font-size: 11px;
             background: #666666;
             color: white;
             border: none;
@@ -473,7 +473,133 @@
         .info-icon:hover {
             color: #3db8b0;
         }
-        
+
+        #batch-processing {
+            width: 280px;
+            max-width: 280px;
+            background: transparent;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            backdrop-filter: blur(10px);
+            min-height: 120px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #batch-processing h3 {
+            margin: 0 0 10px 0;
+            color: #ff9f43;
+            font-size: 14px;
+            text-align: center;
+        }
+
+        .batch-mode-select {
+            width: 100%;
+            padding: 8px 10px;
+            font-size: 13px;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 159, 67, 0.3);
+            border-radius: 6px;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+
+        .batch-mode-select:focus {
+            outline: none;
+            border-color: #ff9f43;
+        }
+
+        .batch-mode-select option {
+            background: #222;
+            color: white;
+        }
+
+        #mini-batch-size-container {
+            display: none;
+            margin-bottom: 10px;
+        }
+
+        #mini-batch-size-container label {
+            display: block;
+            font-size: 12px;
+            color: #ccc;
+            margin-bottom: 5px;
+        }
+
+        #mini-batch-size-slider {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: rgba(255, 255, 255, 0.2);
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        #mini-batch-size-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #ff9f43;
+            cursor: pointer;
+        }
+
+        #mini-batch-size-slider::-moz-range-thumb {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #ff9f43;
+            cursor: pointer;
+            border: none;
+        }
+
+        #batch-size-display {
+            color: #ff9f43;
+            font-weight: bold;
+        }
+
+        #batch-info {
+            font-size: 11px;
+            color: #888;
+            text-align: center;
+            margin-top: auto;
+            padding-top: 8px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        #batch-info .batch-indicator {
+            color: #ff9f43;
+            font-weight: bold;
+        }
+
+        #next-batch-button {
+            width: 100%;
+            padding: 8px;
+            font-size: 12px;
+            background: #ff9f43;
+            color: black;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            margin-top: 8px;
+        }
+
+        #next-batch-button:hover {
+            background: #f39c12;
+            transform: scale(1.02);
+        }
+
+        #next-batch-button:disabled {
+            background: #666;
+            color: #999;
+            cursor: not-allowed;
+            transform: none;
+        }
+
         #training-data-display {
             width: 100%;
             background: rgba(255, 255, 255, 0.05);
@@ -801,17 +927,35 @@
                                     <button id="info-button" style="display: none;">See Calculation</button>
                                 </div>
                                 
-                                <!-- Adjustable parameters on the right -->
+                                <!-- Adjustable parameters -->
                                 <div id="adjustable-parameters">
-                                    <h3>Adjustable Parameters</h3>
+                                    <h3>Training Parameters</h3>
                                     <div class="parameter-row">
                                         <div class="parameter-box">
                                             <label for="learning-rate-slider">Learning Rate: <span id="lr-display">0.085</span></label>
                                             <input type="range" id="learning-rate-slider" min="0" max="0.5" step="0.001" value="0.085">
                                         </div>
                                         <div class="parameter-box">
-                                            <button id="randomize-button">Randomize Starting Point</button>
+                                            <button id="randomize-button">Randomize Start</button>
                                         </div>
+                                    </div>
+                                </div>
+
+                                <!-- Batch Processing Control -->
+                                <div id="batch-processing">
+                                    <h3>Batch Processing <span class="info-icon" title="Full Batch (BGD) uses all 50 samples to compute gradients - this gives the smoothest loss surface. Mini-Batch uses a subset of samples, showing how the loss surface appears different for each batch. SGD uses a single sample, showing the most volatile loss surface.">ⓘ</span></h3>
+                                    <select id="batch-mode-select" class="batch-mode-select">
+                                        <option value="full">Full Batch (50 samples)</option>
+                                        <option value="mini">Mini-Batch</option>
+                                        <option value="sgd">SGD (1 sample)</option>
+                                    </select>
+                                    <div id="mini-batch-size-container">
+                                        <label for="mini-batch-size-slider">Batch Size: <span id="batch-size-display">5</span></label>
+                                        <input type="range" id="mini-batch-size-slider" min="2" max="25" step="1" value="5">
+                                    </div>
+                                    <button id="next-batch-button" disabled>Skip to Next Batch</button>
+                                    <div id="batch-info">
+                                        Using <span class="batch-indicator">all 50</span> samples
                                     </div>
                                 </div>
                             </div>
@@ -819,7 +963,7 @@
                         
                         <!-- Training Data Display -->
                         <div id="training-data-display">
-                            <h3>Loss Calculation (Using BGD) <span class="info-icon" title="BGD (Batch Gradient Descent) uses the entire training dataset in each iteration to calculate gradients for updating W & B. This is opposed to SGD (Stochastic Gradient Descent) which uses one sample at a time. In production settings, we cannot hold millions of data points at once, so most commonly there is a middle ground: Mini-Batch Gradient Descent, which processes 16-32 training points at once and averages them.">ⓘ</span> <span id="close-training-data">&times;</span></h3>
+                            <h3>Loss Calculation <span id="batch-mode-label">(Using BGD)</span> <span class="info-icon" title="BGD (Batch Gradient Descent) uses the entire training dataset in each iteration to calculate gradients for updating W & B. SGD (Stochastic Gradient Descent) uses one sample at a time, showing a 'noisy' estimate of the loss surface. Mini-Batch Gradient Descent processes a subset of training points.">ⓘ</span> <span id="close-training-data">&times;</span></h3>
                             <table class="training-table">
                                 <thead>
                                     <tr>
@@ -848,7 +992,7 @@
                                         <span class="equals">=</span>
                                         <div class="fraction">
                                             <div class="numerator" id="sum-squared-errors">?</div>
-                                            <div class="denominator">50</div>
+                                            <div class="denominator" id="batch-sample-count">50</div>
                                         </div>
                                         <span class="equals">=</span>
                                         <div class="final-mse-result" id="final-loss-display">?</div>
@@ -1447,13 +1591,30 @@
         ctx.stroke();
         ctx.setLineDash([]);
 
-        // Draw training data points
-        ctx.fillStyle = '#4ecdc4';
-        for (const point of trainingData) {
+        // Draw training data points (highlight current batch)
+        const currentBatchSet = new Set(currentBatchData);
+        for (let i = 0; i < trainingData.length; i++) {
+            const point = trainingData[i];
             const cx = xToCanvas(point.x);
             const cy = yToCanvas(point.y);
+
+            // Check if this point is in the current batch
+            const isInBatch = currentBatchSet.has(point);
+
             ctx.beginPath();
-            ctx.arc(cx, cy, 3, 0, 2 * Math.PI);
+            if (batchMode === 'full') {
+                // Full batch: all points same color
+                ctx.fillStyle = '#4ecdc4';
+                ctx.arc(cx, cy, 3, 0, 2 * Math.PI);
+            } else if (isInBatch) {
+                // In current batch: orange/highlighted
+                ctx.fillStyle = '#ff9f43';
+                ctx.arc(cx, cy, 4, 0, 2 * Math.PI);
+            } else {
+                // Not in batch: dimmed
+                ctx.fillStyle = 'rgba(78, 205, 196, 0.3)';
+                ctx.arc(cx, cy, 2, 0, 2 * Math.PI);
+            }
             ctx.fill();
         }
 
@@ -1501,34 +1662,157 @@
     
     // Generate data and landscape
     const trainingData = generateTrainingData(50);
-    const { landscape, maxLoss, wRange, bRange } = generateLossLandscape(trainingData);
-    const visualMaxLoss = maxLoss;
+    let currentBatchData = [...trainingData]; // Current batch being used for visualization
+    let { landscape, maxLoss, wRange, bRange } = generateLossLandscape(currentBatchData);
+    let visualMaxLoss = maxLoss;
+
+    // Batch processing state
+    let batchMode = 'full'; // 'full', 'mini', 'sgd'
+    let miniBatchSize = 5;
+    let currentBatchIndex = 0;
+    let shuffledIndices = [...Array(50).keys()]; // [0, 1, 2, ..., 49]
+    let wireframe = null; // Track wireframe for cleanup
+
+    // Shuffle array using Fisher-Yates algorithm
+    function shuffleArray(array) {
+        const shuffled = [...array];
+        for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        return shuffled;
+    }
+
+    // Get current batch based on mode and index
+    function getCurrentBatch() {
+        if (batchMode === 'full') {
+            return trainingData;
+        }
+
+        const batchSize = batchMode === 'sgd' ? 1 : miniBatchSize;
+        const startIdx = currentBatchIndex * batchSize;
+        const endIdx = Math.min(startIdx + batchSize, 50);
+
+        // Get samples using shuffled indices
+        return shuffledIndices.slice(startIdx, endIdx).map(i => trainingData[i]);
+    }
+
+    // Get total number of batches
+    function getTotalBatches() {
+        if (batchMode === 'full') return 1;
+        const batchSize = batchMode === 'sgd' ? 1 : miniBatchSize;
+        return Math.ceil(50 / batchSize);
+    }
+
+    // Move to next batch (cycles back to start and reshuffles)
+    // Called automatically during gradient descent iterations (when not in full batch mode)
+    function advanceBatch() {
+        if (batchMode === 'full') return; // No need to advance in full batch mode
+
+        const totalBatches = getTotalBatches();
+        currentBatchIndex = (currentBatchIndex + 1) % totalBatches;
+
+        // Reshuffle when we complete an epoch
+        if (currentBatchIndex === 0) {
+            shuffledIndices = shuffleArray([...Array(50).keys()]);
+        }
+
+        // Regenerate surface with new batch
+        regenerateSurface();
+        updateBatchInfo();
+    }
+
+    // Manual next batch button (also resets tutorial)
+    function nextBatch() {
+        advanceBatch();
+    }
+
+    // Regenerate the loss surface with current batch
+    function regenerateSurface() {
+        currentBatchData = getCurrentBatch();
+        const newLandscape = generateLossLandscape(currentBatchData);
+        landscape = newLandscape.landscape;
+        maxLoss = newLandscape.maxLoss;
+        visualMaxLoss = maxLoss;
+
+        // Remove old surface and wireframe
+        if (surface) {
+            scene.remove(surface);
+            surface.geometry.dispose();
+            surface.material.dispose();
+        }
+        if (wireframe) {
+            scene.remove(wireframe);
+            wireframe.geometry.dispose();
+            wireframe.material.dispose();
+        }
+
+        // Create new surface
+        const { newSurface, newWireframe } = createSurfaceWithWireframe();
+        surface = newSurface;
+        wireframe = newWireframe;
+
+        // Update the current point position on the new surface
+        if (currentPoint && currentLoss !== null) {
+            currentLoss = calculateLoss(currentW, currentB, currentBatchData);
+            const pos = paramToPosition(currentW, currentB, currentLoss);
+            currentPoint.position.set(pos.x, pos.y, pos.z);
+        }
+
+        // Redraw data space with highlighted batch points
+        drawDataSpace();
+    }
+
+    // Update batch info display
+    function updateBatchInfo() {
+        const batchInfo = document.getElementById('batch-info');
+        const nextBatchBtn = document.getElementById('next-batch-button');
+        const batchModeLabel = document.getElementById('batch-mode-label');
+
+        if (batchMode === 'full') {
+            batchInfo.innerHTML = 'Using <span class="batch-indicator">all 50</span> samples';
+            nextBatchBtn.disabled = true;
+            if (batchModeLabel) batchModeLabel.textContent = '(Using BGD)';
+        } else if (batchMode === 'sgd') {
+            const totalBatches = getTotalBatches();
+            batchInfo.innerHTML = `Sample <span class="batch-indicator">${currentBatchIndex + 1}/${totalBatches}</span> <span style="color:#666;font-size:10px;">(auto-advances)</span>`;
+            nextBatchBtn.disabled = false;
+            if (batchModeLabel) batchModeLabel.textContent = '(Using SGD)';
+        } else {
+            const totalBatches = getTotalBatches();
+            const batchSize = miniBatchSize;
+            const currentSamples = Math.min(batchSize, 50 - currentBatchIndex * batchSize);
+            batchInfo.innerHTML = `Batch <span class="batch-indicator">${currentBatchIndex + 1}/${totalBatches}</span> (${currentSamples}) <span style="color:#666;font-size:10px;">(auto-advances)</span>`;
+            nextBatchBtn.disabled = false;
+            if (batchModeLabel) batchModeLabel.textContent = '(Using Mini-Batch)';
+        }
+    }
     
-    // Create loss surface
-    function createSurface() {
+    // Create loss surface with wireframe (returns both for cleanup)
+    function createSurfaceWithWireframe() {
         const geometry = new THREE.BufferGeometry();
         const vertices = [];
         const indices = [];
         const colors = [];
-        
+
         const resolution = landscape.length;
-        
+
         for (let i = 0; i < resolution; i++) {
             for (let j = 0; j < resolution; j++) {
                 const point = landscape[i][j];
-                
+
                 // Map so that w=0 -> x=0 and b=0 -> z=0 (on the axes)
                 const x = 8 * point.w / (wRange[1] - wRange[0]);
                 const y = (point.loss / visualMaxLoss) * 2.5;
                 const z = 8 * point.b / (bRange[1] - bRange[0]);
-                
+
                 vertices.push(x, y, z);
-                
+
                 const normalizedLoss = Math.min(point.loss / visualMaxLoss, 1);
-                
+
                 // Create smooth vibrant gradient: Deep Blue → Cyan → Green → Yellow → Orange → Red
                 let r, g, b;
-                
+
                 if (normalizedLoss < 0.15) {
                     // Deep Blue to Cyan (0.0 to 0.15)
                     const t = normalizedLoss / 0.15;
@@ -1560,35 +1844,35 @@
                     g = 0.7 - t * 0.7;
                     b = 0.0;
                 }
-                
+
                 // Add some saturation boost and make colors more vibrant
                 r = Math.min(1.0, r * 1.1);
                 g = Math.min(1.0, g * 1.1);
                 b = Math.min(1.0, b * 1.1);
-                
+
                 colors.push(r, g, b);
             }
         }
-        
+
         for (let i = 0; i < resolution - 1; i++) {
             for (let j = 0; j < resolution - 1; j++) {
                 const a = i * resolution + j;
                 const b = i * resolution + j + 1;
                 const c = (i + 1) * resolution + j;
                 const d = (i + 1) * resolution + j + 1;
-                
+
                 indices.push(a, b, c);
                 indices.push(b, d, c);
             }
         }
-        
+
         geometry.setIndex(indices);
         geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
         geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
         geometry.computeVertexNormals();
-        
+
         // Create high-quality material with better shading
-        const material = new THREE.MeshPhongMaterial({ 
+        const material = new THREE.MeshPhongMaterial({
             vertexColors: true,
             transparent: true,
             opacity: 0.85,
@@ -1597,12 +1881,12 @@
             specular: 0x222222,
             flatShading: false,
         });
-        
-        const surface = new THREE.Mesh(geometry, material);
-        surface.receiveShadow = true;
-        surface.castShadow = true;
-        scene.add(surface);
-        
+
+        const newSurface = new THREE.Mesh(geometry, material);
+        newSurface.receiveShadow = true;
+        newSurface.castShadow = true;
+        scene.add(newSurface);
+
         // Add subtle wireframe overlay for topography definition
         const wireframeGeometry = geometry.clone();
         const wireframeMaterial = new THREE.MeshBasicMaterial({
@@ -1612,11 +1896,18 @@
             opacity: 0.03,
             linewidth: 1
         });
-        const wireframe = new THREE.Mesh(wireframeGeometry, wireframeMaterial);
-        wireframe.position.y = 0.002; // Slightly above surface to prevent z-fighting
-        scene.add(wireframe);
-        
-        return surface;
+        const newWireframe = new THREE.Mesh(wireframeGeometry, wireframeMaterial);
+        newWireframe.position.y = 0.002; // Slightly above surface to prevent z-fighting
+        scene.add(newWireframe);
+
+        return { newSurface, newWireframe };
+    }
+
+    // Legacy wrapper for initial creation
+    function createSurface() {
+        const { newSurface, newWireframe } = createSurfaceWithWireframe();
+        wireframe = newWireframe;
+        return newSurface;
     }
     
     // Function to convert w,b coordinates to 3D position
@@ -1811,7 +2102,7 @@
         
         if (showIn3D) {
             // 3D position with calculated loss
-            loss = calculateLoss(currentW, currentB, trainingData);
+            loss = calculateLoss(currentW, currentB, currentBatchData);
             pos = paramToPosition(currentW, currentB, loss);
             currentLoss = loss;
         } else {
@@ -1933,8 +2224,8 @@
     function createGradientArrows() {
         if (gradientArrow) scene.remove(gradientArrow);
         
-        const loss = calculateLoss(currentW, currentB, trainingData);
-        const gradients = calculateGradients(currentW, currentB, trainingData);
+        const loss = calculateLoss(currentW, currentB, currentBatchData);
+        const gradients = calculateGradients(currentW, currentB, currentBatchData);
         const pos = paramToPosition(currentW, currentB, loss);
         
         gradientArrow = new THREE.Group();
@@ -2028,9 +2319,6 @@
         gradientArrow.add(biasLabel);
         
         scene.add(gradientArrow);
-        
-        // Show the 2D gradient visualization panels
-        show2DGradientPlots();
     }
     
     // Function to create and display 2D gradient plots
@@ -2039,7 +2327,7 @@
         
         // Make sure we have current gradients calculated
         if (!currentGradients) {
-            currentGradients = calculateGradients(currentW, currentB, trainingData);
+            currentGradients = calculateGradients(currentW, currentB, currentBatchData);
         }
         
         // Update current parameter values in the titles
@@ -2078,7 +2366,7 @@
         
         for (let i = 0; i < points; i++) {
             const w = wMin + (wMax - wMin) * i / (points - 1);
-            const loss = calculateLoss(w, currentB, trainingData);
+            const loss = calculateLoss(w, currentB, currentBatchData);
             wValues.push(w);
             lossValues.push(loss);
         }
@@ -2147,7 +2435,7 @@
     
         // Mark current point
         const currentX = wToCanvasX(currentW);
-        const currentLoss = calculateLoss(currentW, currentB, trainingData);
+        const currentLoss = calculateLoss(currentW, currentB, currentBatchData);
         const currentY = lossToCanvasY(currentLoss);
     
         ctx.fillStyle = '#ffff00';
@@ -2165,8 +2453,8 @@
     
         // Numerical gradient verification
         const h = 0.001;
-        const lossLeft = calculateLoss(currentW - h, currentB, trainingData);
-        const lossRight = calculateLoss(currentW + h, currentB, trainingData);
+        const lossLeft = calculateLoss(currentW - h, currentB, currentBatchData);
+        const lossRight = calculateLoss(currentW + h, currentB, currentBatchData);
         const numericalGradient = (lossRight - lossLeft) / (2 * h);
         console.log('Weight: Analytical gradient:', gradient.toFixed(4), 'Numerical gradient:', numericalGradient.toFixed(4));
     
@@ -2212,7 +2500,7 @@
         
         for (let i = 0; i < points; i++) {
             const b = bMin + (bMax - bMin) * i / (points - 1);
-            const loss = calculateLoss(currentW, b, trainingData);
+            const loss = calculateLoss(currentW, b, currentBatchData);
             bValues.push(b);
             lossValues.push(loss);
         }
@@ -2281,7 +2569,7 @@
     
         // Mark current point
         const currentX = bToCanvasX(currentB);
-        const currentLoss = calculateLoss(currentW, currentB, trainingData);
+        const currentLoss = calculateLoss(currentW, currentB, currentBatchData);
         const currentY = lossToCanvasY(currentLoss);
     
         ctx.fillStyle = '#ffff00';
@@ -2299,8 +2587,8 @@
     
         // Numerical gradient verification
         const h = 0.001;
-        const lossLeft = calculateLoss(currentW, currentB - h, trainingData);
-        const lossRight = calculateLoss(currentW, currentB + h, trainingData);
+        const lossLeft = calculateLoss(currentW, currentB - h, currentBatchData);
+        const lossRight = calculateLoss(currentW, currentB + h, currentBatchData);
         const numericalGradient = (lossRight - lossLeft) / (2 * h);
         console.log('Bias: Analytical gradient:', gradient.toFixed(4), 'Numerical gradient:', numericalGradient.toFixed(4));
     
@@ -2535,45 +2823,47 @@
     // Show gradient calculation display
     function showGradientCalculation() {
         document.getElementById('gradient-calculation-display').style.display = 'block';
-    
-        // Calculate the actual sums for the gradient calculation
+
+        // Calculate the actual sums for the gradient calculation using current batch
         let sumWeightGradient = 0;
         let sumBiasGradient = 0;
         let sumYHatGradient = 0;
-    
-        for (const point of trainingData) {
+        const n = currentBatchData.length;
+
+        for (const point of currentBatchData) {
             const predicted = currentW * point.x + currentB;
             const error = predicted - point.y;
             sumWeightGradient += error * point.x;
             sumBiasGradient += error;
             sumYHatGradient += error;
         }
-    
+
         // Console logging for gradient calculation
         console.log('=== GRADIENT CALCULATION ===');
+        console.log('Batch size:', n);
         console.log('Sum of errors (ŷ - y):', sumYHatGradient.toFixed(3));
         console.log('Sum of error × x:', sumWeightGradient.toFixed(3));
         console.log('Sum of errors (for bias):', sumBiasGradient.toFixed(3));
-        console.log('∂Loss/∂ŷ = 2/' + trainingData.length + ' × ' + sumYHatGradient.toFixed(3) + ' = ' + (2 * sumYHatGradient / trainingData.length).toFixed(4));
-        console.log('∂Loss/∂w = 2/' + trainingData.length + ' × ' + sumWeightGradient.toFixed(3) + ' = ' + (2 * sumWeightGradient / trainingData.length).toFixed(4));
-        console.log('∂Loss/∂b = 2/' + trainingData.length + ' × ' + sumBiasGradient.toFixed(3) + ' = ' + (2 * sumBiasGradient / trainingData.length).toFixed(4));
+        console.log('∂Loss/∂ŷ = 2/' + n + ' × ' + sumYHatGradient.toFixed(3) + ' = ' + (2 * sumYHatGradient / n).toFixed(4));
+        console.log('∂Loss/∂w = 2/' + n + ' × ' + sumWeightGradient.toFixed(3) + ' = ' + (2 * sumWeightGradient / n).toFixed(4));
+        console.log('∂Loss/∂b = 2/' + n + ' × ' + sumBiasGradient.toFixed(3) + ' = ' + (2 * sumBiasGradient / n).toFixed(4));
         console.log('============================');
-    
+
         // Update the numerical values in the display
         // First column: ∂Loss/∂ŷ
-        document.getElementById('gradient-yhat-n').textContent = trainingData.length;
+        document.getElementById('gradient-yhat-n').textContent = n;
         document.getElementById('gradient-yhat-sum').textContent = sumYHatGradient.toFixed(3);
-        document.getElementById('gradient-yhat-final').textContent = (2 * sumYHatGradient / trainingData.length).toFixed(4);
-    
+        document.getElementById('gradient-yhat-final').textContent = (2 * sumYHatGradient / n).toFixed(4);
+
         // Second column: ∂Loss/∂w
-        document.getElementById('gradient-w-n').textContent = trainingData.length;
+        document.getElementById('gradient-w-n').textContent = n;
         document.getElementById('gradient-w-sum').textContent = sumWeightGradient.toFixed(3);
-        document.getElementById('gradient-w-final').textContent = (2 * sumWeightGradient / trainingData.length).toFixed(4);
-    
+        document.getElementById('gradient-w-final').textContent = (2 * sumWeightGradient / n).toFixed(4);
+
         // Third column: ∂Loss/∂b
-        document.getElementById('gradient-b-n').textContent = trainingData.length;
+        document.getElementById('gradient-b-n').textContent = n;
         document.getElementById('gradient-b-sum').textContent = sumBiasGradient.toFixed(3);
-        document.getElementById('gradient-b-final').textContent = (2 * sumBiasGradient / trainingData.length).toFixed(4);
+        document.getElementById('gradient-b-final').textContent = (2 * sumBiasGradient / n).toFixed(4);
     
         const infoButton = document.getElementById('info-button');
         infoButton.textContent = "See Calculation";
@@ -2623,18 +2913,20 @@
     function populateTrainingDataTable() {
         const tbody = document.getElementById('training-table-body');
         tbody.innerHTML = '';
-    
+
         let totalSquaredError = 0;
         let totalError = 0;
-        const sampleData = trainingData.slice(0, 8); // Show first 8 examples
-    
+        const dataToShow = currentBatchData; // Use current batch
+        const maxRowsToShow = Math.min(8, dataToShow.length);
+        const sampleData = dataToShow.slice(0, maxRowsToShow);
+
         sampleData.forEach(point => {
             const predicted = currentW * point.x + currentB;
             const error = predicted - point.y;
             const squaredError = error * error;
             totalSquaredError += squaredError;
             totalError += error;
-    
+
             const row = document.createElement('tr');
             row.innerHTML = `
             <td>${point.x.toFixed(1)}</td>
@@ -2645,10 +2937,10 @@
             `;
             tbody.appendChild(row);
         });
-    
-        // Add a row for remaining examples
-        if (trainingData.length > 8) {
-            const remainingData = trainingData.slice(8);
+
+        // Add a row for remaining examples in the batch
+        if (dataToShow.length > maxRowsToShow) {
+            const remainingData = dataToShow.slice(maxRowsToShow);
             let remainingSquaredError = 0;
             let remainingError = 0;
             remainingData.forEach(point => {
@@ -2657,7 +2949,7 @@
                 remainingSquaredError += error * error;
                 remainingError += error;
             });
-    
+
             const row = document.createElement('tr');
             row.innerHTML = `
             <td colspan="3">... ${remainingData.length} more examples ...</td>
@@ -2670,7 +2962,7 @@
             totalSquaredError += remainingSquaredError;
             totalError += remainingError;
         }
-    
+
         // Add total sum row
         const totalRow = document.createElement('tr');
         totalRow.innerHTML = `
@@ -2679,21 +2971,22 @@
         <td style="font-weight: bold; color: #4ecdc4; border-top: 2px solid #4ecdc4;">${totalSquaredError.toFixed(3)}</td>
         `;
         tbody.appendChild(totalRow);
-    
-        const realMSE = totalSquaredError / trainingData.length;
-    
+
+        const realMSE = totalSquaredError / dataToShow.length;
+
         // Console logging - show the REAL calculation from table data
         console.log('=== REAL TABLE CALCULATION ===');
         console.log('Current W:', currentW, 'Current B:', currentB);
         console.log('Total from table rows:', totalSquaredError.toFixed(6));
-        console.log('Number of examples:', trainingData.length);
+        console.log('Number of examples in batch:', dataToShow.length);
         console.log('REAL MSE:', realMSE.toFixed(6));
         console.log('===============================');
-    
+
         // Update the MSE calculation display with REAL values from table
         document.getElementById('sum-squared-errors').textContent = totalSquaredError.toFixed(3);
+        document.getElementById('batch-sample-count').textContent = dataToShow.length;
         document.getElementById('final-loss-display').textContent = realMSE.toFixed(4);
-    
+
         // Return the real MSE for educational/calculation purposes
         return realMSE;
     }
@@ -2712,7 +3005,7 @@
                 const realTableLoss = populateTrainingDataTable();
                 
                 // For visualization, we can use the standard calculateLoss function (approximate)
-                const visualLoss = calculateLoss(currentW, currentB, trainingData);
+                const visualLoss = calculateLoss(currentW, currentB, currentBatchData);
                 
                 // Console log both for comparison
                 console.log('=== LOSS COMPARISON ===');
@@ -2782,7 +3075,7 @@
                 // Auto-close the training data display when moving to next step
                 document.getElementById('training-data-display').style.display = 'none';
                 
-                currentGradients = calculateGradients(currentW, currentB, trainingData);
+                currentGradients = calculateGradients(currentW, currentB, currentBatchData);
                 
                 // DON'T show gradient calculation display automatically
                 // showGradientCalculation();
@@ -2938,7 +3231,7 @@
     // Animation function
     function animateToNewPosition() {
         const startLoss = currentLoss;
-        const endLoss = calculateLoss(currentW, currentB, trainingData);
+        const endLoss = calculateLoss(currentW, currentB, currentBatchData);
     
         // Start from where the point actually is (not a calculated position)
         const startPos = {
@@ -2984,9 +3277,13 @@
                     gradientArrow = null;
                 }
     
+                // Advance to next batch for the new iteration (SGD/mini-batch)
+                // This is the key behavior: each gradient descent step uses the NEXT batch
+                advanceBatch();
+
                 // Automatically start next iteration - go directly to Calculate Loss step
                 currentStep = 0; // Reset to beginning of cycle
-    
+
                 // Hide all displays for next iteration
                 document.getElementById('training-data-display').style.display = 'none';
                 document.getElementById('gradient-calculation-display').style.display = 'none';
@@ -3029,8 +3326,9 @@
             // Show loss calculation table
             document.getElementById('training-data-display').style.display = 'block';
         } else if (currentStep === 2) {
-            // Show gradient calculation display
+            // Show gradient calculation display and 2D gradient plots
             showGradientCalculation();
+            show2DGradientPlots();
         } else if (currentStep === 3) {
             // Show gradient descent display
             showGradientDescent();
@@ -3069,7 +3367,46 @@
     document.getElementById('randomize-button').addEventListener('click', function() {
         randomizeStartingPoint();
     });
-    
+
+    // Batch mode select event
+    document.getElementById('batch-mode-select').addEventListener('change', function(e) {
+        batchMode = e.target.value;
+        currentBatchIndex = 0;
+        shuffledIndices = shuffleArray([...Array(50).keys()]);
+
+        // Show/hide mini-batch size slider
+        const miniBatchContainer = document.getElementById('mini-batch-size-container');
+        if (batchMode === 'mini') {
+            miniBatchContainer.style.display = 'block';
+        } else {
+            miniBatchContainer.style.display = 'none';
+        }
+
+        // Regenerate surface and update info
+        regenerateSurface();
+        updateBatchInfo();
+        resetTutorial();
+    });
+
+    // Mini-batch size slider event
+    document.getElementById('mini-batch-size-slider').addEventListener('input', function(e) {
+        miniBatchSize = parseInt(e.target.value);
+        document.getElementById('batch-size-display').textContent = miniBatchSize;
+        currentBatchIndex = 0;
+        shuffledIndices = shuffleArray([...Array(50).keys()]);
+
+        // Regenerate surface and update info
+        regenerateSurface();
+        updateBatchInfo();
+        resetTutorial();
+    });
+
+    // Next batch button event
+    document.getElementById('next-batch-button').addEventListener('click', function() {
+        nextBatch();
+        resetTutorial();
+    });
+
     // Function to randomize starting point within bounds
     function randomizeStartingPoint() {
         // Generate random values within the mesh bounds
