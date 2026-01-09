@@ -27,6 +27,14 @@
         .date-info {
             color: rgba(255, 255, 255, 0.7);
         }
+
+        a {
+            color: #4ecdc4;
+        }
+
+        a:hover {
+            color: #3db8b0;
+        }
     </style>
 </head>
 <body>
@@ -45,11 +53,19 @@
 
                     <div style="height: 20px;"></div>
 
-                    <p>I want to create a blog about the difference in ML between the loss that we are descending down and the actual data we are fitting to, so there are two spaces, and let's not mix them, in fact, let's make this super clear. If we have some dataset, that we assume is separable, that is to say, modelable, it's not totally random, in fact, hopefully it's actually predictable, and we can use a model, our model just finds a decision boundary, and that is in the data space, and in the loss space, what's happening is we are finding iteratively the difference between what our model predicted and what actually should have been, and we iteratively 'descend' down this path to a global minimum, i.e., minimizing our loss, the difference between the actual and the predicted. Make sense? Let's see it in action.</p>
+                    <p>I want to create a blog about the difference in ML between the loss that we are descending down and the actual data we are fitting to. There are two spaces, and let's not mix them. In fact, let's make this super clear.</p>
+
+                    <p>If we have some dataset, that we assume is separable, that is to say, modelable, it's not totally random. In fact, hopefully it's actually predictable, and we can use a model. Our model just finds a decision boundary, and that is in the data space.</p>
+
+                    <p>In the loss space, what's happening is we are finding iteratively the difference between what our model predicted and what actually should have been. We iteratively 'descend' down this path to a global minimum. That means minimizing our loss, the difference between the actual and the predicted.</p>
+
+                    <p>Make sense? Let's see it in action.</p>
 
                     <p>So we will be using the <a href="interactive-lr.html">interactive-lr</a> for this demonstration. Which exemplifies this concept beautifully and was created to provide intuition into gradient descent.</p>
 
-                    <p>So, see in this image the left side is the loss space, and the right side is the data space. In the loss space, is just the complete list of parameters and their respective loss. In this case we have just 2 parameters, and the z axis is the loss, that means the set of combinations and the resulting loss create this shape, and the global minimum of it is what we are after!</p>
+                    <p>So, see in this image the left side is the loss space, and the right side is the data space.</p>
+
+                    <p>In the loss space, is just the complete list of parameters and their respective loss. In this case we have just 2 parameters, and the z axis is the loss. That means the set of combinations and the resulting loss create this shape. The global minimum of it is what we are after!</p>
 
                     <img src="../assets/images/loss-vs-data-space/image1.png" alt="Loss space and data space visualization" style="max-width: 100%; border-radius: 8px; margin: 20px 0;">
 
@@ -60,11 +76,15 @@
                         <li>Gradient descent finds the most optimal global minimum anyways!</li>
                     </ol>
 
-                    <p>Anyways, see in the image that we have initialized 2 values, -0.3 for the x and 2.5 for b (the y intercept), and the 20.5 is the resulting loss. y = mx+b, plug those numbers in, get the loss, subtract it from the actual value of the input at that point, and that is your loss. Oh wait. Stop!</p>
+                    <p>Anyways, see in the image that we have initialized 2 values. -0.3 for the x and 2.5 for b (the y intercept). The 20.5 is the resulting loss.</p>
+
+                    <p>y = mx+b. Plug those numbers in, get the loss, subtract it from the actual value of the input at that point, and that is your loss.</p>
+
+                    <p>Oh wait. Stop!</p>
 
                     <p>What?</p>
 
-                    <p>We are here taking the set of all training points at once lol, and then we compute the average loss, and use that in our gradient calculation. Such luxury doesn't exist in the real world, because you cannot just take the average of 500k points at the same time.</p>
+                    <p>We are here taking the set of all training points at once lol. Then we compute the average loss, and use that in our gradient calculation. Such luxury doesn't exist in the real world. You cannot just take the average of 500k points at the same time.</p>
 
                     <p>Notice our initial slope.</p>
 
@@ -72,7 +92,11 @@
 
                     <img src="../assets/images/loss-vs-data-space/image2.png" alt="Gradient descent iteration" style="max-width: 100%; border-radius: 8px; margin: 20px 0;">
 
-                    <p>Please now notice that in our data space, the parameters updated now reveal how our model now better fits the training data, and in the loss, we have moved closer to that minimum. I would recommend you to mess around with this to gain an intuition about this and the discrepancy between these two spaces! The one that we are trying to map our model to the training, and the other one is the space that visualizes the relationship of the parameters and how well they fit the data.</p>
+                    <p>Please now notice that in our data space, the parameters updated now reveal how our model now better fits the training data. In the loss, we have moved closer to that minimum.</p>
+
+                    <p>I would recommend you to mess around with this to gain an intuition about this and the discrepancy between these two spaces!</p>
+
+                    <p>The one that we are trying to map our model to the training. The other one is the space that visualizes the relationship of the parameters and how well they fit the data.</p>
 
                 </div>
             </main>
