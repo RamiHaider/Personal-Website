@@ -7,25 +7,18 @@ body {
     font-family: 'Roboto', sans-serif;
     margin: 0;
     padding: 0;
-    background-image: url('../assets/images/Universe-Background1.png');
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
-    background-repeat: repeat;
-    color: rgba(255, 255, 255, 0.9);
+    background-color: #ffffff;
+    color: #1a1a1a;
     font-size: 16px;
     line-height: 1.6;
+    min-height: 100vh;
+    transition: background 0.6s ease;
 }
 
+/* Theme backgrounds — removed, all pages use default white */
+
 body::before {
-    content: "";
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.554);
-    z-index: -1;
+    display: none;
 }
 
 .container {
@@ -64,7 +57,7 @@ main {
 h1 {
     font-size: 34px;
     font-weight: 600;
-    color: white;
+    color: #1a1a1a;
     margin-top: 0;
 }
 
@@ -72,20 +65,20 @@ h1 {
 h2 {
     font-size: 24px;
     font-weight: 500;
-    color: white;
+    color: #1a1a1a;
 }
 
 
 h3 {
     font-size: 20px;
     font-weight: 500;
-    color: white;
+    color: #1a1a1a;
 }
 
 p {
     font-size: 16px;
     line-height: 1.7;
-    color: rgba(255, 255, 255, 0.9);
+    color: #333333;
     font-weight: 370;
 }
 
@@ -98,9 +91,9 @@ header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 20px 50px 10px 50px; /* Reduced bottom padding */
+    padding: 14px 50px 8px 50px;
     background-color: transparent;
-    border-bottom: 3px solid #A4A155; /* Made border thinner */
+    border-bottom: 2px solid #d4d4d4;
 }
 
 .logo {
@@ -111,8 +104,8 @@ header {
 }
 
 .header-favicon {
-    width: 50px;
-    height: 50px;
+    width: 36px;
+    height: 36px;
     transition: transform 0.3s ease;
 }
 
@@ -126,13 +119,13 @@ nav {
 }
 
 nav a {
-    font-size: 19px;
-    font-weight: 1000;
-    color: #c5a91c;
+    font-size: 15px;
+    font-weight: 700;
+    color: #1a1a1a;
     text-decoration: none;
-    margin-left: 10px; /* Reduced from 20px */
-    padding: 5px 5px; /* Reduced horizontal padding */
-    transition: background-color 0.3s;
+    margin-left: 10px;
+    padding: 5px 5px;
+    transition: color 0.3s;
 }
 
 nav a:first-child {
@@ -140,7 +133,7 @@ nav a:first-child {
 }
 
 nav a:hover {
-    color: white;
+    color: #555555;
 }
 
 
@@ -175,20 +168,19 @@ nav a:hover {
 }
 
 .profile-image {
-    width: 350px;
-    height: 350px;
-    border-radius: 50% 50% 0 0; /* Rounded on top only */
+    width: 250px;
+    height: 250px;
+    border-radius: 50%;
     object-fit: cover;
     margin-top: 0px;
-    mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 70%, rgba(0,0,0,0) 100%);
-    -webkit-mask-image: linear-gradient(to bottom, rgba(0,0,0,1) 70%, rgba(0,0,0,0) 100%);
+    border: 2px solid #d4d4d4;
 }
 
 /* Intro Text Styles */
 .intro-greeting {
     font-size: 36px;
     font-weight: 800;
-    color: white;
+    color: #1a1a1a;
     margin-bottom: 5px;
     margin-top: 0;
 }
@@ -197,35 +189,194 @@ nav a:hover {
     color: #A4A155; /* Dark gold color */
 }
 
-.intro-title {
-    font-size: 30px;
+/* Role Chips */
+.role-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 4px;
+    justify-content: center;
+}
+
+.role-chip {
+    font-family: 'Roboto', sans-serif;
+    font-size: 15px;
+    font-weight: 400;
+    color: #555555;
+    background: transparent;
+    border: 1px solid #d4d4d4;
+    border-radius: 6px;
+    padding: 8px 18px;
+    cursor: pointer;
+    transition: color 0.2s, border-color 0.2s, font-weight 0.2s;
+    line-height: 1.4;
+}
+
+@keyframes chip-nudge {
+    0%   { transform: scale(1); }
+    40%  { transform: scale(1.12); }
+    100% { transform: scale(1); }
+}
+
+.role-chip.nudge {
+    animation: chip-nudge 0.6s ease;
+}
+
+.role-chip:hover {
+    background: #f0f0f0;
+    border-width: 1.5px;
+}
+
+/* Chip Hint Text */
+.chip-hint {
+    font-family: 'Roboto', sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    font-style: italic;
+    color: #1a1a1a;
+    opacity: 0.7;
+    margin-top: 10px;
+    margin-bottom: 40px;
+    text-align: center;
+}
+
+
+/* Landing / Role View transitions */
+#landing-view {
+    transition: opacity 0.4s ease;
+}
+
+#role-view {
+    display: none;
+    opacity: 0;
+    transition: opacity 0.4s ease;
+}
+
+#role-view.visible {
+    display: block;
+    opacity: 1;
+}
+
+/* Role View Chips (top strip in role view) */
+.role-view-chips {
+    display: flex;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 10px;
+    margin-top: -20px;
+}
+
+.role-view-chips .role-chip {
+    font-size: 12px;
+    padding: 4px 10px;
+}
+
+.role-chip.active {
+    border-color: #1a1a1a;
+    background: #ffffff;
+    color: #1a1a1a;
     font-weight: 600;
-    color: white;
+}
+
+/* Role Bio Section */
+.role-bio-section {
+    margin-top: 40px;
+    margin-bottom: 40px;
+}
+
+.role-bio-title {
+    display: none;
+    font-size: 26px;
+    font-weight: 700;
+    color: #1a1a1a;
     margin-top: 0;
-    margin-bottom: 20px;
-    min-height: 40px; /* Keep consistent height during animation */
+    margin-bottom: 12px;
 }
 
-#dynamic-title {
-    display: inline;
+.role-bio-text {
+    font-size: 16px;
+    line-height: 1.7;
+    color: #333333;
+    font-weight: 370;
+    max-width: 700px;
 }
 
-/* Typing cursor animation */
-.cursor {
-    display: inline-block;
-    width: 2px;
-    height: 24px;
-    background-color: white; /* Changed to white */
-    animation: blink 1s infinite;
-    margin-left: 2px;
-    position: relative;
-    top: 3px;
+/* Role Highlights Section */
+.role-highlights-section {
+    margin-top: 20px;
 }
 
-@keyframes blink {
-    0% { opacity: 1; }
-    50% { opacity: 0; }
-    100% { opacity: 1; }
+.role-highlights-heading {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin-bottom: 16px;
+}
+
+.highlight-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+}
+
+.highlight-card {
+    display: flex;
+    flex-direction: column;
+    background-color: #f8f8f8;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e0e0e0;
+    padding: 20px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.highlight-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.highlight-card-title {
+    font-size: 17px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin: 0 0 8px 0;
+}
+
+.highlight-card-desc {
+    font-size: 14px;
+    color: #555555;
+    line-height: 1.6;
+    margin: 0 0 12px 0;
+    flex: 1;
+}
+
+.highlight-card-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+.highlight-tag {
+    font-size: 10px;
+    font-weight: 500;
+    color: #555555;
+    background-color: #f0f0f0;
+    border: 1px solid #e0e0e0;
+    padding: 2px 8px;
+    border-radius: 12px;
+}
+
+a.highlight-card {
+    text-decoration: none;
+    color: inherit;
+}
+
+.coming-soon-text {
+    font-size: 15px;
+    color: #999999;
+    font-style: italic;
 }
 
 .social-icons {
@@ -238,12 +389,12 @@ nav a:hover {
     width: 30px;
     height: 30px;
     margin: 0 10px;
-    filter: brightness(0) invert(1); /* Make all icons white */
+    filter: brightness(0); /* Make all icons dark */
     transition: filter 0.3s ease;
 }
 
 .social-icons img:hover {
-    filter: brightness(0) invert(1) opacity(0.8);
+    filter: brightness(0) opacity(0.6);
 }
 
 .intro-container {
@@ -258,7 +409,7 @@ nav a:hover {
 .ds-portfolio h2 {
     font-size: 20px;
     font-weight: 800;
-    color: white;
+    color: #1a1a1a;
     margin-bottom: 20px;
 }
 
@@ -271,11 +422,11 @@ nav a:hover {
 .portfolio-card {
     display: flex;
     flex-direction: column;
-    background-color: rgba(0, 0, 0, 0.2);
+    background-color: #f8f8f8;
     border-radius: 10px;
     overflow: hidden;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+    border: 1px solid #e0e0e0;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     height: auto;
 }
@@ -290,12 +441,12 @@ nav a:hover {
 
 .portfolio-card-link:hover .portfolio-card {
     transform: translateY(-5px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-    background-color: rgba(0, 0, 0, 0.3);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    background-color: #f0f0f0;
 }
 
 .portfolio-card-link:hover .portfolio-content h3 {
-    color: #c5a91c; /* This is the color used for your logo, adjust as needed */
+    color: #555555;
 }
 
 .portfolio-image {
@@ -317,13 +468,13 @@ nav a:hover {
     margin-top: 0; /* Ensure no top margin on title */
     margin-bottom: 0.5rem;
     transition: color 0.3s ease;
-    color: white;
+    color: #1a1a1a;
 }
 
 .portfolio-content .publish-date {
     font-size: 15px;
     font-weight: 500;
-    color: rgba(255, 255, 255, 0.7);
+    color: #777777;
     display: block;
     margin-top: 0;
     margin-bottom: 0;
@@ -332,7 +483,7 @@ nav a:hover {
 .portfolio-description {
     margin-top: 0.5rem;
     font-size: 16px;
-    color: rgba(255, 255, 255, 0.9);
+    color: #333333;
 }
 
 .portfolio-content .tags {
@@ -348,7 +499,7 @@ nav a:hover {
 .portfolio-content .tag {
     font-size: 10px !important; /* Small font size */
     font-weight: 500 !important;
-    color: rgba(255, 255, 255, 0.8) !important;
+    color: #555555 !important;
     background-color: #f0f0f0 !important;
     border: 1px solid rgba(255, 255, 255, 0.2) !important;
     padding: 2px 5px !important; /* Tight padding */
@@ -388,23 +539,23 @@ nav a:hover {
 
 .portfolio-card {
     display: flex;
-    background-color: rgba(0, 0, 0, 0.2);
+    background-color: #f8f8f8;
     border-radius: 10px;
     overflow: hidden;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+    border: 1px solid #e0e0e0;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     width: 100%; /* Changed from 80% to 100% as it's now applied to .portfolio-card-link */
 }
 
 .portfolio-card-link:hover .portfolio-card {
     transform: translateY(-5px);
-    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-    background-color: rgba(0, 0, 0, 0.3);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+    background-color: #f0f0f0;
 }
 
 .portfolio-card-link:hover .portfolio-content h3 {
-    color: #c5a91c; /* This is the color used for your logo, adjust as needed */
+    color: #555555;
 }
 
 .portfolio-image {
@@ -430,8 +581,8 @@ nav a:hover {
 
 
 .code-block {
-    background-color: rgba(0, 0, 0, 0.3);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background-color: #f5f5f5;
+    border: 1px solid #e0e0e0;
     border-radius: 4px;
     font-family: 'Courier New', Courier, monospace;
     font-size: 14px;
@@ -448,7 +599,7 @@ nav a:hover {
     margin-right: -20px; /* This should match the right padding of .content */
     padding: 10px 20px; /* Adjust horizontal padding to match .content */
     width: calc(100% + 40px); /* Increase width to account for negative margins */
-    color: rgba(255, 255, 255, 0.9);
+    color: #333333;
 }
 
 .sample-toggle {
@@ -497,7 +648,7 @@ nav a:hover {
 
 .results-table th {
     font-weight: 500;
-    color: white;
+    color: #1a1a1a;
 }
 
 .loading-overlay {
@@ -506,7 +657,7 @@ nav a:hover {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0,0,0,0.7);
+    background: rgba(255,255,255,0.85);
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -575,13 +726,13 @@ nav a:hover {
 .score-value {
     font-size: 2em;
     font-weight: 600;
-    color: white;
+    color: #1a1a1a;
     display: block;
 }
 
 .score-label {
     font-size: 0.9em;
-    color: rgba(255, 255, 255, 0.7);
+    color: #777777;
 }
 
 .agreement-stats {
@@ -598,12 +749,12 @@ nav a:hover {
 }
 
 .stat-label {
-    color: rgba(255, 255, 255, 0.7);
+    color: #777777;
 }
 
 .stat-value {
     font-weight: 500;
-    color: white;
+    color: #1a1a1a;
 }
 
 /* GitHub Stats Section */
@@ -649,7 +800,7 @@ nav a:hover {
 }
 
 .contact-form {
-    background: rgba(0, 0, 0, 0.2);
+    background: #f8f8f8;
     padding: 30px;
     border-radius: 12px;
     box-shadow: 0 2px 15px rgba(0,0,0,0.05);
@@ -663,19 +814,19 @@ nav a:hover {
     display: block;
     margin-bottom: 8px;
     font-weight: 500;
-    color: rgba(255, 255, 255, 0.9);
+    color: #333333;
 }
 
 .form-group input,
 .form-group textarea {
     width: 100%;
     padding: 10px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
+    border: 1px solid #d4d4d4;
     border-radius: 6px;
     font-size: 16px;
     transition: border-color 0.3s;
-    color: white;
-    background-color: rgba(0, 0, 0, 0.2);
+    color: #1a1a1a;
+    background-color: #ffffff;
 }
 
 .form-group input:focus,
@@ -686,7 +837,7 @@ nav a:hover {
 
 .form-description {
     font-size: 12px;
-    color: rgba(255, 255, 255, 0.7);
+    color: #777777;
     margin-top: 4px;
 }
 
@@ -709,7 +860,7 @@ nav a:hover {
 .email-text {
     text-align: center;
     margin-top: 30px;
-    color: rgba(255, 255, 255, 0.7);
+    color: #777777;
     font-size: 14px;
 }
 
@@ -720,7 +871,7 @@ nav a:hover {
 .date-info p {
     font-size: 14px;
     line-height: 1.6;
-    color: rgba(255, 255, 255, 0.9);
+    color: #333333;
     font-weight: 370;
     margin: 0;
 }
@@ -752,17 +903,13 @@ nav a:hover {
     font-weight: 500;
 }
 
-/* Star Effect Styles */
+/* Star Effect Styles - hidden on white background */
 .star {
-    position: fixed;
-    pointer-events: none;
-    z-index: 1;
-    opacity: 0;
-    transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+    display: none;
 }
 
 .star.visible {
-    opacity: 0.8;
+    display: none;
 }
 
 .star::before,
@@ -905,11 +1052,11 @@ nav a:hover {
 .academics-certs li > span:first-child {
     font-weight: 500; /* Style for the date */
     margin-right: 5px;
-    color: rgba(255, 255, 255, 0.7);
+    color: #777777;
 }
 
 .academics-certs li > span:last-of-type {
-    color: rgba(255, 255, 255, 0.8);
+    color: #555555;
     font-style: italic;
     margin-left: 5px;
     font-size: 15px;
@@ -1017,7 +1164,7 @@ nav a:hover {
 
 .venture-role {
     font-style: italic;
-    color: rgba(255, 255, 255, 0.7);
+    color: #777777;
     font-size: 16px;
     margin-top: 0;
     margin-bottom: 8px;
@@ -1025,7 +1172,7 @@ nav a:hover {
 
 .venture-description {
     font-size: 16px;
-    color: rgba(255, 255, 255, 0.9);
+    color: #333333;
     margin-top: 0;
 }
 
@@ -1082,13 +1229,13 @@ nav a:hover {
 }
 
 .intro-container p a {
-    color: #7dd3fc;
+    color: #2563eb;
     text-decoration: none;
     transition: color 0.2s ease;
 }
 
 .intro-container p a:hover {
-    color: #bae6fd;
+    color: #1d4ed8;
     text-decoration: underline;
 }
 
@@ -1104,6 +1251,18 @@ nav a:hover {
     color: #c5a91c;
 }
 
+/* ── Role Transition ── */
+#role-view.cinematic-enter {
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+#role-view.cinematic-enter.reveal {
+    opacity: 1;
+    transform: translateY(0);
+}
+
 /* Mobile Responsiveness */
 @media screen and (max-width: 768px) {
     header {
@@ -1116,8 +1275,8 @@ nav a:hover {
     }
     
     .header-favicon {
-        width: 40px;
-        height: 40px;
+        width: 32px;
+        height: 32px;
     }
     
     /* Remove hamburger styles and restore nav */
@@ -1140,7 +1299,7 @@ nav a:hover {
         font-weight: 700; /* Slightly bolder */
         margin-left: 10px;
         padding: 4px 6px;
-        color: #c5a91c;
+        color: #1a1a1a;
         width: auto;
         text-align: center;
     }
@@ -1154,11 +1313,29 @@ nav a:hover {
         font-size: 28px;
     }
     
-    .intro-title {
-        font-size: 24px;
-        min-height: 50px;
+    .role-chips {
+        justify-content: center;
     }
-    
+
+    .role-chip {
+        font-size: 14px;
+        padding: 7px 14px;
+    }
+
+
+    /* Role view mobile */
+    .role-view-chips {
+        justify-content: center;
+    }
+
+    .highlight-cards {
+        grid-template-columns: 1fr;
+    }
+
+    .role-bio-title {
+        font-size: 22px;
+    }
+
     /* Adjust heading sizes for mobile */
     h1 {
         font-size: 28px;
@@ -1482,9 +1659,9 @@ nav a:hover {
 .slide-section {
     margin: 40px 0;
     padding: 30px;
-    background: rgba(0, 0, 0, 0.2);
+    background: #f8f8f8;
     border-radius: 12px;
-    box-shadow: 0 2px 15px rgba(0,0,0,0.2);
+    box-shadow: 0 2px 15px rgba(0,0,0,0.05);
 }
 
 .slide-section.map-section {
@@ -1495,12 +1672,12 @@ nav a:hover {
 }
 
 .key-point {
-    background: rgba(0, 0, 0, 0.2);
+    background: #f0f0f0;
     padding: 20px;
-    border-left: 4px solid rgba(255, 255, 255, 0.5);
+    border-left: 4px solid #d4d4d4;
     margin: 20px 0;
     border-radius: 0 8px 8px 0;
-    color: white;
+    color: #1a1a1a;
 }
 
 .metrics-grid {
@@ -1511,82 +1688,82 @@ nav a:hover {
 }
 
 .metric-card {
-    background: rgba(0, 0, 0, 0.2);
+    background: #f8f8f8;
     padding: 20px;
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     text-align: center;
-    color: white;
+    color: #1a1a1a;
 }
 
 .threshold-card, .stats-card {
-    background: rgba(0, 0, 0, 0.2);
+    background: #f8f8f8;
     padding: 15px;
     border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     width: 100%;
-    color: white;
+    color: #1a1a1a;
 }
 
 .threshold-card {
-    background: rgba(0, 0, 0, 0.2);
-    border-left: 4px solid rgba(255, 255, 255, 0.5);
+    background: #f8f8f8;
+    border-left: 4px solid #d4d4d4;
 }
 
 .threshold-item .mineral {
     font-weight: 600;
-    color: white;
+    color: #1a1a1a;
     display: block;
 }
 
 .threshold-item .value {
     font-size: 0.9em;
-    color: rgba(255, 255, 255, 0.8);
+    color: #555555;
 }
 
 .total-samples {
     margin: 10px 0;
     font-weight: 500;
-    color: white;
+    color: #1a1a1a;
 }
 
 .results-table th, .results-table td {
     padding: 8px;
     text-align: left;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-    color: white;
+    border-bottom: 1px solid #e0e0e0;
+    color: #1a1a1a;
 }
 
 .results-table th {
     font-weight: 500;
-    color: white;
+    color: #1a1a1a;
 }
 
 .mineral-card {
-    background: rgba(0, 0, 0, 0.2);
+    background: #f8f8f8;
     padding: 15px;
     border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    color: white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    color: #1a1a1a;
 }
 
 .mineral-card h4 {
     margin: 0 0 10px 0;
-    color: white;
+    color: #1a1a1a;
 }
 
 .alert-message {
-    background: rgba(0, 0, 0, 0.2);
+    background: #f0f0f0;
     padding: 10px 15px;
     border-radius: 4px;
     display: flex;
     align-items: center;
     gap: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     font-size: 14px;
     text-align: center;
     max-width: 600px;
-    color: white;
+    color: #333333;
 }
 
 .alert-icon {
@@ -1598,7 +1775,7 @@ nav a:hover {
 .time-series-container {
     width: 100%;
     height: 300px; /* Increased height for better visualization */
-    background: rgba(0, 0, 0, 0.3);
+    background: #f5f5f5;
     position: relative;
     overflow: hidden;
     margin: 0;
@@ -1630,9 +1807,9 @@ nav a:hover {
     position: absolute;
     top: 10px;
     right: 10px;
-    background: rgba(239, 68, 68, 0.2);
+    background: rgba(239, 68, 68, 0.1);
     border: 1px solid #EF4444;
-    color: white;
+    color: #dc2626;
     padding: 8px 12px;
     border-radius: 8px;
     font-size: 14px;
@@ -1646,7 +1823,7 @@ nav a:hover {
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.7);
+    background: rgba(255, 255, 255, 0.85);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1658,7 +1835,7 @@ nav a:hover {
 .mineral-prediction-container {
     width: 100%;
     height: 400px;
-    background-color: rgba(0, 0, 0, 0.4);
+    background-color: #f5f5f5;
     border-radius: 12px;
     overflow: hidden;
     position: relative;

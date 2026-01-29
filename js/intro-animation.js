@@ -1,9 +1,8 @@
 document.addEventListener('DOMContentLoaded', function() {
     const titles = [
-        { text: "Data Engineer", deleteToPrefix: "Data " },
-        { text: "Data Scientist", deleteToPrefix: "" }, // Delete completely
-        { text: "Machine Learning Engineer", deleteToPrefix: "" }, // Delete completely
-        { text: "Fullstack Developer", deleteToPrefix: "" } // Delete completely
+        { text: "ML Engineer", deleteToPrefix: "" },
+        { text: "Data Scientist", deleteToPrefix: "" },
+        { text: "Math Educator", deleteToPrefix: "" }
     ];
     
     const dynamicTitleElement = document.getElementById('dynamic-title');
@@ -75,7 +74,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        let typeSpeed = isDeleting ? 60 : 110;
+        let typeSpeed = isDeleting ? 30 : 55;
         const randomFactor = Math.random() * 0.5 + 0.75;
         typeSpeed = Math.floor(typeSpeed * randomFactor);
 
@@ -83,11 +82,8 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     if (dynamicTitleElement) {
-        // Initial setup: If first title is "Data Engineer", start with "Data " displayed
-        if (titles.length > 0 && titles[0].text === "Data Engineer") {
-            dynamicTitleElement.textContent = "Data ";
-            charIndex = "Data ".length;
-        }
+        dynamicTitleElement.textContent = "";
+        charIndex = 0;
         setTimeout(typeEffect, 500); // Initial delay
     } else {
         console.error("Element with ID 'dynamic-title' not found.");
