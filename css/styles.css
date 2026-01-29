@@ -185,8 +185,28 @@ nav a:hover {
     margin-top: 0;
 }
 
+.greeting-name {
+    color: #4a7c72;
+    -webkit-text-stroke: 0.4px #3a6a60;
+}
+
 .name-highlight {
     color: #A4A155; /* Dark gold color */
+}
+
+.about-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #777777;
+    text-decoration: none;
+    margin-left: 6px;
+    vertical-align: super;
+    transition: color 0.2s ease;
+}
+
+.about-icon:hover {
+    color: #444444;
 }
 
 /* Role Chips */

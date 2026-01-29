@@ -68,7 +68,6 @@ document.addEventListener('DOMContentLoaded', function () {
     ────────────────────────────────────────────── */
     var landingView    = document.getElementById('landing-view');
     var roleView       = document.getElementById('role-view');
-    var roleChipsBar   = document.getElementById('role-view-chips');
     var bioTitle       = document.getElementById('role-bio-title');
     var bioText        = document.getElementById('role-bio-text');
     var highlightCards = document.getElementById('highlight-cards');
@@ -126,7 +125,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Prepare role-view content (still hidden)
         bioText.textContent  = data.bio;
-        populateRoleChips(key);
         populateHighlights(data.highlights);
 
         // Snapshot current image position & size
@@ -229,41 +227,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     /* ──────────────────────────────────────────────
-       POPULATE ROLE CHIPS (in role view)
-    ────────────────────────────────────────────── */
-    function populateRoleChips(activeKey) {
-        roleChipsBar.innerHTML = '';
-        var keys = ['educator', 'ds', 'ml', 'geo'];
-        keys.forEach(function (key) {
-            var btn = document.createElement('button');
-            btn.className = 'role-chip' + (key === activeKey ? ' active' : '');
-            btn.textContent = ROLE_DATA[key].title;
-            btn.dataset.role = key;
-            btn.addEventListener('click', function () {
-                switchRole(key);
-            });
-            roleChipsBar.appendChild(btn);
-        });
-    }
-
-    /* ──────────────────────────────────────────────
-       SWITCH ROLE (within role view)
-    ────────────────────────────────────────────── */
-    function switchRole(key) {
-        if (key === activeRole) return;
-        var data = ROLE_DATA[key];
-        if (!data) return;
-        activeRole = key;
-
-        removeAllThemes();
-        document.body.classList.add(data.theme);
-
-        bioText.textContent  = data.bio;
-        populateRoleChips(key);
-        populateHighlights(data.highlights);
-    }
-
-    /* ──────────────────────────────────────────────
        POPULATE HIGHLIGHTS
     ────────────────────────────────────────────── */
     function populateHighlights(highlights) {
@@ -331,5 +294,68 @@ document.addEventListener('DOMContentLoaded', function () {
             showLandingView();
         }
     });
+
+    /* ──────────────────────────────────────────────
+       DEEP-LINK: ?role=geo | ds | ml | educator
+       Shows role image centered, holds, then reveals content
+    ────────────────────────────────────────────── */
+    var params = new URLSearchParams(window.location.search);
+    var roleParam = params.get('role');
+    if (roleParam && ROLE_DATA[roleParam]) {
+        (function () {
+            var data = ROLE_DATA[roleParam];
+            activeRole = roleParam;
+            clearTimeout(nudgeTimer);
+
+            // Prepare role-view content
+            bioText.textContent = data.bio;
+            populateHighlights(data.highlights);
+
+            // Hide landing immediately
+            landingView.style.display = 'none';
+            landingView.style.opacity = '0';
+
+            // Create centered image
+            var imgSize = 300;
+            var centerX = (window.innerWidth - imgSize) / 2;
+            var centerY = (window.innerHeight - imgSize) / 2;
+            var img = document.createElement('img');
+            img.src = ROLE_IMAGES[roleParam];
+            img.alt = data.title;
+            img.style.cssText =
+                'position:fixed;z-index:9999;border-radius:50%;object-fit:cover;' +
+                'border:2px solid #d4d4d4;pointer-events:none;' +
+                'left:' + centerX + 'px;top:' + centerY + 'px;' +
+                'width:' + imgSize + 'px;height:' + imgSize + 'px;' +
+                'opacity:0;transition:opacity 0.4s ease;';
+            document.body.appendChild(img);
+
+            // Fade image in
+            void img.offsetWidth;
+            img.style.opacity = '1';
+
+            // After 1s hold → fade out image, reveal role view
+            setTimeout(function () {
+                img.style.opacity = '0';
+
+                removeAllThemes();
+                document.body.classList.add(data.theme);
+                profileImg.src = ROLE_IMAGES[roleParam];
+
+                roleView.style.display = 'block';
+                roleView.classList.add('visible');
+                roleView.classList.add('cinematic-enter');
+                void roleView.offsetWidth;
+                roleView.classList.add('reveal');
+
+                setTimeout(function () {
+                    img.remove();
+                    roleView.classList.remove('cinematic-enter', 'reveal');
+                    roleView.style.opacity = '1';
+                    roleView.style.transform = '';
+                }, 400);
+            }, 1400);
+        })();
+    }
 
 });
