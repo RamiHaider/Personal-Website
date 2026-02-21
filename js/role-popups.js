@@ -19,29 +19,64 @@ document.addEventListener('DOMContentLoaded', function () {
             title: 'Geoscientist',
             theme: 'theme-geo',
             bio: 'I am a P.Geo accredited geoscientist registered with the Professional Geoscientists of Ontario. My work spans induced polarization (IP) surveys, airborne geophysics, and mineral exploration targeting. I apply data science and machine learning to geoscientific problems\u2014geospatial analysis, deposit modeling, and integrating geological and geophysical datasets to identify high-potential exploration targets.',
-            highlights: [
-                {
-                    title: 'P.Geo Accreditation \u2014 Professional Geoscientists Ontario',
-                    description: 'Licensed professional geoscientist, recognized for competence in geological and geophysical practice across Ontario.',
-                    tags: ['Accreditation', 'Ontario', 'P.Geo']
-                },
-                {
-                    title: 'Induced Polarization (IP) Survey Programs',
-                    description: 'Designed and executed IP survey programs for mineral exploration, interpreting chargeability and resistivity data to delineate subsurface targets.',
-                    tags: ['IP Surveys', 'Chargeability', 'Resistivity']
-                },
-                {
-                    title: 'Airborne Geophysics Interpretation',
-                    description: 'Processed and interpreted airborne magnetic and electromagnetic datasets to map geological structures and identify prospective mineral zones.',
-                    tags: ['Airborne', 'Magnetics', 'EM']
-                },
-                {
-                    title: 'Geospatial Mineral Deposit Targeting',
-                    description: 'Used CNNs and geospatial analysis to associate geophysics images with geological data, predicting geochemical signatures for mineral deposit inference.',
-                    tags: ['Machine Learning', 'CNN', 'Geospatial'],
-                    link: 'portfolio/quebec-minerals.html'
-                }
-            ]
+            highlights: [],
+            timeline: {
+                career: [
+                    {
+                        year: 'July 2025 – Present',
+                        title: 'Project Geologist — Seequent',
+                        description: 'Technical subject-matter expert supporting geoscience users worldwide. Troubleshooting databases, APIs, and data pipelines. Assisting customers with data integrity, onboarding, and system integration.'
+                    },
+                    {
+                        year: 'June 2025',
+                        title: 'Began GeomindAI.com',
+                        description: 'Mineral prospectivity platform. Ensembled CNN-GBT model processing magnetic imagery and geological features, trained on 450K+ geospatial samples. Dockerized inference pipeline with PostGIS backend.',
+                        link: { label: 'GeomindAI.com', url: 'blog/quebecai.html' }
+                    },
+                    {
+                        year: '2025',
+                        title: 'Began Hadoona.com',
+                        description: 'Geospatial field data collection platform with offline-first mobile and web apps. Point, line, and polygon logging with cached satellite imagery and real-time GPS tracking.',
+                        link: { label: 'Hadoona.com', url: 'https://hadoona.com' }
+                    },
+                    {
+                        year: 'April 2025',
+                        title: 'P.Geo Designation',
+                        description: 'Registered Professional Geoscientist with the Professional Geoscientists of Ontario.'
+                    },
+                    {
+                        year: 'June 2023 – July 2025',
+                        title: 'Geophysicist — Sander Geophysics',
+                        description: 'Processed and interpreted airborne geophysical data (magnetics, EM, gravity, radiometrics). Designed and led field surveys. Built Python ETL pipelines and automated anomaly detection with ML.'
+                    },
+                    {
+                        year: 'Dec 2022',
+                        title: 'GIT Designation',
+                        description: 'Geologist-in-Training designation from the Professional Geoscientists of Ontario.'
+                    },
+                    {
+                        year: 'Dec 2021 – June 2023',
+                        title: 'Environmental Field Consultant — Stantec / Geospatial Geoscientist — Innovative Mining',
+                        description: 'Led a team of 5 geoscientists in data extraction and feature engineering for ML pipelines. ArcGIS and QGIS geospatial analysis. Managed project budgets and stakeholder coordination.'
+                    },
+                    {
+                        year: '2021–2022',
+                        title: 'Co-Authored GIS Publications',
+                        description: 'Jackfish Lake Project (Jan 2022) and McCivar Lake Project (Oct 2021). GeologyOntario assessment records.',
+                        link: { label: 'Jackfish Lake — Assessment Record 20000020879', url: 'https://www.geologyontario.mines.gov.on.ca/' }
+                    },
+                    {
+                        year: 'June 2020 – Dec 2021',
+                        title: 'Field Geologist — Bayside Geoscience',
+                        description: 'Hard-rock field mapping and prospecting of Orogenic gold-hosted deposits. Conducted ground IP surveys. Geospatial analysis of geochemical data with ArcGIS and QGIS. Co-authored technical assessment reports.'
+                    },
+                    {
+                        year: '2016–2020',
+                        title: 'BSc Geoscience & Applied Mathematics — Western University',
+                        description: 'Bachelor of Science in Geology and Applied Mathematics.'
+                    }
+                ]
+            }
         },
         ds: {
             title: 'Data Scientist',
@@ -53,13 +88,130 @@ document.addEventListener('DOMContentLoaded', function () {
             title: 'ML Engineer',
             theme: 'theme-ml',
             bio: 'I build and deploy machine learning models including deep learning, CNNs, and time series systems. Focused on practical solutions from prototype to production.',
-            highlights: []
+            highlights: [],
+            socialLinks: [
+                { icon: 'https://cdn.worldvectorlogo.com/logos/kaggle-1.svg', alt: 'Kaggle', url: 'https://www.kaggle.com/ramiaboushamalah' },
+                { icon: 'https://upload.wikimedia.org/wikipedia/commons/9/91/Octicons-mark-github.svg', alt: 'GitHub', url: 'https://github.com/RamiHaider', invert: true }
+            ],
+            timeline: {
+                career: [
+                    {
+                        year: 'Feb 2026',
+                        title: 'Began ML Teaching Series',
+                        description: 'Started creating content teaching deep intuitive math and visualizations of machine learning concepts.'
+                    },
+                    {
+                        year: 'June 2025',
+                        title: 'Began GeomindAI.com',
+                        description: 'Mineral prospectivity mapper powered by an ensembled CNN trained on geophysical and geochemical data to predict mineral deposit locations.'
+                    },
+                    {
+                        year: 'Nov 2024',
+                        title: 'Speaker at KEGS Ottawa',
+                        description: 'Talk titled "Detecting Anomalies in Ground Magnetic Data using Supervised Learning".',
+                        link: { label: 'View Slides (PDF)', url: 'assets/images/TimeSeriesPresentation.pdf' }
+                    },
+                    {
+                        year: 'June 2024',
+                        title: 'Masters in Data Science — University of Michigan',
+                        description: 'Began pursuing a Masters degree in Data Science.'
+                    },
+                    {
+                        year: 'June 2023 – June 2025',
+                        title: 'ML Engineer — Sander Geophysics',
+                        description: 'Developed a CNN model fine-tuned on anomaly detection. Hosted model on AWS and built end-to-end ML pipelines.'
+                    },
+                    {
+                        year: 'Dec 2021 – June 2023',
+                        title: 'Subject Matter Expert / Data Engineer — Innovative Mining Solutions',
+                        description: 'Led a team in sourcing data for an ML project developing a mineral prospectivity model.'
+                    },
+                    {
+                        year: 'June 2020',
+                        title: 'BSc Applied Mathematics',
+                        description: 'Completed Bachelor of Science in Applied Mathematics.'
+                    }
+                ]
+            },
+            projectCards: [
+                {
+                    title: 'The Illustrated CNN',
+                    description: 'Interactive visual walkthrough of how Convolutional Neural Networks process images — from convolution to prediction.',
+                    tags: ['CNN', 'Deep Learning', 'Visualization'],
+                    link: 'blog/visualize-cnn.html'
+                },
+                {
+                    title: 'Mineral Prospectivity Map',
+                    description: 'CNN-based geospatial model predicting mineral deposit locations across Quebec using geophysical and geochemical data.',
+                    tags: ['CNN', 'Geospatial', 'Mining'],
+                    link: 'portfolio/quebec-minerals.html'
+                },
+                {
+                    title: 'GeomindAI — Mineral Targeting Platform',
+                    description: 'Full implementation of the mineral targeting platform with ensembled CNN architecture and interactive mapping.',
+                    tags: ['Platform', 'CNN', 'AWS'],
+                    link: 'blog/quebecai.html'
+                },
+                {
+                    title: 'Anomaly Detection — KEGS Ottawa Talk',
+                    description: 'Presentation slides on detecting anomalies in ground magnetic data using supervised learning.',
+                    tags: ['Anomaly Detection', 'Geophysics', 'Talk'],
+                    link: 'assets/images/TimeSeriesPresentation.pdf'
+                }
+            ]
         },
         educator: {
             title: 'Math & Chess Educator',
             theme: 'theme-educator',
-            bio: 'I create math content and teach chess. I enjoy breaking down complex topics into clear, visual explanations and producing quality educational videos.',
-            highlights: []
+            bio: 'I have been personally tutoring Math since 2015 and teaching Chess to diverse groups. I enjoy breaking down complex topics into clear, visual explanations and producing quality educational videos.',
+            highlights: [],
+            timeline: {
+                chess: [
+                    {
+                        year: '2023',
+                        title: 'U1800 Prize Winner',
+                        description: 'Won the U1800 prize at the London Chess Club 2023 Winter Active tournament.',
+                        link: { label: 'London Chess Club Results', url: 'https://londonchessclub.ca/?p=10684' }
+                    },
+                    {
+                        year: '2015–2016',
+                        title: 'Chess Instructor — Amica of London',
+                        description: 'Volunteered at Amica of London, an upscale retirement community. Taught senior residents the game of chess, making a lasting impact on the community.',
+                        reference: 'Reference: Laura Cuthbertson, Life Enrichment Coordinator'
+                    },
+                    {
+                        year: '2013',
+                        title: 'Started Playing Chess',
+                        description: 'Began playing chess and competing in tournaments across multiple countries.'
+                    }
+                ],
+                math: [
+                    {
+                        year: '2025',
+                        title: 'ML Fundamentals',
+                        description: 'New playlist covering machine learning fundamentals.',
+                        video: 'https://www.youtube.com/embed/I28UmlvljiM'
+                    },
+                    {
+                        year: '2016',
+                        title: 'Calculus Teaching',
+                        description: 'Video playlists teaching Calculus.',
+                        videos: [
+                            { label: 'Calculus Playlist 1', url: 'https://www.youtube.com/embed/za3K3spZJwQ?list=PLxOmhqQoYAkzf4Ql4cmYXGyT009dJAtaF' },
+                            { label: 'Calculus Playlist 2', url: 'https://www.youtube.com/embed/5Iw_0T_XUUw?list=PLxOmhqQoYAkwiJpphzYAri2xvGjlTy4Ys' }
+                        ]
+                    },
+                    {
+                        year: '2015',
+                        title: 'Started Tutoring Math',
+                        description: 'Began personally tutoring students in mathematics.',
+                        testimonials: [
+                            { label: 'Student Testimonial #1', url: 'assets/references/student-testimonial-1.pdf' },
+                            { label: 'Student Testimonial #2', url: 'assets/references/student-testimonial-2.pdf' }
+                        ]
+                    }
+                ]
+            }
         }
     };
 
@@ -125,7 +277,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         // Prepare role-view content (still hidden)
         bioText.textContent  = data.bio;
-        populateHighlights(data.highlights);
+        populateHighlights(data.highlights, data.timeline, data.socialLinks, data.projectCards);
 
         // Snapshot current image position & size
         var rect = profileImg.getBoundingClientRect();
@@ -229,8 +381,38 @@ document.addEventListener('DOMContentLoaded', function () {
     /* ──────────────────────────────────────────────
        POPULATE HIGHLIGHTS
     ────────────────────────────────────────────── */
-    function populateHighlights(highlights) {
+    function populateHighlights(highlights, timeline, socialLinks, projectCards) {
         highlightCards.innerHTML = '';
+        var heading = document.getElementById('role-highlights-heading');
+
+        // Render social icons near the bio if provided
+        var existingIcons = document.querySelector('.role-social-icons');
+        if (existingIcons) existingIcons.remove();
+        if (socialLinks && socialLinks.length) {
+            var iconsDiv = document.createElement('div');
+            iconsDiv.className = 'role-social-icons';
+            socialLinks.forEach(function (s) {
+                var a = document.createElement('a');
+                a.href = s.url;
+                a.target = '_blank';
+                a.rel = 'noopener noreferrer';
+                var img = document.createElement('img');
+                img.src = s.icon;
+                img.alt = s.alt;
+                if (s.invert) img.style.filter = 'brightness(0) invert(0)';
+                a.appendChild(img);
+                iconsDiv.appendChild(a);
+            });
+            bioText.parentNode.insertBefore(iconsDiv, bioText.nextSibling);
+        }
+
+        if (timeline) {
+            if (heading) heading.style.display = 'none';
+            populateTimeline(timeline, projectCards);
+            return;
+        }
+
+        if (heading) heading.style.display = '';
 
         if (!highlights || highlights.length === 0) {
             var p = document.createElement('p');
@@ -278,6 +460,190 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 
     /* ──────────────────────────────────────────────
+       POPULATE TIMELINE
+    ────────────────────────────────────────────── */
+    function populateTimeline(timeline, projectCards) {
+        var keys = Object.keys(timeline);
+        var isSingle = keys.length === 1;
+        var hasCards = projectCards && projectCards.length > 0;
+
+        var wrapper = document.createElement('div');
+        if (isSingle && hasCards) {
+            wrapper.className = 'timeline-with-cards';
+        } else if (isSingle) {
+            wrapper.className = 'single-timeline';
+        } else {
+            wrapper.className = 'educator-timeline';
+        }
+
+        function buildColumn(label, entries, hideHeading) {
+            var col = document.createElement('div');
+            col.className = 'timeline-column';
+
+            if (!hideHeading) {
+                var heading = document.createElement('h3');
+                heading.className = 'timeline-column-heading';
+                heading.textContent = label;
+                col.appendChild(heading);
+            }
+
+            var line = document.createElement('div');
+            line.className = 'timeline-line';
+
+            entries.forEach(function (e) {
+                var entry = document.createElement('div');
+                entry.className = 'timeline-entry';
+
+                var dot = document.createElement('span');
+                dot.className = 'timeline-dot';
+                entry.appendChild(dot);
+
+                var year = document.createElement('span');
+                year.className = 'timeline-year';
+                year.textContent = e.year;
+                entry.appendChild(year);
+
+                var content = document.createElement('div');
+                content.className = 'timeline-entry-content';
+
+                var title = document.createElement('h4');
+                title.textContent = e.title;
+                content.appendChild(title);
+
+                var desc = document.createElement('p');
+                desc.textContent = e.description;
+                content.appendChild(desc);
+
+                if (e.reference) {
+                    var ref = document.createElement('p');
+                    ref.className = 'timeline-reference';
+                    ref.textContent = e.reference;
+                    content.appendChild(ref);
+                }
+
+                if (e.link) {
+                    var linkEl = document.createElement('a');
+                    linkEl.href = e.link.url;
+                    linkEl.target = '_blank';
+                    linkEl.rel = 'noopener noreferrer';
+                    linkEl.className = 'timeline-link';
+                    linkEl.textContent = e.link.label;
+                    content.appendChild(linkEl);
+                }
+
+                if (e.testimonials) {
+                    var list = document.createElement('ul');
+                    list.className = 'timeline-testimonials';
+                    e.testimonials.forEach(function (t) {
+                        var li = document.createElement('li');
+                        var a = document.createElement('a');
+                        a.href = t.url;
+                        a.target = '_blank';
+                        a.rel = 'noopener noreferrer';
+                        a.className = 'timeline-link';
+                        a.textContent = t.label;
+                        li.appendChild(a);
+                        list.appendChild(li);
+                    });
+                    content.appendChild(list);
+                }
+
+                if (e.video) {
+                    var iframe = document.createElement('iframe');
+                    iframe.width = '280';
+                    iframe.height = '158';
+                    iframe.src = e.video;
+                    iframe.frameBorder = '0';
+                    iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+                    iframe.allowFullscreen = true;
+                    iframe.className = 'timeline-video';
+                    content.appendChild(iframe);
+                }
+
+                if (e.videos) {
+                    var vidsWrap = document.createElement('div');
+                    vidsWrap.className = 'timeline-videos';
+                    e.videos.forEach(function (v) {
+                        var vDiv = document.createElement('div');
+                        var lbl = document.createElement('p');
+                        lbl.className = 'timeline-video-label';
+                        lbl.textContent = v.label;
+                        vDiv.appendChild(lbl);
+                        var iframe2 = document.createElement('iframe');
+                        iframe2.width = '280';
+                        iframe2.height = '158';
+                        iframe2.src = v.url;
+                        iframe2.frameBorder = '0';
+                        iframe2.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+                        iframe2.allowFullscreen = true;
+                        iframe2.className = 'timeline-video';
+                        vDiv.appendChild(iframe2);
+                        vidsWrap.appendChild(vDiv);
+                    });
+                    content.appendChild(vidsWrap);
+                }
+
+                entry.appendChild(content);
+                line.appendChild(entry);
+            });
+
+            col.appendChild(line);
+            return col;
+        }
+
+        if (isSingle && hasCards) {
+            // Timeline left, project cards right
+            wrapper.appendChild(buildColumn(keys[0], timeline[keys[0]], true));
+
+            var cardsCol = document.createElement('div');
+            cardsCol.className = 'timeline-cards-column';
+
+            var cardsHeading = document.createElement('h3');
+            cardsHeading.className = 'timeline-column-heading';
+            cardsHeading.textContent = 'Projects';
+            cardsCol.appendChild(cardsHeading);
+
+            projectCards.forEach(function (pc) {
+                var card = document.createElement('a');
+                card.href = pc.link;
+                card.className = 'timeline-project-card';
+
+                var t = document.createElement('h4');
+                t.textContent = pc.title;
+                card.appendChild(t);
+
+                var d = document.createElement('p');
+                d.textContent = pc.description;
+                card.appendChild(d);
+
+                if (pc.tags && pc.tags.length) {
+                    var tagsDiv = document.createElement('div');
+                    tagsDiv.className = 'highlight-card-tags';
+                    pc.tags.forEach(function (tag) {
+                        var span = document.createElement('span');
+                        span.className = 'highlight-tag';
+                        span.textContent = tag;
+                        tagsDiv.appendChild(span);
+                    });
+                    card.appendChild(tagsDiv);
+                }
+
+                cardsCol.appendChild(card);
+            });
+
+            wrapper.appendChild(cardsCol);
+        } else if (isSingle) {
+            wrapper.appendChild(buildColumn(keys[0], timeline[keys[0]], true));
+        } else {
+            keys.forEach(function (k) {
+                var label = k.charAt(0).toUpperCase() + k.slice(1);
+                wrapper.appendChild(buildColumn(label, timeline[k], false));
+            });
+        }
+        highlightCards.appendChild(wrapper);
+    }
+
+    /* ──────────────────────────────────────────────
        THEME HELPERS
     ────────────────────────────────────────────── */
     function removeAllThemes() {
@@ -309,7 +675,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
             // Prepare role-view content
             bioText.textContent = data.bio;
-            populateHighlights(data.highlights);
+            populateHighlights(data.highlights, data.timeline, data.socialLinks, data.projectCards);
 
             // Hide landing immediately
             landingView.style.display = 'none';

@@ -1271,6 +1271,238 @@ a.highlight-card {
     color: #c5a91c;
 }
 
+/* ── Educator Timeline ── */
+.highlight-cards:has(.educator-timeline),
+.highlight-cards:has(.single-timeline) {
+    max-width: none;
+    display: block;
+}
+
+.educator-timeline {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.timeline-column {
+    min-width: 0;
+}
+
+.timeline-column-heading {
+    font-size: 20px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin: 0 0 20px 0;
+    text-align: center;
+}
+
+.timeline-line {
+    position: relative;
+    padding-left: 24px;
+    border-left: 2px solid #d4d4d4;
+}
+
+.timeline-entry {
+    position: relative;
+    margin-bottom: 36px;
+}
+
+.timeline-entry:last-child {
+    margin-bottom: 0;
+}
+
+.timeline-dot {
+    position: absolute;
+    left: -31px;
+    top: 4px;
+    width: 12px;
+    height: 12px;
+    background: #1a1a1a;
+    border-radius: 50%;
+    border: 2px solid #fff;
+}
+
+.timeline-year {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 600;
+    color: #fff;
+    background: #555;
+    padding: 2px 10px;
+    border-radius: 10px;
+    margin-bottom: 6px;
+}
+
+.timeline-entry-content h4 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin: 8px 0 6px 0;
+}
+
+.timeline-entry-content p {
+    font-size: 14px;
+    line-height: 1.6;
+    color: #555;
+    margin: 0 0 8px 0;
+}
+
+.timeline-reference {
+    font-style: italic;
+    font-size: 12px !important;
+    color: #777 !important;
+}
+
+.timeline-link {
+    color: #0056b3;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 500;
+    transition: color 0.2s ease;
+    display: inline-block;
+    margin-top: 4px;
+}
+
+.timeline-link:hover {
+    color: #003d80;
+    text-decoration: underline;
+}
+
+.timeline-testimonials {
+    list-style: none;
+    padding-left: 0;
+    margin: 8px 0 0 0;
+}
+
+.timeline-testimonials li {
+    margin-bottom: 4px;
+}
+
+.timeline-video {
+    border-radius: 6px;
+    margin-top: 8px;
+    max-width: 100%;
+}
+
+.timeline-videos {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 8px;
+}
+
+.timeline-video-label {
+    font-size: 12px !important;
+    font-weight: 500;
+    color: #777 !important;
+    margin: 0 0 4px 0 !important;
+}
+
+/* Single-column timeline (no cards) */
+.single-timeline {
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* Timeline + project cards side by side */
+.highlight-cards:has(.timeline-with-cards) {
+    max-width: none;
+    display: block;
+}
+
+.timeline-with-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+.timeline-cards-column {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.timeline-project-card {
+    display: flex;
+    flex-direction: column;
+    background-color: #f8f8f8;
+    border-radius: 10px;
+    border: 1px solid #e0e0e0;
+    padding: 18px;
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.timeline-project-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+}
+
+.timeline-project-card h4 {
+    font-size: 15px;
+    font-weight: 600;
+    color: #1a1a1a;
+    margin: 0 0 6px 0;
+}
+
+.timeline-project-card p {
+    font-size: 13px;
+    color: #555;
+    line-height: 1.5;
+    margin: 0 0 10px 0;
+    flex: 1;
+}
+
+@media screen and (max-width: 768px) {
+    .timeline-with-cards {
+        grid-template-columns: 1fr;
+        gap: 30px;
+    }
+}
+
+/* Role social icons (near bio) */
+.role-social-icons {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    margin-top: 12px;
+}
+
+.role-social-icons a {
+    display: inline-block;
+    transition: transform 0.2s ease;
+}
+
+.role-social-icons a:hover {
+    transform: scale(1.15);
+}
+
+.role-social-icons img {
+    height: 26px;
+    width: auto;
+}
+
+@media screen and (max-width: 768px) {
+    .educator-timeline {
+        grid-template-columns: 1fr;
+        gap: 30px;
+    }
+
+    .timeline-video {
+        width: 100%;
+        height: auto;
+        aspect-ratio: 16/9;
+    }
+}
+
 /* ── Role Transition ── */
 #role-view.cinematic-enter {
     opacity: 0;
