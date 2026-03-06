@@ -12,14 +12,19 @@ function drawReLUVisualization() {
     ctx.fillRect(0, 0, canvasWidth, canvasHeight);
     
     // Get input data (36x36 grayscale values from 0-1)
-    const cnnData = window.cnnInputData;
-    if (!cnnData) {
+    let inputData = null;
+
+    if (window.cnnInputData && window.cnnInputData.normalizedRed) {
+        inputData = window.cnnInputData.normalizedRed;
+    } else if (typeof REAL_RGB_DATA !== 'undefined') {
+        console.log('ReLU: Falling back to REAL_RGB_DATA');
+        inputData = REAL_RGB_DATA.map(row => row.map(pixel => pixel.r / 255));
+    }
+
+    if (!inputData) {
         console.error('CNN input data not available yet');
         return;
     }
-    
-    // Use the normalized red channel as grayscale input
-    const inputData = cnnData.normalizedRed;
     
     // Define the same 3 filters as in the convolution
     const filters = [
@@ -209,14 +214,17 @@ function drawArrow(ctx, x, y, width) {
 
 // Initialize when DOM is loaded
 document.addEventListener('DOMContentLoaded', function() {
-    // Wait for CNN data to be loaded
+    let attempts = 0;
     const checkDataAndDraw = () => {
-        if (window.cnnInputData) {
+        if (window.cnnInputData || typeof REAL_RGB_DATA !== 'undefined') {
             drawReLUVisualization();
-        } else {
+        } else if (attempts < 50) {
+            attempts++;
             setTimeout(checkDataAndDraw, 100);
+        } else {
+            console.error('ReLU: gave up waiting for data');
         }
     };
-    
-    checkDataAndDraw();
+
+    setTimeout(checkDataAndDraw, 200);
 }); 

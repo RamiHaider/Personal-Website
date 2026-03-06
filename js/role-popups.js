@@ -667,6 +667,12 @@ document.addEventListener('DOMContentLoaded', function () {
     ────────────────────────────────────────────── */
     var params = new URLSearchParams(window.location.search);
     var roleParam = params.get('role');
+    // Support clean URLs: /Geoscience, /MLEngineer, /DataScientist, /Educator
+    if (!roleParam) {
+        var pathRoleMap = { geoscience: 'geo', mlengineer: 'ml', datascientist: 'ds', educator: 'educator' };
+        var seg = window.location.pathname.split('/').filter(Boolean)[0];
+        if (seg) roleParam = pathRoleMap[seg.toLowerCase()] || null;
+    }
     if (roleParam && ROLE_DATA[roleParam]) {
         (function () {
             var data = ROLE_DATA[roleParam];

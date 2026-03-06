@@ -33,18 +33,23 @@ class SimpleConvolution {
             this.imageData = window.cnnInputData.normalizedRed;
             this.setupPaddedData();
             this.startAnimation();
+        } else if (typeof REAL_RGB_DATA !== 'undefined') {
+            console.log('SimpleConvolution: Falling back to REAL_RGB_DATA');
+            this.imageData = REAL_RGB_DATA.map(row => row.map(pixel => pixel.r / 255));
+            this.setupPaddedData();
+            this.startAnimation();
         } else {
             // Wait for data to be available
             setTimeout(() => {
                 if (window.cnnInputData && window.cnnInputData.normalizedRed) {
                     this.imageData = window.cnnInputData.normalizedRed;
-                    this.setupPaddedData();
-                    this.startAnimation();
+                } else if (typeof REAL_RGB_DATA !== 'undefined') {
+                    this.imageData = REAL_RGB_DATA.map(row => row.map(pixel => pixel.r / 255));
                 } else {
                     this.generateSampleData();
-                    this.setupPaddedData();
-                    this.startAnimation();
                 }
+                this.setupPaddedData();
+                this.startAnimation();
             }, 2000);
         }
     }

@@ -6552,3 +6552,19 @@ const REAL_RGB_DATA = [
     }
   ]
 ];
+
+// Pre-compute cnnInputData so all downstream visualizations have it immediately
+(function() {
+    var nr = REAL_RGB_DATA.map(function(row) { return row.map(function(p) { return parseFloat((p.r / 255).toFixed(3)); }); });
+    var ng = REAL_RGB_DATA.map(function(row) { return row.map(function(p) { return parseFloat((p.g / 255).toFixed(3)); }); });
+    var nb = REAL_RGB_DATA.map(function(row) { return row.map(function(p) { return parseFloat((p.b / 255).toFixed(3)); }); });
+    window.cnnInputData = {
+        red: REAL_RGB_DATA.map(function(row) { return row.map(function(p) { return p.r; }); }),
+        green: REAL_RGB_DATA.map(function(row) { return row.map(function(p) { return p.g; }); }),
+        blue: REAL_RGB_DATA.map(function(row) { return row.map(function(p) { return p.b; }); }),
+        normalizedRed: nr,
+        normalizedGreen: ng,
+        normalizedBlue: nb,
+        dimensions: { rows: REAL_RGB_DATA.length, cols: REAL_RGB_DATA[0].length }
+    };
+})();

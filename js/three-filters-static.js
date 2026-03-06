@@ -79,21 +79,21 @@ function drawThreeFiltersStatic() {
     });
     
     // Layout parameters
-    const inputSize = 180;
-    const filterSize = 60;
-    const outputSize = 120;
-    const spacing = 70;
-    const startY = 50;
-    
+    const inputSize = 150;
+    const filterSize = 55;
+    const outputSize = 110;
+    const spacing = 60;
+    const startY = 40;
+
     // Calculate positions for horizontal layout: Input | Filter1 | Output1
-    //                                              | Filter2 | Output2  
+    //                                              | Filter2 | Output2
     //                                              | Filter3 | Output3
-    const inputX = 20;
+    const inputX = 30;
     const filtersStartX = inputX + inputSize + spacing;
     const outputsStartX = filtersStartX + filterSize + spacing;
-    
+
     // Calculate filter starting Y to space them out vertically
-    const verticalSpacing = 80;
+    const verticalSpacing = 60;
     const filtersStartY = startY + 20;
     
     // Draw input matrix (grayscale)
