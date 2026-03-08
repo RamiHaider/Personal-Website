@@ -31,7 +31,7 @@ document.addEventListener('DOMContentLoaded', function () {
                         year: 'June 2025',
                         title: 'Began GeomindAI.com',
                         description: 'Mineral prospectivity platform. Ensembled CNN-GBT model processing magnetic imagery and geological features, trained on 450K+ geospatial samples. Dockerized inference pipeline with PostGIS backend.',
-                        link: { label: 'GeomindAI.com', url: 'blog/quebecai.html' }
+                        link: { label: 'GeomindAI.com', url: 'https://geomindai.com' }
                     },
                     {
                         year: '2025',
@@ -57,7 +57,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     {
                         year: 'Dec 2021 – June 2023',
                         title: 'Environmental Field Consultant — Stantec / Geospatial Geoscientist — Innovative Mining',
-                        description: 'Led a team of 5 geoscientists in data extraction and feature engineering for ML pipelines. ArcGIS and QGIS geospatial analysis. Managed project budgets and stakeholder coordination.'
+                        description: 'Led a team of 5 geoscientists in data extraction and feature engineering for ML pipelines. Led a team in sourcing data for CNN-based Mineral Prospectivity and model development. ArcGIS and QGIS geospatial analysis. Managed project budgets and stakeholder coordination.'
                     },
                     {
                         year: '2021–2022',
@@ -90,6 +90,7 @@ document.addEventListener('DOMContentLoaded', function () {
             bio: 'I build and deploy machine learning models including deep learning, CNNs, and time series systems. Focused on practical solutions from prototype to production.',
             highlights: [],
             socialLinks: [
+                { icon: 'https://cdn.worldvectorlogo.com/logos/linkedin-icon-2.svg', alt: 'LinkedIn', url: 'https://www.linkedin.com/in/ramihaider/' },
                 { icon: 'https://cdn.worldvectorlogo.com/logos/kaggle-1.svg', alt: 'Kaggle', url: 'https://www.kaggle.com/ramiaboushamalah' },
                 { icon: 'https://upload.wikimedia.org/wikipedia/commons/9/91/Octicons-mark-github.svg', alt: 'GitHub', url: 'https://github.com/RamiHaider', invert: true }
             ],
@@ -98,12 +99,25 @@ document.addEventListener('DOMContentLoaded', function () {
                     {
                         year: 'Feb 2026',
                         title: 'Began ML Teaching Series',
-                        description: 'Started creating content teaching deep intuitive math and visualizations of machine learning concepts.'
+                        description: 'Started creating content teaching deep intuitive math and visualizations of machine learning concepts.',
+                        link: { label: 'Watch on YouTube', url: 'https://www.youtube.com/watch?v=I28UmlvljiM' }
                     },
                     {
                         year: 'June 2025',
                         title: 'Began GeomindAI.com',
-                        description: 'Mineral prospectivity mapper powered by an ensembled CNN trained on geophysical and geochemical data to predict mineral deposit locations.'
+                        description: 'Mineral prospectivity mapper powered by an ensembled CNN trained on geophysical and geochemical data to predict mineral deposit locations.',
+                        link: { label: 'GeomindAI.com', url: 'https://geomindai.com' }
+                    },
+                    {
+                        year: 'March 2025',
+                        title: 'Began Hadoona.com',
+                        description: 'Fullstack web application with a Flutter mobile app for offline capturing of field data. Node.js backend with a Flutter frontend for seamless offline-first geospatial data collection.',
+                        link: { label: 'Hadoona.com', url: 'https://hadoona.com' }
+                    },
+                    {
+                        year: 'Sept 2024',
+                        title: 'Data Science Consultant — 1stoplaundry.com',
+                        description: 'Consulted for a high-growth laundry startup. Built statistical forecasting models and a dynamic pricing engine that drove an 80% increase in sales.'
                     },
                     {
                         year: 'Nov 2024',
@@ -117,14 +131,14 @@ document.addEventListener('DOMContentLoaded', function () {
                         description: 'Began pursuing a Masters degree in Data Science.'
                     },
                     {
-                        year: 'June 2023 – June 2025',
+                        year: 'July 2021 – July 2025',
                         title: 'ML Engineer — Sander Geophysics',
-                        description: 'Developed a CNN model fine-tuned on anomaly detection. Hosted model on AWS and built end-to-end ML pipelines.'
+                        description: 'Developed and fine-tuned a YOLO-based CNN for anomaly detection. Hosted model on AWS and built end-to-end ML pipelines.'
                     },
                     {
-                        year: 'Dec 2021 – June 2023',
-                        title: 'Subject Matter Expert / Data Engineer — Innovative Mining Solutions',
-                        description: 'Led a team in sourcing data for an ML project developing a mineral prospectivity model.'
+                        year: 'November 2020 – July 2021',
+                        title: 'Data Analyst / Engineer — Innovative Mining Solutions',
+                        description: 'Led a team in sourcing data for CNN-based Mineral Prospectivity and model development.'
                     },
                     {
                         year: 'June 2020',
@@ -141,22 +155,10 @@ document.addEventListener('DOMContentLoaded', function () {
                     link: 'blog/visualize-cnn.html'
                 },
                 {
-                    title: 'Mineral Prospectivity Map',
-                    description: 'CNN-based geospatial model predicting mineral deposit locations across Quebec using geophysical and geochemical data.',
-                    tags: ['CNN', 'Geospatial', 'Mining'],
-                    link: 'portfolio/quebec-minerals.html'
-                },
-                {
                     title: 'GeomindAI — Mineral Targeting Platform',
                     description: 'Full implementation of the mineral targeting platform with ensembled CNN architecture and interactive mapping.',
                     tags: ['Platform', 'CNN', 'AWS'],
                     link: 'blog/quebecai.html'
-                },
-                {
-                    title: 'Anomaly Detection — KEGS Ottawa Talk',
-                    description: 'Presentation slides on detecting anomalies in ground magnetic data using supervised learning.',
-                    tags: ['Anomaly Detection', 'Geophysics', 'Talk'],
-                    link: 'assets/images/TimeSeriesPresentation.pdf'
                 }
             ]
         },
@@ -683,50 +685,18 @@ document.addEventListener('DOMContentLoaded', function () {
             bioText.textContent = data.bio;
             populateHighlights(data.highlights, data.timeline, data.socialLinks, data.projectCards);
 
-            // Hide landing immediately
+            // Hide landing and show role view immediately
             landingView.style.display = 'none';
             landingView.style.opacity = '0';
 
-            // Create centered image
-            var imgSize = 300;
-            var centerX = (window.innerWidth - imgSize) / 2;
-            var centerY = (window.innerHeight - imgSize) / 2;
-            var img = document.createElement('img');
-            img.src = ROLE_IMAGES[roleParam];
-            img.alt = data.title;
-            img.style.cssText =
-                'position:fixed;z-index:9999;border-radius:50%;object-fit:cover;' +
-                'border:2px solid #d4d4d4;pointer-events:none;' +
-                'left:' + centerX + 'px;top:' + centerY + 'px;' +
-                'width:' + imgSize + 'px;height:' + imgSize + 'px;' +
-                'opacity:0;transition:opacity 0.4s ease;';
-            document.body.appendChild(img);
+            removeAllThemes();
+            document.body.classList.add(data.theme);
+            profileImg.src = ROLE_IMAGES[roleParam];
 
-            // Fade image in
-            void img.offsetWidth;
-            img.style.opacity = '1';
-
-            // After 1s hold → fade out image, reveal role view
-            setTimeout(function () {
-                img.style.opacity = '0';
-
-                removeAllThemes();
-                document.body.classList.add(data.theme);
-                profileImg.src = ROLE_IMAGES[roleParam];
-
-                roleView.style.display = 'block';
-                roleView.classList.add('visible');
-                roleView.classList.add('cinematic-enter');
-                void roleView.offsetWidth;
-                roleView.classList.add('reveal');
-
-                setTimeout(function () {
-                    img.remove();
-                    roleView.classList.remove('cinematic-enter', 'reveal');
-                    roleView.style.opacity = '1';
-                    roleView.style.transform = '';
-                }, 400);
-            }, 1400);
+            roleView.style.display = 'block';
+            roleView.classList.add('visible');
+            roleView.style.opacity = '1';
+            roleView.style.transform = '';
         })();
     }
 
